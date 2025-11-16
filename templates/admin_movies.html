@@ -49,6 +49,24 @@
       min-height: 70px;
       resize: vertical;
   }
+
+  .lang-multi {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 10px;
+      margin-top: 4px;
+  }
+  .lang-chip {
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      background: #020617;
+  }
+
   .admin-actions {
       margin-top: 10px;
       display: flex;
@@ -84,32 +102,36 @@
                   <label>Title</label>
                   <input name="title" class="admin-input" required />
               </div>
+
               <div class="admin-field">
                   <label>Year</label>
                   <input name="year" class="admin-input" placeholder="2024" />
               </div>
+
+              <!-- Primary language (for home page row) -->
               <div class="admin-field">
-                  <label>Language</label>
+                  <label>Primary language (row)</label>
                   <select name="language" class="admin-select">
                       <option value="Tamil">Tamil</option>
                       <option value="Telugu">Telugu</option>
                       <option value="Hindi">Hindi</option>
                       <option value="Malayalam">Malayalam</option>
                       <option value="Kannada">Kannada</option>
+                      <option value="English">English</option>
                   </select>
               </div>
+
               <div class="admin-field">
                   <label>Quality</label>
                   <input name="quality" class="admin-input" placeholder="HD / 720p / 1080p" />
               </div>
+
               <div class="admin-field">
                   <label>Category / Genre</label>
                   <input name="category" class="admin-input" placeholder="Action / Drama ..." />
               </div>
-              <div class="admin-field">
-                  <label>Duration</label>
-                  <input name="duration" class="admin-input" placeholder="2h 20m" />
-              </div>
+
+              <!-- Watch / Download URLs -->
               <div class="admin-field">
                   <label>Watch URL</label>
                   <input name="watch_url" class="admin-input" placeholder="https://..." />
@@ -117,6 +139,31 @@
               <div class="admin-field">
                   <label>Download URL</label>
                   <input name="download_url" class="admin-input" placeholder="https://..." />
+              </div>
+          </div>
+
+          <!-- Multi-language audio support -->
+          <div class="admin-field" style="margin-top:8px;">
+              <label>Available audio languages (multi‑select)</label>
+              <div class="lang-multi">
+                  <label class="lang-chip">
+                      <input type="checkbox" name="languages" value="Tamil" /> Tamil
+                  </label>
+                  <label class="lang-chip">
+                      <input type="checkbox" name="languages" value="Telugu" /> Telugu
+                  </label>
+                  <label class="lang-chip">
+                      <input type="checkbox" name="languages" value="Hindi" /> Hindi
+                  </label>
+                  <label class="lang-chip">
+                      <input type="checkbox" name="languages" value="Malayalam" /> Malayalam
+                  </label>
+                  <label class="lang-chip">
+                      <input type="checkbox" name="languages" value="Kannada" /> Kannada
+                  </label>
+                  <label class="lang-chip">
+                      <input type="checkbox" name="languages" value="English" /> English
+                  </label>
               </div>
           </div>
 
@@ -137,4 +184,4 @@
   </article>
 </section>
 {% endblock %}
-                
+                    
