@@ -2,399 +2,232 @@
 
 {% block content %}
 <style>
-    .detail-page {
-        max-width: 960px;
-        margin: 0 auto;
-        width: 100%;
-    }
+  .detail-shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
+      gap: 16px;
+  }
+  .detail-left {
+      background: rgba(15, 23, 42, 0.96);
+      border-radius: 24px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      padding: 14px 14px 16px;
+      display: flex;
+      gap: 12px;
+  }
+  .detail-poster {
+      width: 120px;
+      border-radius: 18px;
+      background: radial-gradient(circle at top, #1d4ed8, #020617);
+      flex-shrink: 0;
+      overflow: hidden;
+  }
+  .detail-poster img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+  }
+  .detail-main {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+  }
+  .detail-title {
+      font-size: 17px;
+      font-weight: 600;
+  }
+  .detail-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+  }
+  .detail-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+  }
+  .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+  }
+  .badge {
+      font-size: 10px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      background: #020617;
+  }
+  .badge.hot {
+      border-color: rgba(248, 113, 113, 0.8);
+      color: #fecaca;
+  }
 
-    /* Desktop / tablet default layout: 2 columns */
-    .detail-shell {
-        display: grid;
-        grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-        gap: 18px;
-    }
-    .detail-main {
-        background: rgba(15, 23, 42, 0.92);
-        border-radius: 26px;
-        border: 1px solid rgba(148, 163, 184, 0.35);
-        padding: 18px 18px 16px;
-        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.85);
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-    .detail-tagline {
-        font-size: 12px;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.16em;
-    }
-    .detail-title {
-        font-size: 28px;
-        font-weight: 700;
-        margin-top: 4px;
-    }
-    .detail-meta-line {
-        margin-top: 6px;
-        font-size: 12px;
-        color: var(--text-muted);
-    }
-    .detail-chips {
-        margin-top: 10px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-    .detail-chip {
-        font-size: 11px;
-        padding: 5px 10px;
-        border-radius: 999px;
-        border: 1px solid rgba(148, 163, 184, 0.4);
-        color: #e5e7eb;
-    }
-    .detail-chip.accent {
-        border-color: #facc15;
-        color: #fef3c7;
-    }
+  .detail-actions {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+  }
+  .detail-btn-primary {
+      border-radius: 999px;
+      border: none;
+      padding: 7px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #ecfdf5;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+  }
+  .detail-btn-secondary {
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      padding: 6px 14px;
+      font-size: 12px;
+      cursor: pointer;
+      background: #020617;
+      color: #e5e7eb;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+  }
 
-    .detail-actions {
-        margin-top: 14px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-    .btn-primary {
-        border: none;
-        outline: none;
-        padding: 8px 18px;
-        border-radius: 999px;
-        font-size: 13px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        cursor: pointer;
-        background: linear-gradient(135deg, #22c55e, #16a34a);
-        color: #ecfdf5;
-        box-shadow: 0 10px 24px rgba(22, 163, 74, 0.6);
-    }
-    .btn-secondary {
-        border: 1px solid rgba(148, 163, 184, 0.45);
-        background: rgba(15, 23, 42, 0.95);
-        color: #e5e7eb;
-        padding: 8px 16px;
-        border-radius: 999px;
-        font-size: 13px;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        cursor: pointer;
-    }
-    .btn-ghost {
-        border: 1px dashed rgba(148, 163, 184, 0.55);
-        background: transparent;
-        color: #e5e7eb;
-    }
+  .detail-right {
+      background: rgba(15, 23, 42, 0.96);
+      border-radius: 24px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      padding: 14px 14px 16px;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+  }
+  .detail-section-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 3px;
+  }
+  .detail-text {
+      font-size: 12px;
+      color: var(--text-muted);
+  }
+  .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 8px 16px;
+  }
+  .info-label {
+      font-size: 11px;
+      color: var(--text-muted);
+  }
+  .info-value {
+      font-size: 12px;
+  }
 
-    .detail-description {
-        margin-top: 14px;
-        font-size: 13px;
-        color: #e5e7eb;
-        line-height: 1.5;
-    }
-
-    .detail-extra {
-        margin-top: 10px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 14px;
-        font-size: 12px;
-        color: var(--text-muted);
-    }
-
-    /* Poster side */
-    .detail-poster-wrap {
-        background: radial-gradient(circle at top, #1d4ed8 0, #020617 55%);
-        border-radius: 26px;
-        border: 1px solid rgba(37, 99, 235, 0.7);
-        padding: 12px 12px 14px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-    .detail-poster {
-        border-radius: 22px;
-        background: #020617;
-        height: 260px;
-    }
-    .detail-small-meta {
-        font-size: 11px;
-        color: var(--text-muted);
-        display: flex;
-        justify-content: space-between;
-    }
-
-    /* Suggested + comments */
-    .detail-section {
-        margin-top: 18px;
-    }
-    .detail-section-title {
-        font-size: 15px;
-        font-weight: 600;
-        margin-bottom: 8px;
-    }
-    .suggest-row {
-        display: grid;
-        grid-auto-flow: column;
-        grid-auto-columns: minmax(120px, 150px);
-        gap: 10px;
-        overflow-x: auto;
-        padding-bottom: 4px;
-    }
-    .suggest-row::-webkit-scrollbar {
-        height: 5px;
-    }
-    .suggest-row::-webkit-scrollbar-thumb {
-        background: rgba(148, 163, 184, 0.5);
-        border-radius: 999px;
-    }
-    .suggest-card {
-        border-radius: 16px;
-        background: rgba(15, 23, 42, 0.96);
-        border: 1px solid rgba(30, 64, 175, 0.6);
-        min-height: 170px;
-        display: flex;
-        flex-direction: column;
-    }
-    .suggest-poster {
-        height: 110px;
-        background: radial-gradient(circle at top, #22c55e, #020617);
-        border-radius: 16px 16px 10px 10px;
-    }
-    .suggest-body {
-        padding: 7px 8px 8px;
-        font-size: 11px;
-    }
-
-    .comments-box {
-        margin-top: 10px;
-        border-radius: 18px;
-        border: 1px solid rgba(148, 163, 184, 0.35);
-        padding: 10px 10px 12px;
-        background: rgba(15, 23, 42, 0.9);
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-    .comment-input {
-        width: 100%;
-        border-radius: 12px;
-        border: 1px solid rgba(55, 65, 81, 0.8);
-        padding: 7px 9px;
-        background: #020617;
-        color: #e5e7eb;
-        font-size: 12px;
-        resize: vertical;
-        min-height: 50px;
-    }
-    .comment-input::placeholder {
-        color: var(--text-muted);
-    }
-    .comment-submit-row {
-        display: flex;
-        justify-content: flex-end;
-    }
-    .comment-submit-btn {
-        border-radius: 999px;
-        border: none;
-        padding: 6px 14px;
-        font-size: 12px;
-        background: linear-gradient(135deg, #38bdf8, #6366f1);
-        color: #eff6ff;
-        cursor: pointer;
-    }
-    .comment-list {
-        margin-top: 4px;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        max-height: 150px;
-        overflow-y: auto;
-    }
-    .comment-item {
-        display: flex;
-        gap: 8px;
-        font-size: 11px;
-    }
-    .comment-avatar {
-        width: 22px;
-        height: 22px;
-        border-radius: 999px;
-        background: linear-gradient(135deg, #f97316, #ec4899);
-    }
-    .comment-meta {
-        color: var(--text-muted);
-        font-size: 10px;
-    }
-
-    /* --- MOBILE LAYOUT (max 768px) --- */
-    @media (max-width: 768px) {
-        .detail-page {
-            max-width: 100%;
-        }
-
-        /* One column only */
-        .detail-shell {
-            display: block;
-        }
-
-        /* Poster first, full width card */
-        .detail-poster-wrap {
-            margin-bottom: 14px;
-            border-radius: 18px;
-            padding: 10px 10px 12px;
-        }
-        .detail-poster {
-            height: 200px;
-            border-radius: 14px;
-        }
-
-        /* Main content below poster */
-        .detail-main {
-            border-radius: 18px;
-            padding: 12px 10px 12px;
-        }
-        .detail-title {
-            font-size: 22px;
-        }
-        .detail-description {
-            font-size: 12px;
-        }
-        .detail-extra {
-            font-size: 11px;
-        }
-
-        /* Buttons full width vertical stack */
-        .detail-actions {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        .btn-primary,
-        .btn-secondary {
-            width: 100%;
-            justify-content: center;
-        }
-    }
-
-    /* Extra small mobiles */
-    @media (max-width: 480px) {
-        .detail-main {
-            padding: 10px 8px 10px;
-        }
-        .detail-title {
-            font-size: 20px;
-        }
-        .detail-poster {
-            height: 180px;
-        }
-    }
+  @media (max-width: 768px) {
+      .detail-shell {
+          grid-template-columns: minmax(0, 1fr);
+      }
+      .detail-left {
+          flex-direction: row;
+      }
+  }
 </style>
 
-<div class="detail-page">
-    <div class="detail-shell">
-        <!-- Right: poster side (will go top on mobile) -->
-        <aside class="detail-poster-wrap">
-            <div class="detail-poster">
-                <!-- Later set background-image from movie.poster_url -->
-            </div>
-            <div class="detail-small-meta">
-                <span>ID: {{ movie.id or "preview" }}</span>
-                <span>Views: {{ movie.views or "12.4K" }}</span>
-            </div>
-        </aside>
+<section class="detail-shell">
+  <!-- LEFT: Poster + main info -->
+  <article class="detail-left">
+      <div class="detail-poster">
+          {% if movie.poster_path %}
+              <img src="{{ url_for('static', path=movie.poster_path) }}"
+                   alt="{{ movie.title }} poster">
+          {% endif %}
+      </div>
 
-        <!-- Left: main info -->
-        <section class="detail-main">
-            <div class="detail-tagline">Now streaming on Movies Magic Club</div>
-            <h1 class="detail-title">{{ movie.title or "Sample Movie Title" }}</h1>
-            <div class="detail-meta-line">
-                {{ movie.year or "2024" }} · {{ movie.language or "Tamil" }} · {{ movie.quality or "HD" }}
-            </div>
+      <div class="detail-main">
+          <div>
+              <div class="detail-title">{{ movie.title }}</div>
+              <div class="detail-sub">
+                  {{ movie.year }} · {{ movie.quality }} · {{ movie.language }}
+              </div>
+          </div>
 
-            <div class="detail-chips">
-                <span class="detail-chip accent">{{ movie.category or "Action" }}</span>
-                {% if movie.is_multi_dubbed %}
-                <span class="detail-chip">Multi‑dubbed</span>
-                {% endif %}
-                <span class="detail-chip">Duration: {{ movie.duration or "2h 20m" }}</span>
-            </div>
+          <div class="detail-meta">
+              Category: {{ movie.category }}<br>
+              Audio: {{ movie.audio }}<br>
+              Subtitles: {{ movie.subtitles }}
+          </div>
 
-            <div class="detail-actions">
-                <button class="btn-primary">
-                    ▶ Watch now
-                </button>
-                <button class="btn-secondary">
-                    ⬇ Download now
-                </button>
-                <button class="btn-secondary btn-ghost">
-                    ＋ Add to watchlist
-                </button>
-            </div>
+          <div class="badge-row">
+              {% if movie.is_multi_dubbed %}
+              <span class="badge hot">Multi audio</span>
+              {% endif %}
+              <span class="badge">HD ready</span>
+              <span class="badge">Secure download</span>
+          </div>
 
-            <div class="detail-description">
-                {{ movie.description or
-                   "An exciting description about this movie will appear here. You can talk about the plot, main characters and why users should watch it on Movies Magic Club." }}
-            </div>
+          <div class="detail-actions">
+              {% if movie.watch_url %}
+              <a href="{{ movie.watch_url }}" class="detail-btn-primary" target="_blank" rel="noopener">
+                  ▶ Watch now
+              </a>
+              {% endif %}
 
-            <div class="detail-extra">
-                <span>Audio: {{ movie.audio or "Tamil, Telugu, Hindi" }}</span>
-                <span>Subtitles: {{ movie.subtitles or "English" }}</span>
-                <span>File size: {{ movie.size or "2.1 GB" }}</span>
-            </div>
+              {% if movie.download_url %}
+              <a href="{{ movie.download_url }}" class="detail-btn-secondary" target="_blank" rel="noopener">
+                  ⬇ Download
+              </a>
+              {% endif %}
+          </div>
+      </div>
+  </article>
 
-            <!-- Suggested movies -->
-            <div class="detail-section">
-                <div class="detail-section-title">
-                    More in {{ movie.category or "Action" }}
-                </div>
-                <div class="suggest-row">
-                    {% for i in range(6) %}
-                    <article class="suggest-card">
-                        <div class="suggest-poster"></div>
-                        <div class="suggest-body">
-                            <div style="font-weight:600;">Suggested {{ i + 1 }}</div>
-                            <div style="color:var(--text-muted); font-size:10px;">
-                                HD · 2023 · {{ movie.language or "Tamil" }}
-                            </div>
-                        </div>
-                    </article>
-                    {% endfor %}
-                </div>
-            </div>
+  <!-- RIGHT: Description + info -->
+  <article class="detail-right">
+      <div>
+          <div class="detail-section-title">Synopsis</div>
+          <p class="detail-text">
+              {% if movie.description %}
+                  {{ movie.description }}
+              {% else %}
+                  No description added yet. This will be filled from the admin dashboard.
+              {% endif %}
+          </p>
+      </div>
 
-            <!-- Comments -->
-            <div class="detail-section">
-                <div class="detail-section-title">Comments</div>
-                <div class="comments-box">
-                    <textarea class="comment-input" placeholder="Share your thoughts about this movie..."></textarea>
-                    <div class="comment-submit-row">
-                        <button class="comment-submit-btn">Post comment</button>
-                    </div>
-                    <div class="comment-list">
-                        {% for i in range(3) %}
-                        <div class="comment-item">
-                            <div class="comment-avatar"></div>
-                            <div>
-                                <div><strong>User {{ i + 1 }}</strong></div>
-                                <div class="comment-meta">2h ago · via web</div>
-                                <div>Nice movie! This is a placeholder comment for design preview.</div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </section>
-    </div>
-</div>
+      <div>
+          <div class="detail-section-title">Movie info</div>
+          <div class="info-grid">
+              <div>
+                  <div class="info-label">Year</div>
+                  <div class="info-value">{{ movie.year }}</div>
+              </div>
+              <div>
+                  <div class="info-label">Language</div>
+                  <div class="info-value">{{ movie.language }}</div>
+              </div>
+              <div>
+                  <div class="info-label">Quality</div>
+                  <div class="info-value">{{ movie.quality }}</div>
+              </div>
+              <div>
+                  <div class="info-label">Category</div>
+                  <div class="info-value">{{ movie.category }}</div>
+              </div>
+              <div>
+                  <div class="info-label">Size</div>
+                  <div class="info-value">{{ movie.size }}</div>
+              </div>
+              <div>
+                  <div class="info-label">Views</div>
+                  <div class="info-value">{{ movie.views }}</div>
+              </div>
+          </div>
+      </div>
+  </article>
+</section>
 {% endblock %}
