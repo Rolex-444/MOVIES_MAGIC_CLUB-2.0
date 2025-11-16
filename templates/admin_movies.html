@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  .admin-shell {
+      max-width: 720px;
+      margin: 0 auto;
+  }
+  .admin-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+  }
+  .admin-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+  }
+  .admin-card {
+      background: rgba(15, 23, 42, 0.95);
+      border-radius: 20px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      padding: 14px 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+  }
+  .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px 12px;
+  }
+  .admin-field label {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 2px;
+  }
+  .admin-input, .admin-select, .admin-textarea {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 12px;
+      padding: 6px 8px;
+  }
+  .admin-textarea {
+      min-height: 70px;
+      resize: vertical;
+  }
+  .admin-actions {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+  }
+  .admin-btn-primary {
+      border-radius: 999px;
+      border: none;
+      padding: 7px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #ecfdf5;
+  }
+  .admin-msg {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--accent-emerald);
+  }
+</style>
+
+<section class="admin-shell">
+  <h1 class="admin-title">Admin · Add movie</h1>
+  <p class="admin-sub">
+      Use this form to quickly add a movie into the Movies Magic Club database.
+  </p>
+
+  <article class="admin-card">
+      <form action="/admin/movies" method="post">
+          <div class="admin-grid">
+              <div class="admin-field">
+                  <label>Title</label>
+                  <input name="title" class="admin-input" required />
+              </div>
+              <div class="admin-field">
+                  <label>Year</label>
+                  <input name="year" class="admin-input" placeholder="2024" />
+              </div>
+              <div class="admin-field">
+                  <label>Language</label>
+                  <select name="language" class="admin-select">
+                      <option value="Tamil">Tamil</option>
+                      <option value="Telugu">Telugu</option>
+                      <option value="Hindi">Hindi</option>
+                      <option value="Malayalam">Malayalam</option>
+                      <option value="Kannada">Kannada</option>
+                  </select>
+              </div>
+              <div class="admin-field">
+                  <label>Quality</label>
+                  <input name="quality" class="admin-input" placeholder="HD / 720p / 1080p" />
+              </div>
+              <div class="admin-field">
+                  <label>Category / Genre</label>
+                  <input name="category" class="admin-input" placeholder="Action / Drama ..." />
+              </div>
+              <div class="admin-field">
+                  <label>Duration</label>
+                  <input name="duration" class="admin-input" placeholder="2h 20m" />
+              </div>
+              <div class="admin-field">
+                  <label>Watch URL</label>
+                  <input name="watch_url" class="admin-input" placeholder="https://..." />
+              </div>
+              <div class="admin-field">
+                  <label>Download URL</label>
+                  <input name="download_url" class="admin-input" placeholder="https://..." />
+              </div>
+          </div>
+
+          <div class="admin-field" style="margin-top:8px;">
+              <label>Description</label>
+              <textarea name="description" class="admin-textarea"
+                        placeholder="Short description about the movie..."></textarea>
+          </div>
+
+          <div class="admin-actions">
+              <button type="submit" class="admin-btn-primary">Save movie</button>
+          </div>
+
+          {% if message %}
+          <div class="admin-msg">{{ message }}</div>
+          {% endif %}
+      </form>
+  </article>
+</section>
+{% endblock %}
+                
