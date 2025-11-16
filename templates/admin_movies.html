@@ -96,7 +96,8 @@
   </p>
 
   <article class="admin-card">
-      <form action="/admin/movies" method="post">
+      <!-- IMPORTANT: enctype added for file upload -->
+      <form action="/admin/movies" method="post" enctype="multipart/form-data">
           <div class="admin-grid">
               <div class="admin-field">
                   <label>Title</label>
@@ -139,6 +140,15 @@
               <div class="admin-field">
                   <label>Download URL</label>
                   <input name="download_url" class="admin-input" placeholder="https://..." />
+              </div>
+
+              <!-- Poster upload -->
+              <div class="admin-field">
+                  <label>Poster image</label>
+                  <input type="file" name="poster" class="admin-input" accept="image/*" />
+                  <small style="font-size:10px; color:var(--text-muted);">
+                      Upload a vertical poster (e.g. 600×900). Saved and shown on website.
+                  </small>
               </div>
           </div>
 
@@ -184,4 +194,4 @@
   </article>
 </section>
 {% endblock %}
-                    
+  
