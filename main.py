@@ -7,19 +7,14 @@ from fastapi.responses import PlainTextResponse
 from pyrogram import Client, filters, idle
 
 from db import connect_to_mongo, close_mongo_connection, get_db
-
-
-# ---------- TELEGRAM CONFIG ----------
-API_ID = int(os.getenv("API_ID", "0"))
-API_HASH = os.getenv("API_HASH", "")
-BOT_TOKEN = os.getenv("BOT_TOKEN", "")
-
-if not API_ID or not API_HASH or not BOT_TOKEN:
-    print("❌ Please set API_ID, API_HASH, BOT_TOKEN as env variables")
-# -------------------------------------
+from routes.movies import router as movies_router
+from config import API_ID, API_HASH, BOT_TOKEN  # <-- from config.py
 
 
 app = FastAPI()
+
+# include movies API router
+app.include_router(movies_router)
 
 
 # ---------- PYROGRAM BOT ----------
@@ -95,6 +90,6 @@ async def on_shutdown():
 if __name__ == "__main__":
     import uvicorn
 
-    port = int(os.getenv("PORT", "8000"))
+    port = int(os.getenv("PORT", "8080"))
     uvicorn.run("main:app", host="0.0.0.0", port=port)
     
