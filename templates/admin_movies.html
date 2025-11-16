@@ -2,404 +2,326 @@
 
 {% block content %}
 <style>
-  .admin-shell {
-      max-width: 960px;
-      margin: 0 auto;
-  }
-  .admin-title {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 6px;
-  }
-  .admin-sub {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-bottom: 12px;
-  }
+    .admin-shell {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
+        gap: 16px;
+        margin-top: 10px;
+        font-size: 13px;
+    }
 
-  /* Stats row */
-  .admin-stats-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 10px;
-      margin-bottom: 12px;
-  }
-  .admin-stat-card {
-      padding: 10px 12px;
-      border-radius: 16px;
-      background: rgba(15, 23, 42, 0.95);
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      font-size: 12px;
-  }
-  .admin-stat-label {
-      color: var(--text-muted);
-      margin-bottom: 4px;
-  }
-  .admin-stat-value {
-      font-size: 16px;
-      font-weight: 600;
-  }
+    .card {
+        background: rgba(15, 23, 42, 0.96);
+        border-radius: 20px;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        padding: 14px 14px 16px;
+    }
 
-  /* Action tabs */
-  .admin-tabs {
-      margin-top: 4px;
-      display: inline-flex;
-      gap: 6px;
-      padding: 4px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(30, 64, 175, 0.7);
-      margin-bottom: 10px;
-  }
-  .admin-tab-btn {
-      border: none;
-      border-radius: 999px;
-      padding: 6px 14px;
-      font-size: 12px;
-      cursor: pointer;
-      background: transparent;
-      color: var(--text-muted);
-  }
-  .admin-tab-btn.active {
-      background: linear-gradient(135deg, #f97316, #ec4899);
-      color: #fef2f2;
-      box-shadow: 0 6px 14px rgba(236, 72, 153, 0.6);
-  }
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 8px;
+    }
 
-  .admin-card {
-      background: rgba(15, 23, 42, 0.95);
-      border-radius: 20px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      padding: 14px 14px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-  }
+    .card-title {
+        font-size: 14px;
+        font-weight: 600;
+    }
 
-  .admin-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 10px 12px;
-  }
-  .admin-field label {
-      font-size: 11px;
-      color: var(--text-muted);
-      display: block;
-      margin-bottom: 2px;
-  }
-  .admin-input, .admin-select, .admin-textarea {
-      width: 100%;
-      border-radius: 10px;
-      border: 1px solid rgba(55, 65, 81, 0.9);
-      background: #020617;
-      color: #e5e7eb;
-      font-size: 12px;
-      padding: 6px 8px;
-  }
-  .admin-textarea {
-      min-height: 70px;
-      resize: vertical;
-  }
+    .card-sub {
+        font-size: 11px;
+        color: var(--text-muted);
+    }
 
-  .lang-multi {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px 10px;
-      margin-top: 4px;
-  }
-  .lang-chip {
-      font-size: 11px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(55, 65, 81, 0.9);
-      background: #020617;
-  }
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 4px;
+    }
 
-  .admin-actions {
-      margin-top: 10px;
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-  }
-  .admin-btn-primary {
-      border-radius: 999px;
-      border: none;
-      padding: 7px 16px;
-      font-size: 13px;
-      cursor: pointer;
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      color: #ecfdf5;
-  }
-  .admin-btn-danger {
-      border-radius: 999px;
-      border: none;
-      padding: 5px 10px;
-      font-size: 11px;
-      cursor: pointer;
-      background: linear-gradient(135deg, #ef4444, #b91c1c);
-      color: #fee2e2;
-  }
-  .admin-msg {
-      margin-top: 8px;
-      font-size: 12px;
-      color: var(--accent-emerald);
-  }
+    .stat-pill {
+        border-radius: 16px;
+        padding: 8px 10px;
+        background: radial-gradient(circle at top, #1d4ed8, #020617);
+        border: 1px solid rgba(55, 65, 81, 0.8);
+    }
 
-  /* Panels */
-  .admin-panel {
-      display: none;
-  }
-  .admin-panel.active {
-      display: block;
-  }
+    .stat-label {
+        font-size: 11px;
+        color: var(--text-muted);
+    }
 
-  /* Table for edit/delete */
-  .admin-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 11px;
-  }
-  .admin-table th,
-  .admin-table td {
-      padding: 6px 8px;
-      border-bottom: 1px solid rgba(51, 65, 85, 0.8);
-  }
-  .admin-table th {
-      text-align: left;
-      color: var(--text-muted);
-      font-weight: 500;
-  }
+    .stat-value {
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 12px;
+        margin-top: 6px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .form-label {
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+        border-radius: 999px;
+        border: 1px solid rgba(55, 65, 81, 0.9);
+        background: #020617;
+        color: #e5e7eb;
+        font-size: 12px;
+        padding: 7px 10px;
+        outline: none;
+    }
+
+    .form-textarea {
+        border-radius: 14px;
+        min-height: 70px;
+        resize: vertical;
+    }
+
+    .form-input[type="file"] {
+        padding: 6px 8px;
+    }
+
+    .checkbox-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 10px;
+        font-size: 11px;
+    }
+
+    .checkbox-row label {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .btn-primary {
+        margin-top: 10px;
+        padding: 8px 16px;
+        border-radius: 999px;
+        border: none;
+        background: linear-gradient(135deg, #f97316, #ec4899);
+        color: #020617;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        box-shadow: 0 10px 25px rgba(248, 113, 113, 0.6);
+    }
+
+    .movies-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        margin-top: 6px;
+    }
+
+    .movies-table th,
+    .movies-table td {
+        padding: 6px 6px;
+        text-align: left;
+        border-bottom: 1px solid rgba(31, 41, 55, 0.7);
+    }
+
+    .movies-table th {
+        font-size: 11px;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .movies-table tbody tr:hover {
+        background: rgba(15, 23, 42, 0.85);
+    }
+
+    .btn-small-danger {
+        padding: 4px 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(248, 113, 113, 0.8);
+        background: rgba(127, 29, 29, 0.5);
+        color: #fecaca;
+        font-size: 11px;
+        cursor: pointer;
+    }
+
+    .message-bar {
+        margin-top: 6px;
+        font-size: 11px;
+        color: #bbf7d0;
+    }
+
+    @media (max-width: 768px) {
+        .admin-shell {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .form-grid {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
 </style>
 
 <section class="admin-shell">
-  <h1 class="admin-title">Admin · Dashboard</h1>
-  <p class="admin-sub">
-      Overview of Movies Magic Club library and quick actions.
-  </p>
+    <!-- LEFT: Stats + Add movie -->
+    <article class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Library overview</div>
+                <div class="card-sub">
+                    Overview of Movies Magic Club library and quick actions.
+                </div>
+            </div>
+            {% if message %}
+            <div class="message-bar">{{ message }}</div>
+            {% endif %}
+        </div>
 
-  <!-- Stats row -->
-  <div class="admin-stats-row">
-      <div class="admin-stat-card">
-          <div class="admin-stat-label">Total movies</div>
-          <div class="admin-stat-value">{{ total_movies or 0 }}</div>
-      </div>
-      <div class="admin-stat-card">
-          <div class="admin-stat-label">Tamil</div>
-          <div class="admin-stat-value">{{ tamil_count or 0 }}</div>
-      </div>
-      <div class="admin-stat-card">
-          <div class="admin-stat-label">Telugu</div>
-          <div class="admin-stat-value">{{ telugu_count or 0 }}</div>
-      </div>
-      <div class="admin-stat-card">
-          <div class="admin-stat-label">Hindi</div>
-          <div class="admin-stat-value">{{ hindi_count or 0 }}</div>
-      </div>
-      <div class="admin-stat-card">
-          <div class="admin-stat-label">Malayalam</div>
-          <div class="admin-stat-value">{{ malayalam_count or 0 }}</div>
-      </div>
-      <div class="admin-stat-card">
-          <div class="admin-stat-label">Kannada</div>
-          <div class="admin-stat-value">{{ kannada_count or 0 }}</div>
-      </div>
-  </div>
+        <div class="stats-grid">
+            <div class="stat-pill">
+                <div class="stat-label">Total movies</div>
+                <div class="stat-value">{{ total_movies }}</div>
+            </div>
+            <div class="stat-pill">
+                <div class="stat-label">Tamil</div>
+                <div class="stat-value">{{ tamil_count }}</div>
+            </div>
+            <div class="stat-pill">
+                <div class="stat-label">Telugu</div>
+                <div class="stat-value">{{ telugu_count }}</div>
+            </div>
+            <div class="stat-pill">
+                <div class="stat-label">Hindi</div>
+                <div class="stat-value">{{ hindi_count }}</div>
+            </div>
+            <div class="stat-pill">
+                <div class="stat-label">Malayalam</div>
+                <div class="stat-value">{{ malayalam_count }}</div>
+            </div>
+            <div class="stat-pill">
+                <div class="stat-label">Kannada</div>
+                <div class="stat-value">{{ kannada_count }}</div>
+            </div>
+        </div>
 
-  <!-- Action tabs -->
-  <div class="admin-tabs">
-      <button type="button" class="admin-tab-btn active" data-panel="panel-add">Add movie</button>
-      <button type="button" class="admin-tab-btn" data-panel="panel-edit">Edit movies</button>
-      <button type="button" class="admin-tab-btn" data-panel="panel-delete">Delete movies</button>
-  </div>
+        <form action="/admin/movies" method="post" enctype="multipart/form-data" style="margin-top: 10px;">
+            <div class="card-header">
+                <div class="card-title">Add new movie</div>
+                <div class="card-sub">Fill details and upload poster</div>
+            </div>
 
-  <!-- ADD MOVIE PANEL -->
-  <section id="panel-add" class="admin-panel active">
-      <article class="admin-card">
-          <form action="/admin/movies" method="post" enctype="multipart/form-data">
-              <div class="admin-grid">
-                  <div class="admin-field">
-                      <label>Title</label>
-                      <input name="title" class="admin-input" required />
-                  </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Title</label>
+                    <input class="form-input" type="text" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Year</label>
+                    <input class="form-input" type="text" name="year" placeholder="2025">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Primary language</label>
+                    <select class="form-select" name="language" required>
+                        <option value="Tamil">Tamil</option>
+                        <option value="Telugu">Telugu</option>
+                        <option value="Hindi">Hindi</option>
+                        <option value="Malayalam">Malayalam</option>
+                        <option value="Kannada">Kannada</option>
+                        <option value="English">English</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Quality</label>
+                    <input class="form-input" type="text" name="quality" value="1080P">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Category / Genre</label>
+                    <input class="form-input" type="text" name="category" placeholder="Action, Fantasy">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Poster image</label>
+                    <input class="form-input" type="file" name="poster" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Watch link (stream)</label>
+                    <input class="form-input" type="url" name="watch_url" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Download link</label>
+                    <input class="form-input" type="url" name="download_url" placeholder="https://...">
+                </div>
+            </div>
 
-                  <div class="admin-field">
-                      <label>Year</label>
-                      <input name="year" class="admin-input" placeholder="2024" />
-                  </div>
+            <div class="form-group" style="margin-top: 8px;">
+                <label class="form-label">Audio languages (multi-dub)</label>
+                <div class="checkbox-row">
+                    <label><input type="checkbox" name="languages" value="Tamil"> Tamil</label>
+                    <label><input type="checkbox" name="languages" value="Telugu"> Telugu</label>
+                    <label><input type="checkbox" name="languages" value="Hindi"> Hindi</label>
+                    <label><input type="checkbox" name="languages" value="Malayalam"> Malayalam</label>
+                    <label><input type="checkbox" name="languages" value="Kannada"> Kannada</label>
+                    <label><input type="checkbox" name="languages" value="English"> English</label>
+                </div>
+            </div>
 
-                  <div class="admin-field">
-                      <label>Primary language (row)</label>
-                      <select name="language" class="admin-select">
-                          <option value="Tamil">Tamil</option>
-                          <option value="Telugu">Telugu</option>
-                          <option value="Hindi">Hindi</option>
-                          <option value="Malayalam">Malayalam</option>
-                          <option value="Kannada">Kannada</option>
-                          <option value="English">English</option>
-                      </select>
-                  </div>
+            <div class="form-group" style="margin-top: 6px;">
+                <label class="form-label">Short description</label>
+                <textarea class="form-textarea" name="description" placeholder="Short synopsis for this movie."></textarea>
+            </div>
 
-                  <div class="admin-field">
-                      <label>Quality</label>
-                      <input name="quality" class="admin-input" placeholder="HD / 720p / 1080p" />
-                  </div>
+            <button type="submit" class="btn-primary">Save movie</button>
+        </form>
+    </article>
 
-                  <div class="admin-field">
-                      <label>Category / Genre</label>
-                      <input name="category" class="admin-input" placeholder="Action / Drama ..." />
-                  </div>
+    <!-- RIGHT: Movies list / delete -->
+    <article class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Latest movies</div>
+                <div class="card-sub">Recently added movies (max 30)</div>
+            </div>
+        </div>
 
-                  <div class="admin-field">
-                      <label>Watch URL</label>
-                      <input name="watch_url" class="admin-input" placeholder="https://..." />
-                  </div>
-                  <div class="admin-field">
-                      <label>Download URL</label>
-                      <input name="download_url" class="admin-input" placeholder="https://..." />
-                  </div>
-
-                  <div class="admin-field">
-                      <label>Poster image</label>
-                      <input type="file" name="poster" class="admin-input" accept="image/*" />
-                      <small style="font-size:10px; color:var(--text-muted);">
-                          Upload a vertical poster (e.g. 600×900). Saved and shown on website.
-                      </small>
-                  </div>
-              </div>
-
-              <div class="admin-field" style="margin-top:8px;">
-                  <label>Available audio languages (multi‑select)</label>
-                  <div class="lang-multi">
-                      <label class="lang-chip">
-                          <input type="checkbox" name="languages" value="Tamil" /> Tamil
-                      </label>
-                      <label class="lang-chip">
-                          <input type="checkbox" name="languages" value="Telugu" /> Telugu
-                      </label>
-                      <label class="lang-chip">
-                          <input type="checkbox" name="languages" value="Hindi" /> Hindi
-                      </label>
-                      <label class="lang-chip">
-                          <input type="checkbox" name="languages" value="Malayalam" /> Malayalam
-                      </label>
-                      <label class="lang-chip">
-                          <input type="checkbox" name="languages" value="Kannada" /> Kannada
-                      </label>
-                      <label class="lang-chip">
-                          <input type="checkbox" name="languages" value="English" /> English
-                      </label>
-                  </div>
-              </div>
-
-              <div class="admin-field" style="margin-top:8px;">
-                  <label>Description</label>
-                  <textarea name="description" class="admin-textarea"
-                            placeholder="Short description about the movie..."></textarea>
-              </div>
-
-              <div class="admin-actions">
-                  <button type="submit" class="admin-btn-primary">Save movie</button>
-              </div>
-
-              {% if message %}
-              <div class="admin-msg">{{ message }}</div>
-              {% endif %}
-          </form>
-      </article>
-  </section>
-
-  <!-- EDIT MOVIES PANEL (list only for now) -->
-  <section id="panel-edit" class="admin-panel">
-      <article class="admin-card">
-          <div style="font-size:12px; color:var(--text-muted); margin-bottom:6px;">
-              Recent movies (click Edit per row – next step we wire full edit form).
-          </div>
-          <div style="max-height:260px; overflow-y:auto;">
-              <table class="admin-table">
-                  <thead>
-                      <tr>
-                          <th>Title</th>
-                          <th>Year</th>
-                          <th>Lang</th>
-                          <th>Quality</th>
-                          <th>Actions</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      {% for m in movies %}
-                      <tr>
-                          <td>{{ m.title }}</td>
-                          <td>{{ m.year or "" }}</td>
-                          <td>{{ m.language or "" }}</td>
-                          <td>{{ m.quality or "" }}</td>
-                          <td>
-                              <a href="/admin/movies/{{ m.id }}/edit"
-                                 style="font-size:11px; color:#38bdf8; text-decoration:none;">
-                                  Edit
-                              </a>
-                          </td>
-                      </tr>
-                      {% endfor %}
-                  </tbody>
-              </table>
-          </div>
-      </article>
-  </section>
-
-  <!-- DELETE MOVIES PANEL -->
-  <section id="panel-delete" class="admin-panel">
-      <article class="admin-card">
-          <div style="font-size:12px; color:var(--text-muted); margin-bottom:6px;">
-              Delete movies (be careful – this action cannot be undone).
-          </div>
-          <div style="max-height:260px; overflow-y:auto;">
-              <table class="admin-table">
-                  <thead>
-                      <tr>
-                          <th>Title</th>
-                          <th>Year</th>
-                          <th>Lang</th>
-                          <th></th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      {% for m in movies %}
-                      <tr>
-                          <td>{{ m.title }}</td>
-                          <td>{{ m.year or "" }}</td>
-                          <td>{{ m.language or "" }}</td>
-                          <td>
-                              <form action="/admin/movies/{{ m.id }}/delete" method="post"
-                                    onsubmit="return confirm('Delete {{ m.title }}?');">
-                                  <button type="submit" class="admin-btn-danger">Delete</button>
-                              </form>
-                          </td>
-                      </tr>
-                      {% endfor %}
-                  </tbody>
-              </table>
-          </div>
-      </article>
-  </section>
+        <table class="movies-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Year</th>
+                    <th>Lang</th>
+                    <th>Quality</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in movies %}
+                <tr>
+                    <td>{{ m.title }}</td>
+                    <td>{{ m.year or "" }}</td>
+                    <td>{{ m.language or "" }}</td>
+                    <td>{{ m.quality or "" }}</td>
+                    <td>
+                        <form method="post" action="/admin/movies/{{ m.id }}/delete" style="display:inline;">
+                            <button type="submit" class="btn-small-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
 </section>
-
-<script>
-  // Simple tab switching for Add / Edit / Delete
-  const tabButtons = document.querySelectorAll(".admin-tab-btn");
-  const panels = document.querySelectorAll(".admin-panel");
-
-  tabButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-          const target = btn.getAttribute("data-panel");
-          tabButtons.forEach(b => b.classList.remove("active"));
-          panels.forEach(p => p.classList.remove("active"));
-          btn.classList.add("active");
-          document.getElementById(target).classList.add("active");
-      });
-  });
-</script>
 {% endblock %}
-  
+              
