@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section style="max-width:340px; margin:40px auto;">
+  <h1 style="font-size:18px; font-weight:600; margin-bottom:8px;">Admin login</h1>
+  <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">
+    Enter admin password to manage movies.
+  </p>
+  <form action="/admin/login" method="post"
+        style="background:rgba(15,23,42,0.95); padding:14px 14px 16px;
+               border-radius:18px; border:1px solid rgba(148,163,184,0.4);">
+      <div style="display:flex; flex-direction:column; gap:8px;">
+          <input type="password" name="password"
+                 placeholder="Admin password"
+                 style="border-radius:10px; border:1px solid rgba(55,65,81,0.9);
+                        background:#020617; color:#e5e7eb; font-size:12px; padding:6px 8px;" />
+          {% if error %}
+          <div style="font-size:11px; color:#f97316;">{{ error }}</div>
+          {% endif %}
+          <button type="submit"
+                  style="margin-top:4px; border:none; border-radius:999px;
+                         padding:7px 16px; font-size:13px; cursor:pointer;
+                         background:linear-gradient(135deg,#38bdf8,#6366f1);
+                         color:#eff6ff;">
+              Login
+          </button>
+      </div>
+  </form>
+</section>
+{% endblock %}
