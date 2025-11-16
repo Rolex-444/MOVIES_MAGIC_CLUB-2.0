@@ -1,16 +1,360 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1 style="font-size:18px; font-weight:600; margin-bottom:10px;">
-        Trending on Movies Magic Club
-    </h1>
-    <p style="font-size:13px; color:#9ca3af; margin-bottom:18px;">
-        Movies list will appear here soon. This is just a layout preview.
-    </p>
+<style>
+    .hero-wrapper {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.18), rgba(236, 72, 153, 0.14));
+        border-radius: var(--radius-xl);
+        padding: 14px 14px 16px;
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 16px 35px rgba(15, 23, 42, 0.8);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .hero-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+    }
+    .hero-title {
+        font-weight: 600;
+        font-size: 16px;
+    }
+    .hero-sub {
+        color: var(--text-muted);
+        font-size: 12px;
+    }
+    .hero-slider {
+        position: relative;
+        overflow: hidden;
+        height: 180px;
+        border-radius: 20px;
+    }
+    .hero-track {
+        display: flex;
+        width: 500%;
+        height: 100%;
+        transition: transform 0.7s ease;
+    }
+    .hero-card {
+        flex: 0 0 100%;
+        padding: 14px 16px;
+        display: flex;
+        align-items: flex-end;
+        border-radius: 20px;
+        color: #f9fafb;
+        position: relative;
+        overflow: hidden;
+    }
+    .hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(120deg, rgba(15,23,42,0.15), rgba(15,23,42,0.75));
+    }
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 70%;
+    }
+    .hero-movie-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+    .hero-meta {
+        font-size: 12px;
+        color: #e5e7eb;
+        margin-bottom: 10px;
+    }
+    .hero-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.92);
+        color: #f9fafb;
+        border: 1px solid rgba(248, 250, 252, 0.25);
+    }
 
-    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px;">
-        {% for i in range(6) %}
-        <div style="background:#020617; border-radius:14px; border:1px solid #1e293b; height:210px;"></div>
+    /* Genre chips row */
+    .genre-row {
+        margin-top: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .genre-chip {
+        font-size: 12px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        background: rgba(15, 23, 42, 0.85);
+        color: var(--text-muted);
+    }
+    .genre-chip.active {
+        border-color: var(--accent-blue);
+        background: rgba(56, 189, 248, 0.18);
+        color: #e0f2fe;
+    }
+
+    /* Row sections */
+    .section {
+        margin-top: 16px;
+    }
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 10px;
+    }
+    .section-title {
+        font-size: 15px;
+        font-weight: 600;
+    }
+    .section-sub {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+    .card-row {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(120px, 150px);
+        gap: 12px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+    .card-row::-webkit-scrollbar {
+        height: 5px;
+    }
+    .card-row::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 184, 0.5);
+        border-radius: 999px;
+    }
+    .movie-card {
+        border-radius: 18px;
+        background: rgba(15, 23, 42, 0.96);
+        border: 1px solid rgba(30, 64, 175, 0.6);
+        overflow: hidden;
+        min-height: 190px;
+        display: flex;
+        flex-direction: column;
+    }
+    .movie-poster {
+        height: 120px;
+        background: radial-gradient(circle at top, #1d4ed8, #020617);
+    }
+    .movie-body {
+        padding: 8px 9px 10px;
+        font-size: 11px;
+    }
+    .movie-title {
+        font-weight: 600;
+        margin-bottom: 2px;
+    }
+    .movie-meta {
+        color: var(--text-muted);
+        font-size: 10px;
+    }
+
+    @media (max-width: 768px) {
+        .hero-wrapper {
+            padding: 12px 10px 14px;
+        }
+        .hero-slider {
+            height: 170px;
+        }
+        .hero-movie-title {
+            font-size: 16px;
+        }
+        .hero-content {
+            max-width: 82%;
+        }
+    }
+</style>
+
+<!-- Hero + genres -->
+<section class="hero-wrapper">
+    <div class="hero-header">
+        <div>
+            <div class="hero-title">Latest release</div>
+            <div class="hero-sub">Fresh movies added to Movies Magic Club</div>
+        </div>
+        <div class="hero-sub">Auto‑sliding preview · last 5 uploads</div>
+    </div>
+
+    <!-- Slider container (later DB data) -->
+    <div class="hero-slider" id="hero-slider">
+        <div class="hero-track" id="hero-track">
+            {% for i in range(5) %}
+            <div class="hero-card" style="background-image: linear-gradient(120deg, #1d4ed8, #ec4899);">
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <div class="hero-movie-title">Sample Movie {{ i + 1 }}</div>
+                    <div class="hero-meta">2024 · HD · Action / Adventure</div>
+                    <button class="hero-btn">
+                        ▶ Watch now
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Genre chips row -->
+    <div class="genre-row">
+        <span class="genre-chip active">Action</span>
+        <span class="genre-chip">Comedy</span>
+        <span class="genre-chip">Drama</span>
+        <span class="genre-chip">Horror</span>
+        <span class="genre-chip">Crime</span>
+        <span class="genre-chip">Romance</span>
+    </div>
+</section>
+
+<!-- Sections: Trending, Continue, Languages (dummy data) -->
+<section class="section">
+    <div class="section-header">
+        <div class="section-title">Trending now</div>
+        <div class="section-sub">Popular across Movies Magic Club</div>
+    </div>
+    <div class="card-row">
+        {% for i in range(8) %}
+        <article class="movie-card">
+            <div class="movie-poster"></div>
+            <div class="movie-body">
+                <div class="movie-title">Trending {{ i + 1 }}</div>
+                <div class="movie-meta">HD · 2024 · Tamil</div>
+            </div>
+        </article>
         {% endfor %}
     </div>
+</section>
+
+<section class="section">
+    <div class="section-header">
+        <div class="section-title">Continue watching</div>
+        <div class="section-sub">Pick up right where you left off</div>
+    </div>
+    <div class="card-row">
+        {% for i in range(6) %}
+        <article class="movie-card">
+            <div class="movie-poster"></div>
+            <div class="movie-body">
+                <div class="movie-title">Continue {{ i + 1 }}</div>
+                <div class="movie-meta">Progress · 45%</div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="section">
+    <div class="section-header">
+        <div class="section-title">Tamil movies</div>
+        <div class="section-sub">Hand‑picked Tamil releases</div>
+    </div>
+    <div class="card-row">
+        {% for i in range(8) %}
+        <article class="movie-card">
+            <div class="movie-poster"></div>
+            <div class="movie-body">
+                <div class="movie-title">Tamil Movie {{ i + 1 }}</div>
+                <div class="movie-meta">HD · 2023 · Tamil</div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="section">
+    <div class="section-header">
+        <div class="section-title">Telugu movies</div>
+        <div class="section-sub">Top picks in Telugu</div>
+    </div>
+    <div class="card-row">
+        {% for i in range(8) %}
+        <article class="movie-card">
+            <div class="movie-poster"></div>
+            <div class="movie-body">
+                <div class="movie-title">Telugu Movie {{ i + 1 }}</div>
+                <div class="movie-meta">HD · 2023 · Telugu</div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="section">
+    <div class="section-header">
+        <div class="section-title">Hindi movies</div>
+        <div class="section-sub">Bollywood & beyond</div>
+    </div>
+    <div class="card-row">
+        {% for i in range(8) %}
+        <article class="movie-card">
+            <div class="movie-poster"></div>
+            <div class="movie-body">
+                <div class="movie-title">Hindi Movie {{ i + 1 }}</div>
+                <div class="movie-meta">HD · 2023 · Hindi</div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="section">
+    <div class="section-header">
+        <div class="section-title">Malayalam movies</div>
+        <div class="section-sub">Critically acclaimed picks</div>
+    </div>
+    <div class="card-row">
+        {% for i in range(8) %}
+        <article class="movie-card">
+            <div class="movie-poster"></div>
+            <div class="movie-body">
+                <div class="movie-title">Malayalam {{ i + 1 }}</div>
+                <div class="movie-meta">HD · 2023 · Malayalam</div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="section">
+    <div class="section-header">
+        <div class="section-title">Kannada movies</div>
+        <div class="section-sub">Latest from Sandalwood</div>
+    </div>
+    <div class="card-row">
+        {% for i in range(8) %}
+        <article class="movie-card">
+            <div class="movie-poster"></div>
+            <div class="movie-body">
+                <div class="movie-title">Kannada {{ i + 1 }}</div>
+                <div class="movie-meta">HD · 2023 · Kannada</div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<script>
+    // Simple auto‑sliding hero (dummy, later DB data will replace)
+    const track = document.getElementById("hero-track");
+    const totalSlides = 5;
+    let current = 0;
+
+    function slideHero() {
+        current = (current + 1) % totalSlides;
+        const offset = -current * 100;
+        track.style.transform = `translateX(${offset}%)`;
+    }
+
+    setInterval(slideHero, 4000);
+</script>
 {% endblock %}
+    
