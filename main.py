@@ -2,6 +2,7 @@ import os
 import asyncio
 from datetime import datetime
 from typing import List
+from uuid import uuid4
 
 from fastapi import (
     FastAPI,
@@ -22,11 +23,11 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from pyrogram import Client, filters, idle
 
+from bson import ObjectId
+
 from db import connect_to_mongo, close_mongo_connection, get_db
 from routes.movies import router as movies_router
 from config import API_ID, API_HASH, BOT_TOKEN  # from config.py
-
-from uuid import uuid4
 
 
 # ---------- CONFIG ----------
@@ -80,7 +81,6 @@ def is_admin(request: Request) -> bool:
 
 @app.get("/admin/login", response_class=HTMLResponse)
 async def admin_login_form(request: Request):
-    # template admin_login.html will be added next
     return templates.TemplateResponse(
         "admin_login.html",
         {"request": request, "error": ""},
@@ -106,7 +106,7 @@ async def admin_logout(request: Request):
 # ----------------------------------------
 
 
-# ---------- FASTAPI ROUTES ----------
+# ---------- FASTAPI USER ROUTES ----------
 
 # Home page – dashboard (hero + language rows from MongoDB)
 @app.get("/", response_class=HTMLResponse)
@@ -211,8 +211,6 @@ async def movie_detail(request: Request, movie_id: str):
     movie = None
 
     if db is not None:
-        from bson import ObjectId
-
         try:
             oid = ObjectId(movie_id)
             movie = await db["movies"].find_one({"_id": oid})
@@ -280,18 +278,69 @@ async def movies_count():
 # ------------------------------------
 
 
-# ---------- ADMIN ADD MOVIE ROUTES ----------
+# ---------- ADMIN DASHBOARD ROUTES ----------
 
+# Dashboard (stats + add/edit/delete panels)
 @app.get("/admin/movies", response_class=HTMLResponse)
-async def admin_add_movie_form(request: Request):
+async def admin_dashboard(request: Request, message: str = ""):
     if not is_admin(request):
         return RedirectResponse("/admin/login", status_code=303)
+
+    db = get_db()
+    if db is None:
+        return templates.TemplateResponse(
+            "admin_movies.html",
+            {
+                "request": request,
+                "message": "MongoDB not connected",
+                "total_movies": 0,
+                "tamil_count": 0,
+                "telugu_count": 0,
+                "hindi_count": 0,
+                "malayalam_count": 0,
+                "kannada_count": 0,
+                "movies": [],
+            },
+        )
+
+    movies_col = db["movies"]
+
+    total_movies = await movies_col.count_documents({})
+    tamil_count = await movies_col.count_documents({"language": "Tamil"})
+    telugu_count = await movies_col.count_documents({"language": "Telugu"})
+    hindi_count = await movies_col.count_documents({"language": "Hindi"})
+    malayalam_count = await movies_col.count_documents({"language": "Malayalam"})
+    kannada_count = await movies_col.count_documents({"language": "Kannada"})
+
+    cursor = movies_col.find().sort("_id", -1).limit(30)
+    movies = [
+        {
+            "id": str(doc.get("_id")),
+            "title": doc.get("title", "Untitled"),
+            "year": doc.get("year"),
+            "language": doc.get("language"),
+            "quality": doc.get("quality", "HD"),
+        }
+        async for doc in cursor
+    ]
+
     return templates.TemplateResponse(
         "admin_movies.html",
-        {"request": request, "message": ""},
+        {
+            "request": request,
+            "message": message,
+            "total_movies": total_movies,
+            "tamil_count": tamil_count,
+            "telugu_count": telugu_count,
+            "hindi_count": hindi_count,
+            "malayalam_count": malayalam_count,
+            "kannada_count": kannada_count,
+            "movies": movies,
+        },
     )
 
 
+# Add movie (from Add panel)
 @app.post("/admin/movies", response_class=HTMLResponse)
 async def admin_create_movie(
     request: Request,
@@ -311,9 +360,9 @@ async def admin_create_movie(
 
     db = get_db()
     if db is None:
-        return templates.TemplateResponse(
-            "admin_movies.html",
-            {"request": request, "message": "MongoDB not connected"},
+        return RedirectResponse(
+            "/admin/movies?message=MongoDB+not+connected",
+            status_code=303,
         )
 
     poster_path = None
@@ -351,10 +400,35 @@ async def admin_create_movie(
 
     await db["movies"].insert_one(movie_doc)
 
-    return templates.TemplateResponse(
-        "admin_movies.html",
-        {"request": request, "message": "Movie saved successfully ✅"},
+    return RedirectResponse(
+        "/admin/movies?message=Movie+saved+successfully+%E2%9C%85",
+        status_code=303,
     )
+
+
+# Delete movie (from Delete panel)
+@app.post("/admin/movies/{movie_id}/delete")
+async def admin_delete_movie(request: Request, movie_id: str):
+    if not is_admin(request):
+        return RedirectResponse("/admin/login", status_code=303)
+
+    db = get_db()
+    if db is None:
+        return RedirectResponse(
+            "/admin/movies?message=MongoDB+not+connected",
+            status_code=303,
+        )
+
+    try:
+        oid = ObjectId(movie_id)
+        await db["movies"].delete_one({"_id": oid})
+        msg = "Movie+deleted+successfully"
+    except Exception:
+        msg = "Failed+to+delete+movie"
+
+    return RedirectResponse(f"/admin/movies?message={msg}", status_code=303)
+
+# (Edit movie routes will be added later)
 
 # ---------------------------------------------
 
