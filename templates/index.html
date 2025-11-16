@@ -71,6 +71,35 @@
         max-width: 70%;
     }
 
+    /* Poster + text inside hero slide */
+    .hero-inner {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+    }
+
+    .hero-thumb {
+        width: 86px;
+        height: 120px;
+        border-radius: 16px;
+        overflow: hidden;
+        background: radial-gradient(circle at top, #1d4ed8, #020617);
+        flex-shrink: 0;
+    }
+
+    .hero-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .hero-text {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
     .hero-movie-title {
         font-size: 18px;
         font-weight: 700;
@@ -254,14 +283,24 @@
                          "
                          {% endif %}>
                         <div class="hero-overlay"></div>
-                        <div class="hero-content">
-                            <div class="hero-movie-title">{{ m.title }}</div>
-                            <div class="hero-meta">
-                                {{ m.year or "" }} · {{ m.quality or "HD" }}{% if m.category %} · {{ m.category }}{% endif %}
+
+                        <div class="hero-content hero-inner">
+                            <div class="hero-thumb">
+                                {% if m.poster_path %}
+                                    <img src="{{ url_for('static', path=m.poster_path) }}"
+                                         alt="{{ m.title }} poster">
+                                {% endif %}
                             </div>
-                            <a href="/movie/{{ m.id }}" class="hero-btn">
-                                ▶ Watch now
-                            </a>
+
+                            <div class="hero-text">
+                                <div class="hero-movie-title">{{ m.title }}</div>
+                                <div class="hero-meta">
+                                    {{ m.year or "" }} · {{ m.quality or "HD" }}{% if m.category %} · {{ m.category }}{% endif %}
+                                </div>
+                                <a href="/movie/{{ m.id }}" class="hero-btn">
+                                    ▶ Watch now
+                                </a>
+                            </div>
                         </div>
                     </div>
                 {% endfor %}
@@ -269,12 +308,15 @@
                 {% for i in range(5) %}
                     <div class="hero-card">
                         <div class="hero-overlay"></div>
-                        <div class="hero-content">
-                            <div class="hero-movie-title">Sample Movie {{ i + 1 }}</div>
-                            <div class="hero-meta">2024 · HD · Action / Adventure</div>
-                            <a href="/movie/sample-{{ i + 1 }}" class="hero-btn">
-                                ▶ Watch now
-                            </a>
+                        <div class="hero-content hero-inner">
+                            <div class="hero-thumb"></div>
+                            <div class="hero-text">
+                                <div class="hero-movie-title">Sample Movie {{ i + 1 }}</div>
+                                <div class="hero-meta">2024 · HD · Action / Adventure</div>
+                                <a href="/movie/sample-{{ i + 1 }}" class="hero-btn">
+                                    ▶ Watch now
+                                </a>
+                            </div>
                         </div>
                     </div>
                 {% endfor %}
@@ -556,4 +598,4 @@
 </script>
 
 {% endblock %}
-    
+        
