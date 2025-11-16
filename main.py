@@ -1,9 +1,24 @@
 import os
 import asyncio
+from datetime import datetime
+from typing import List
 
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, PlainTextResponse
+from fastapi import (
+    FastAPI,
+    Request,
+    Form,
+    File,
+    UploadFile,
+)
+from fastapi.responses import (
+    HTMLResponse,
+    PlainTextResponse,
+    RedirectResponse,
+)
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+
+from starlette.middleware.sessions import SessionMiddleware
 
 from pyrogram import Client, filters, idle
 
@@ -11,11 +26,25 @@ from db import connect_to_mongo, close_mongo_connection, get_db
 from routes.movies import router as movies_router
 from config import API_ID, API_HASH, BOT_TOKEN  # from config.py
 
+from uuid import uuid4
+
+
+# ---------- CONFIG ----------
+SESSION_SECRET = os.getenv("SESSION_SECRET", "change-this-secret")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
+# ----------------------------
+
 
 app = FastAPI()
 
+# Sessions for admin login
+app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
+
 # Jinja2 templates directory
 templates = Jinja2Templates(directory="templates")
+
+# Static files (for posters etc.)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Include movies API router (JSON APIs)
 app.include_router(movies_router)
@@ -43,6 +72,40 @@ async def start_command(client, message):
 # ----------------------------
 
 
+def is_admin(request: Request) -> bool:
+    return request.session.get("is_admin") is True
+
+
+# ---------- ADMIN LOGIN ROUTES ----------
+
+@app.get("/admin/login", response_class=HTMLResponse)
+async def admin_login_form(request: Request):
+    # template admin_login.html will be added next
+    return templates.TemplateResponse(
+        "admin_login.html",
+        {"request": request, "error": ""},
+    )
+
+
+@app.post("/admin/login", response_class=HTMLResponse)
+async def admin_login(request: Request, password: str = Form(...)):
+    if password == ADMIN_PASSWORD:
+        request.session["is_admin"] = True
+        return RedirectResponse("/admin/movies", status_code=303)
+    return templates.TemplateResponse(
+        "admin_login.html",
+        {"request": request, "error": "Invalid password"},
+    )
+
+
+@app.get("/admin/logout")
+async def admin_logout(request: Request):
+    request.session.clear()
+    return RedirectResponse("/", status_code=303)
+
+# ----------------------------------------
+
+
 # ---------- FASTAPI ROUTES ----------
 
 # Home page – dashboard (hero + language rows from MongoDB)
@@ -60,7 +123,7 @@ async def home(request: Request):
     if db is not None:
         movies_col = db["movies"]
 
-        # latest 5 (for hero slider) [web:60]
+        # latest 5 (for hero slider)
         cursor = movies_col.find().sort("_id", -1).limit(5)
         latest_movies = [
             {
@@ -74,7 +137,6 @@ async def home(request: Request):
             async for doc in cursor
         ]
 
-        # helper to fetch by language
         async def fetch_by_language(lang: str, limit: int = 12):
             cur = (
                 movies_col
@@ -158,6 +220,10 @@ async def movie_detail(request: Request, movie_id: str):
             movie = None
 
     if movie:
+        languages = movie.get("languages") or []
+        audio_text = ", ".join(languages) if languages else movie.get(
+            "audio", "Tamil, Telugu, Hindi"
+        )
         movie_ctx = {
             "id": str(movie.get("_id")),
             "title": movie.get("title", "Sample Movie Title"),
@@ -165,13 +231,14 @@ async def movie_detail(request: Request, movie_id: str):
             "language": movie.get("language", "Tamil"),
             "quality": movie.get("quality", "HD"),
             "category": movie.get("category", "Action"),
-            "is_multi_dubbed": movie.get("is_multi_dubbed", False),
+            "is_multi_dubbed": len(languages) > 1,
             "duration": movie.get("duration", "2h 20m"),
             "description": movie.get("description", ""),
-            "audio": movie.get("audio", "Tamil, Telugu, Hindi"),
+            "audio": audio_text,
             "subtitles": movie.get("subtitles", "English"),
             "size": movie.get("size", "2.1 GB"),
             "views": movie.get("views", "12.4K"),
+            "poster_path": movie.get("poster_path"),
         }
     else:
         movie_ctx = {
@@ -188,6 +255,7 @@ async def movie_detail(request: Request, movie_id: str):
             "subtitles": "English",
             "size": "2.1 GB",
             "views": "12.4K",
+            "poster_path": None,
         }
 
     return templates.TemplateResponse(
@@ -210,6 +278,85 @@ async def movies_count():
     return f"Movies in DB: {count}"
 
 # ------------------------------------
+
+
+# ---------- ADMIN ADD MOVIE ROUTES ----------
+
+@app.get("/admin/movies", response_class=HTMLResponse)
+async def admin_add_movie_form(request: Request):
+    if not is_admin(request):
+        return RedirectResponse("/admin/login", status_code=303)
+    return templates.TemplateResponse(
+        "admin_movies.html",
+        {"request": request, "message": ""},
+    )
+
+
+@app.post("/admin/movies", response_class=HTMLResponse)
+async def admin_create_movie(
+    request: Request,
+    title: str = Form(...),
+    year: str = Form(""),
+    language: str = Form(...),
+    quality: str = Form("HD"),
+    category: str = Form(""),
+    watch_url: str = Form(""),
+    download_url: str = Form(""),
+    languages: List[str] = Form(default=[]),
+    description: str = Form(""),
+    poster: UploadFile = File(None),
+):
+    if not is_admin(request):
+        return RedirectResponse("/admin/login", status_code=303)
+
+    db = get_db()
+    if db is None:
+        return templates.TemplateResponse(
+            "admin_movies.html",
+            {"request": request, "message": "MongoDB not connected"},
+        )
+
+    poster_path = None
+    if poster and poster.filename:
+        poster_dir = os.path.join("static", "posters")
+        os.makedirs(poster_dir, exist_ok=True)
+        ext = os.path.splitext(poster.filename)[1].lower()
+        filename = f"{uuid4().hex}{ext}"
+        filepath = os.path.join(poster_dir, filename)
+        content = await poster.read()
+        with open(filepath, "wb") as f:
+            f.write(content)
+        poster_path = f"posters/{filename}"
+
+    year_int = None
+    if year.strip():
+        try:
+            year_int = int(year)
+        except ValueError:
+            year_int = None
+
+    movie_doc = {
+        "title": title,
+        "year": year_int,
+        "language": language,
+        "languages": languages,
+        "quality": quality or "HD",
+        "category": category,
+        "watch_url": watch_url,
+        "download_url": download_url,
+        "poster_path": poster_path,
+        "description": description,
+        "created_at": datetime.utcnow(),
+    }
+
+    await db["movies"].insert_one(movie_doc)
+
+    return templates.TemplateResponse(
+        "admin_movies.html",
+        {"request": request, "message": "Movie saved successfully ✅"},
+    )
+
+# ---------------------------------------------
 
 
 # ---------- START BOT IN BACKGROUND ----------
@@ -244,4 +391,4 @@ if __name__ == "__main__":
 
     port = int(os.getenv("PORT", "8080"))
     uvicorn.run("main:app", host="0.0.0.0", port=port)
-        
+    
