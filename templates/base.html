@@ -4,348 +4,228 @@
     <meta charset="UTF-8">
     <title>{{ title or "MOVIES MAGIC CLUB" }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <style>
         :root {
-            --bg-main: #050816;
-            --bg-elevated: #020617;
-            --bg-panel: #020617;
-            --border-subtle: #1e293b;
+            --bg-body: #020617;
+            --bg-card: rgba(15, 23, 42, 0.85);
+            --bg-soft: rgba(30, 64, 175, 0.14);
+            --glass-border: rgba(148, 163, 184, 0.35);
             --text-main: #f9fafb;
             --text-muted: #9ca3af;
-            --accent-red: #ef4444;
-            --accent-green: #22c55e;
-            --accent-blue: #3b82f6;
-            --accent-purple: #a855f7;
+            --accent-rose: #fb7185;
+            --accent-blue: #38bdf8;
+            --accent-amber: #fbbf24;
+            --accent-emerald: #22c55e;
+            --radius-xl: 26px;
         }
+
         * {
             box-sizing: border-box;
         }
+
         body {
             margin: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background: radial-gradient(circle at top, #0b1120 0, #020617 55%, #020617 100%);
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+            background:
+                radial-gradient(circle at top left, #1e293b 0, transparent 45%),
+                radial-gradient(circle at bottom right, #0f172a 0, transparent 50%),
+                #020617;
             color: var(--text-main);
-        }
-        .app-shell {
-            display: grid;
-            grid-template-columns: 220px minmax(0, 1fr) 280px;
-            gap: 16px;
-            height: 100vh;
-            padding: 14px 14px 18px;
-        }
-        /* Left sidebar */
-        .sidebar {
-            background: linear-gradient(180deg, #020617 0, #020617 45%, #020617 100%);
-            border-radius: 18px;
-            border: 1px solid var(--border-subtle);
-            padding: 18px 14px 12px;
             display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .brand {
-            font-weight: 700;
-            font-size: 15px;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            margin-bottom: 18px;
-        }
-        .brand span {
-            color: var(--accent-red);
-        }
-        .nav-group-title {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            color: var(--text-muted);
-            margin: 10px 0 4px;
-        }
-        .nav-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .nav-item {
-            font-size: 13px;
-            padding: 7px 8px;
-            border-radius: 999px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-muted);
-            cursor: pointer;
-        }
-        .nav-item.active {
-            background: rgba(248, 250, 252, 0.05);
-            color: var(--text-main);
-        }
-        .nav-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 999px;
-            background: var(--accent-red);
-        }
-        .sidebar-footer {
-            font-size: 11px;
-            color: var(--text-muted);
-            opacity: 0.9;
+            align-items: stretch;
+            justify-content: center;
+            padding: 16px;
         }
 
-        /* Center main panel */
-        .main-panel {
-            background: rgba(15, 23, 42, 0.96);
-            border-radius: 18px;
-            border: 1px solid var(--border-subtle);
-            padding: 16px 18px 16px;
+        .mmc-shell {
+            max-width: 1180px;
+            width: 100%;
+            background: radial-gradient(circle at top, #1f2937 0, #020617 60%);
+            border-radius: 32px;
+            border: 1px solid rgba(148, 163, 184, 0.45);
+            padding: 18px 18px 20px;
+            box-shadow:
+                0 24px 60px rgba(15, 23, 42, 0.8),
+                0 0 0 1px rgba(15, 23, 42, 0.9);
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            gap: 14px;
+            backdrop-filter: blur(22px);
         }
-        .tabs-row {
+
+        /* Top nav */
+        .mmc-nav {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
+            gap: 14px;
         }
-        .tabs {
+
+        .mmc-brand {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(248, 250, 252, 0.08), rgba(148, 163, 184, 0.12));
+            border: 1px solid rgba(148, 163, 184, 0.35);
+        }
+
+        .mmc-brand span {
+            color: var(--accent-rose);
+        }
+
+        .mmc-nav-center {
+            flex: 1;
             display: flex;
-            gap: 8px;
+            justify-content: center;
+        }
+
+        .mmc-tabs {
+            display: inline-flex;
+            padding: 3px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(15, 23, 42, 0.9);
+            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.9);
+            gap: 3px;
+        }
+
+        .mmc-tab-pill {
+            font-size: 12px;
+            padding: 6px 16px;
+            border-radius: 999px;
+            border: none;
+            outline: none;
+            cursor: default;
+            background: transparent;
+            color: var(--text-muted);
+        }
+
+        .mmc-tab-pill.active {
+            background: linear-gradient(135deg, #f97316, #ec4899);
+            color: #fef2f2;
+            box-shadow: 0 7px 18px rgba(236, 72, 153, 0.6);
+        }
+
+        .mmc-nav-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mmc-search {
+            position: relative;
+        }
+
+        .mmc-search input {
+            width: 190px;
+            padding: 7px 32px 7px 11px;
+            border-radius: 999px;
+            border: 1px solid rgba(15, 23, 42, 0.9);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-main);
             font-size: 12px;
         }
-        .tab-pill {
-            padding: 6px 12px;
-            border-radius: 999px;
-            border: 1px solid transparent;
+
+        .mmc-search input::placeholder {
             color: var(--text-muted);
-            cursor: pointer;
         }
-        .tab-pill.active {
-            border-color: var(--accent-red);
-            background: rgba(239, 68, 68, 0.12);
-            color: var(--text-main);
+
+        .mmc-search-icon {
+            position: absolute;
+            right: 9px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 13px;
+            color: var(--text-muted);
         }
-        .main-scroll {
+
+        .mmc-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #38bdf8, #6366f1);
+            border: 1px solid rgba(15, 23, 42, 0.9);
+        }
+
+        /* Content wrapper */
+        .mmc-content {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-height: calc(100vh - 80px);
             overflow-y: auto;
             padding-right: 4px;
         }
 
-        /* Right panel */
-        .right-panel {
-            background: rgba(15, 23, 42, 0.96);
-            border-radius: 18px;
-            border: 1px solid var(--border-subtle);
-            padding: 14px 14px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
+        /* Simple scrollbar */
+        .mmc-content::-webkit-scrollbar {
+            width: 6px;
         }
-        .profile-chip {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 9px;
+        .mmc-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .mmc-content::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.35);
             border-radius: 999px;
-            background: rgba(15,23,42,0.8);
-            border: 1px solid #111827;
-        }
-        .avatar {
-            width: 26px;
-            height: 26px;
-            border-radius: 999px;
-            background: linear-gradient(135deg, #f97316, #ec4899);
-        }
-        .profile-meta {
-            font-size: 11px;
-        }
-        .profile-name {
-            font-weight: 600;
-        }
-        .profile-sub {
-            color: var(--text-muted);
-        }
-        .search-box {
-            margin-top: 6px;
-        }
-        .search-input {
-            width: 100%;
-            padding: 7px 9px;
-            border-radius: 999px;
-            border: 1px solid #111827;
-            background: #020617;
-            color: var(--text-main);
-            font-size: 12px;
-        }
-        .search-input::placeholder {
-            color: var(--text-muted);
-        }
-        .right-section-title {
-            font-size: 12px;
-            font-weight: 600;
-            margin: 4px 0 6px;
-        }
-        .genre-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-        .chip {
-            font-size: 11px;
-            padding: 5px 9px;
-            border-radius: 999px;
-            border: 1px solid #1f2937;
-            color: var(--text-muted);
-            cursor: pointer;
-        }
-        .chip.active {
-            background: #ef4444;
-            border-color: #ef4444;
-            color: #fef2f2;
-        }
-        .mini-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 4px;
-        }
-        .mini-item {
-            display: flex;
-            gap: 8px;
-            font-size: 11px;
-            align-items: center;
-        }
-        .mini-poster {
-            width: 44px;
-            height: 28px;
-            border-radius: 7px;
-            background: #020617;
-        }
-        .mini-meta-title {
-            font-weight: 500;
-        }
-        .mini-meta-sub {
-            color: var(--text-muted);
-            font-size: 10px;
         }
 
-        /* Responsive */
-        @media (max-width: 900px) {
-            .app-shell {
-                grid-template-columns: 1fr;
-                grid-template-rows: auto auto auto;
-                height: auto;
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
             }
-            .sidebar {
-                flex-direction: row;
-                align-items: center;
-                gap: 16px;
+            .mmc-shell {
+                padding: 14px 12px 16px;
+                border-radius: 24px;
             }
-            .sidebar-footer {
-                display: none;
+            .mmc-nav {
+                flex-wrap: wrap;
+                gap: 10px;
             }
-            .right-panel {
+            .mmc-nav-center {
                 order: 3;
+                width: 100%;
+                justify-content: flex-start;
+            }
+            .mmc-search input {
+                width: 150px;
             }
         }
     </style>
 </head>
 <body>
 
-<div class="app-shell">
-    <!-- Left sidebar -->
-    <aside class="sidebar">
-        <div>
-            <div class="brand">
-                MOVIES <span>MAGIC</span> CLUB
-            </div>
-            <div class="nav-group">
-                <div class="nav-group-title">Menu</div>
-                <ul class="nav-list">
-                    <li class="nav-item active">
-                        <span class="nav-dot"></span>
-                        <span>Home</span>
-                    </li>
-                    <li class="nav-item">
-                        <span class="nav-dot" style="opacity:0;"></span>
-                        <span>Movies</span>
-                    </li>
-                    <li class="nav-item">
-                        <span class="nav-dot" style="opacity:0;"></span>
-                        <span>Series</span>
-                    </li>
-                    <li class="nav-item">
-                        <span class="nav-dot" style="opacity:0;"></span>
-                        <span>Favourites</span>
-                    </li>
-                </ul>
-            </div>
+<div class="mmc-shell">
+    <!-- Top header -->
+    <header class="mmc-nav">
+        <div class="mmc-brand">
+            MOVIES <span>MAGIC</span> CLUB
         </div>
-        <div class="sidebar-footer">
-            © {{ year or 2025 }} · Movies Magic Club
-        </div>
-    </aside>
 
-    <!-- Center main panel -->
-    <main class="main-panel">
-        <div class="tabs-row">
-            <div class="tabs">
-                <div class="tab-pill active">Movies</div>
-                <div class="tab-pill">Series</div>
-                <div class="tab-pill">TV Shows</div>
-            </div>
-            <div style="font-size:11px; color: var(--text-muted);">
-                Dashboard · v1.0 (Preview)
+        <div class="mmc-nav-center">
+            <div class="mmc-tabs">
+                <button class="mmc-tab-pill active">Movies</button>
+                <button class="mmc-tab-pill">Series</button>
             </div>
         </div>
 
-        <div class="main-scroll">
-            {% block content %}
-            <!-- Page specific content injected here -->
-            {% endblock %}
+        <div class="mmc-nav-right">
+            <div class="mmc-search">
+                <input type="text" placeholder="Search movies..." />
+                <span class="mmc-search-icon">🔍</span>
+            </div>
+            <div class="mmc-avatar"></div>
         </div>
+    </header>
+
+    <!-- Scrollable page content -->
+    <main class="mmc-content">
+        {% block content %}{% endblock %}
     </main>
-
-    <!-- Right panel -->
-    <aside class="right-panel">
-        <div>
-            <div class="profile-chip">
-                <div class="avatar"></div>
-                <div class="profile-meta">
-                    <div class="profile-name">Guest User</div>
-                    <div class="profile-sub">Enjoy Movies Magic Club</div>
-                </div>
-            </div>
-            <div class="search-box">
-                <input class="search-input" placeholder="Search movies..." />
-            </div>
-        </div>
-
-        <div>
-            <div class="right-section-title">Genres</div>
-            <div class="genre-chips">
-                <button class="chip active">Action</button>
-                <button class="chip">Comedy</button>
-                <button class="chip">Romance</button>
-                <button class="chip">Thriller</button>
-                <button class="chip">Horror</button>
-                <button class="chip">Sci‑Fi</button>
-            </div>
-        </div>
-
-        <div>
-            <div class="right-section-title">Recent activity</div>
-            <div class="mini-list">
-                <div class="mini-item">
-                    <div class="mini-poster"></div>
-                    <div>
-                        <div class="mini-meta-title">No activity yet</div>
-                        <div class="mini-meta-sub">Watch something to see it here</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </aside>
 </div>
 
 </body>
-        </html>
-            
+</html>
