@@ -45,13 +45,14 @@ async def start_command(client, message):
 # ---------- FASTAPI ROUTES ----------
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    return templates.TemplateResponse("base.html", {"request": request})
-    
-
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request}
+    )
+       
 @app.get("/health", response_class=PlainTextResponse)
 async def health():
     return "OK"
-
 
 @app.get("/debug/movies-count", response_class=PlainTextResponse)
 async def movies_count():
