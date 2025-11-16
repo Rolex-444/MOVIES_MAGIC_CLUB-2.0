@@ -116,13 +116,20 @@
             gap: 10px;
         }
 
+        /* Search box */
         .mmc-search {
             position: relative;
         }
 
-        .mmc-search input {
+        .mmc-search form {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mmc-search-input {
             width: 190px;
-            padding: 7px 32px 7px 11px;
+            padding: 7px 10px;
             border-radius: 999px;
             border: 1px solid rgba(15, 23, 42, 0.9);
             background: rgba(15, 23, 42, 0.9);
@@ -130,17 +137,22 @@
             font-size: 12px;
         }
 
-        .mmc-search input::placeholder {
+        .mmc-search-input::placeholder {
             color: var(--text-muted);
         }
 
-        .mmc-search-icon {
-            position: absolute;
-            right: 9px;
-            top: 50%;
-            transform: translateY(-50%);
+        .mmc-search-btn {
+            border: none;
+            border-radius: 999px;
+            width: 26px;
+            height: 26px;
             font-size: 13px;
-            color: var(--text-muted);
+            cursor: pointer;
+            background: radial-gradient(circle at top, #38bdf8, #6366f1);
+            color: #e5e7eb;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .mmc-avatar {
@@ -190,7 +202,7 @@
                 width: 100%;
                 justify-content: flex-start;
             }
-            .mmc-search input {
+            .mmc-search-input {
                 width: 150px;
             }
         }
@@ -214,8 +226,15 @@
 
         <div class="mmc-nav-right">
             <div class="mmc-search">
-                <input type="text" placeholder="Search movies..." />
-                <span class="mmc-search-icon">🔍</span>
+                <form action="/search" method="get">
+                    <input
+                        type="text"
+                        name="q"
+                        placeholder="Search movies..."
+                        class="mmc-search-input"
+                    />
+                    <button type="submit" class="mmc-search-btn">🔍</button>
+                </form>
             </div>
             <div class="mmc-avatar"></div>
         </div>
