@@ -22,8 +22,7 @@ bot = Client(
     "movie_webapp_bot",
     api_id=API_ID,
     api_hash=API_HASH,
-    bot_token=BOT_TOKEN,
-    in_memory=True,  # avoid sqlite .session file & "database is locked"
+    bot_token=BOT_TOKEN,  
 )
 
 
