@@ -78,6 +78,7 @@
         background: rgba(15, 23, 42, 0.92);
         color: #f9fafb;
         border: 1px solid rgba(248, 250, 252, 0.25);
+        text-decoration: none;
     }
 
     /* Genre chips row */
@@ -195,9 +196,10 @@
                 <div class="hero-content">
                     <div class="hero-movie-title">Sample Movie {{ i + 1 }}</div>
                     <div class="hero-meta">2024 · HD · Action / Adventure</div>
-                    <button class="hero-btn">
+                    <!-- hero watch now → detail page -->
+                    <a href="/movie/hero-sample-{{ i + 1 }}" class="hero-btn">
                         ▶ Watch now
-                    </button>
+                    </a>
                 </div>
             </div>
             {% endfor %}
@@ -215,7 +217,7 @@
     </div>
 </section>
 
-<!-- Sections: Trending, Continue, Languages (dummy data) -->
+<!-- Sections: Trending, Continue, Languages (dummy data but clickable) -->
 <section class="section">
     <div class="section-header">
         <div class="section-title">Trending now</div>
@@ -223,13 +225,15 @@
     </div>
     <div class="card-row">
         {% for i in range(8) %}
-        <article class="movie-card">
-            <div class="movie-poster"></div>
-            <div class="movie-body">
-                <div class="movie-title">Trending {{ i + 1 }}</div>
-                <div class="movie-meta">HD · 2024 · Tamil</div>
-            </div>
-        </article>
+        <a href="/movie/trending-{{ i + 1 }}" style="text-decoration:none; color:inherit;">
+            <article class="movie-card">
+                <div class="movie-poster"></div>
+                <div class="movie-body">
+                    <div class="movie-title">Trending {{ i + 1 }}</div>
+                    <div class="movie-meta">HD · 2024 · Tamil</div>
+                </div>
+            </article>
+        </a>
         {% endfor %}
     </div>
 </section>
@@ -241,13 +245,15 @@
     </div>
     <div class="card-row">
         {% for i in range(6) %}
-        <article class="movie-card">
-            <div class="movie-poster"></div>
-            <div class="movie-body">
-                <div class="movie-title">Continue {{ i + 1 }}</div>
-                <div class="movie-meta">Progress · 45%</div>
-            </div>
-        </article>
+        <a href="/movie/continue-{{ i + 1 }}" style="text-decoration:none; color:inherit;">
+            <article class="movie-card">
+                <div class="movie-poster"></div>
+                <div class="movie-body">
+                    <div class="movie-title">Continue {{ i + 1 }}</div>
+                    <div class="movie-meta">Progress · 45%</div>
+                </div>
+            </article>
+        </a>
         {% endfor %}
     </div>
 </section>
@@ -259,13 +265,15 @@
     </div>
     <div class="card-row">
         {% for i in range(8) %}
-        <article class="movie-card">
-            <div class="movie-poster"></div>
-            <div class="movie-body">
-                <div class="movie-title">Tamil Movie {{ i + 1 }}</div>
-                <div class="movie-meta">HD · 2023 · Tamil</div>
-            </div>
-        </article>
+        <a href="/movie/tamil-{{ i + 1 }}" style="text-decoration:none; color:inherit;">
+            <article class="movie-card">
+                <div class="movie-poster"></div>
+                <div class="movie-body">
+                    <div class="movie-title">Tamil Movie {{ i + 1 }}</div>
+                    <div class="movie-meta">HD · 2023 · Tamil</div>
+                </div>
+            </article>
+        </a>
         {% endfor %}
     </div>
 </section>
@@ -277,13 +285,15 @@
     </div>
     <div class="card-row">
         {% for i in range(8) %}
-        <article class="movie-card">
-            <div class="movie-poster"></div>
-            <div class="movie-body">
-                <div class="movie-title">Telugu Movie {{ i + 1 }}</div>
-                <div class="movie-meta">HD · 2023 · Telugu</div>
-            </div>
-        </article>
+        <a href="/movie/telugu-{{ i + 1 }}" style="text-decoration:none; color:inherit;">
+            <article class="movie-card">
+                <div class="movie-poster"></div>
+                <div class="movie-body">
+                    <div class="movie-title">Telugu Movie {{ i + 1 }}</div>
+                    <div class="movie-meta">HD · 2023 · Telugu</div>
+                </div>
+            </article>
+        </a>
         {% endfor %}
     </div>
 </section>
@@ -295,13 +305,15 @@
     </div>
     <div class="card-row">
         {% for i in range(8) %}
-        <article class="movie-card">
-            <div class="movie-poster"></div>
-            <div class="movie-body">
-                <div class="movie-title">Hindi Movie {{ i + 1 }}</div>
-                <div class="movie-meta">HD · 2023 · Hindi</div>
-            </div>
-        </article>
+        <a href="/movie/hindi-{{ i + 1 }}" style="text-decoration:none; color:inherit;">
+            <article class="movie-card">
+                <div class="movie-poster"></div>
+                <div class="movie-body">
+                    <div class="movie-title">Hindi Movie {{ i + 1 }}</div>
+                    <div class="movie-meta">HD · 2023 · Hindi</div>
+                </div>
+            </article>
+        </a>
         {% endfor %}
     </div>
 </section>
@@ -313,13 +325,15 @@
     </div>
     <div class="card-row">
         {% for i in range(8) %}
-        <article class="movie-card">
-            <div class="movie-poster"></div>
-            <div class="movie-body">
-                <div class="movie-title">Malayalam {{ i + 1 }}</div>
-                <div class="movie-meta">HD · 2023 · Malayalam</div>
-            </div>
-        </article>
+        <a href="/movie/malayalam-{{ i + 1 }}" style="text-decoration:none; color:inherit;">
+            <article class="movie-card">
+                <div class="movie-poster"></div>
+                <div class="movie-body">
+                    <div class="movie-title">Malayalam {{ i + 1 }}</div>
+                    <div class="movie-meta">HD · 2023 · Malayalam</div>
+                </div>
+            </article>
+        </a>
         {% endfor %}
     </div>
 </section>
@@ -331,13 +345,15 @@
     </div>
     <div class="card-row">
         {% for i in range(8) %}
-        <article class="movie-card">
-            <div class="movie-poster"></div>
-            <div class="movie-body">
-                <div class="movie-title">Kannada {{ i + 1 }}</div>
-                <div class="movie-meta">HD · 2023 · Kannada</div>
-            </div>
-        </article>
+        <a href="/movie/kannada-{{ i + 1 }}" style="text-decoration:none; color:inherit;">
+            <article class="movie-card">
+                <div class="movie-poster"></div>
+                <div class="movie-body">
+                    <div class="movie-title">Kannada {{ i + 1 }}</div>
+                    <div class="movie-meta">HD · 2023 · Kannada</div>
+                </div>
+            </article>
+        </a>
         {% endfor %}
     </div>
 </section>
