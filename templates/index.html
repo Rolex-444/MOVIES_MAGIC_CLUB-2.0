@@ -189,22 +189,40 @@
 
     <!-- Slider container (later DB data) -->
     <div class="hero-slider" id="hero-slider">
-        <div class="hero-track" id="hero-track">
+    <div class="hero-track" id="hero-track">
+        {% if latest_movies and latest_movies|length > 0 %}
+            {% for m in latest_movies %}
+            <div class="hero-card" style="background-image: linear-gradient(120deg, #1d4ed8, #ec4899);">
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <div class="hero-movie-title">{{ m.title }}</div>
+                    <div class="hero-meta">
+                        {{ m.year or "" }} · {{ m.quality or "HD" }}
+                        {% if m.category %} · {{ m.category }}{% endif %}
+                    </div>
+                    <a href="/movie/{{ m.id }}" class="hero-btn">
+                        ▶ Watch now
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
             {% for i in range(5) %}
             <div class="hero-card" style="background-image: linear-gradient(120deg, #1d4ed8, #ec4899);">
                 <div class="hero-overlay"></div>
                 <div class="hero-content">
                     <div class="hero-movie-title">Sample Movie {{ i + 1 }}</div>
                     <div class="hero-meta">2024 · HD · Action / Adventure</div>
-                    <!-- hero watch now → detail page -->
                     <a href="/movie/hero-sample-{{ i + 1 }}" class="hero-btn">
                         ▶ Watch now
                     </a>
                 </div>
             </div>
             {% endfor %}
-        </div>
+        {% endif %}
     </div>
+    </div>
+    
 
     <!-- Genre chips row -->
     <div class="genre-row">
