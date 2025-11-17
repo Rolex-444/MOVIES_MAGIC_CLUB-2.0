@@ -125,7 +125,8 @@
     }
 
     .btn-small-danger,
-    .btn-small-secondary {
+    .btn-small-secondary,
+    .btn-small-primary {
         padding: 4px 8px;
         border-radius: 999px;
         font-size: 11px;
@@ -148,6 +149,17 @@
         display: inline-flex;
         align-items: center;
         gap: 4px;
+    }
+
+    .btn-small-primary {
+        border-color: rgba(34, 197, 94, 0.8);
+        background: rgba(21, 128, 61, 0.5);
+        color: #bbf7d0;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-right: 4px;
     }
 
     .message-bar {
@@ -269,12 +281,12 @@
         </form>
     </article>
 
-    <!-- RIGHT: Series list / search -->
+    <!-- RIGHT: Series list / search / manage -->
     <article class="card">
         <div class="card-header">
             <div>
                 <div class="card-title">All series</div>
-                <div class="card-sub">Top-level series (no seasons editor yet)</div>
+                <div class="card-sub">Top-level series with seasons & episodes managed separately</div>
             </div>
             <form class="search-inline-form" method="get" action="/admin/series">
                 <input
@@ -306,16 +318,34 @@
                     <td>{{ s.language or "" }}</td>
                     <td>{{ s.seasons_count }}</td>
                     <td>
-                        <a href="/admin/series/{{ s.id }}/edit" class="btn-small-secondary">Edit</a>
-                        <form method="post" action="/admin/series/{{ s.id }}/delete" style="display:inline;">
-                            <button type="submit" class="btn-small-danger">Delete</button>
+                        <a href="/admin/series/{{ s.id }}/seasons"
+                           class="btn-small btn-small-primary">
+                            Manage seasons
+                        </a>
+                        <a href="/admin/series/{{ s.id }}/edit"
+                           class="btn-small btn-small-secondary">
+                            Edit
+                        </a>
+                        <form method="post"
+                              action="/admin/series/{{ s.id }}/delete"
+                              style="display:inline;">
+                            <button type="submit" class="btn-small btn-small-danger">
+                                Delete
+                            </button>
                         </form>
                     </td>
                 </tr>
                 {% endfor %}
+                {% if series_list|length == 0 %}
+                <tr>
+                    <td colspan="5" style="font-size:11px; color:var(--text-muted);">
+                        No series created yet.
+                    </td>
+                </tr>
+                {% endif %}
             </tbody>
         </table>
     </article>
 </section>
 {% endblock %}
-                            
+        
