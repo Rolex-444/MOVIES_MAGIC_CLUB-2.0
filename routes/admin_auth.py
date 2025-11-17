@@ -16,9 +16,6 @@ def is_admin(request: Request) -> bool:
     return request.session.get("is_admin") is True
 
 
-# ---------- LOGIN / LOGOUT ----------
-
-
 @router.get("/admin/login", response_class=HTMLResponse)
 async def admin_login_form(request: Request):
     return templates.TemplateResponse(
@@ -43,3 +40,4 @@ async def admin_login(request: Request, password: str = Form(...)):
 async def admin_logout(request: Request):
     request.session.clear()
     return RedirectResponse("/", status_code=303)
+    
