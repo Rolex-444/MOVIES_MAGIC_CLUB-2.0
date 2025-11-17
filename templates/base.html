@@ -2,24 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ title or "MOVIES MAGIC CLUB" }}</title>
+    <title>Movies Magic Club</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Optional fonts (you already used system font, keep/change later) -->
 
     <style>
         :root {
-            --bg-body: #020617;
-            --bg-card: rgba(15, 23, 42, 0.85);
-            --bg-soft: rgba(30, 64, 175, 0.14);
-            --glass-border: rgba(148, 163, 184, 0.35);
+            --bg-main: #020617;
+            --bg-panel: #020617;
+            --bg-card: #020617;
             --text-main: #f9fafb;
             --text-muted: #9ca3af;
-            --accent-rose: #fb7185;
-            --accent-blue: #38bdf8;
-            --accent-amber: #fbbf24;
-            --accent-emerald: #22c55e;
+            --accent: #fb7185;
+            --accent-2: #fb923c;
             --radius-xl: 26px;
+            --glass-border: rgba(148, 163, 184, 0.3);
         }
 
         * {
@@ -28,246 +24,251 @@
 
         body {
             margin: 0;
-            min-height: 100vh;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
-            background:
-                radial-gradient(circle at top left, #1e293b 0, transparent 45%),
-                radial-gradient(circle at bottom right, #0f172a 0, transparent 50%),
-                #020617;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+                "Inter", sans-serif;
+            background: radial-gradient(circle at top, #020617, #020617 40%, #000000 100%);
             color: var(--text-main);
+        }
+
+        a {
+            color: inherit;
+        }
+
+        .app-shell {
+            min-height: 100vh;
             display: flex;
-            align-items: stretch;
             justify-content: center;
-            padding: 16px;
+            padding: 16px 10px 24px;
         }
 
-        .mmc-shell {
-            max-width: 1180px;
+        .app-inner {
             width: 100%;
-            background: radial-gradient(circle at top, #1f2937 0, #020617 60%);
-            border-radius: 32px;
-            border: 1px solid rgba(148, 163, 184, 0.45);
-            padding: 18px 18px 20px;
+            max-width: 480px;
+            background: radial-gradient(circle at top, #020617, #020617 40%, #020617 100%);
+            border-radius: 30px;
+            border: 1px solid rgba(15, 23, 42, 0.9);
             box-shadow:
-                0 24px 60px rgba(15, 23, 42, 0.8),
-                0 0 0 1px rgba(15, 23, 42, 0.9);
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            backdrop-filter: blur(22px);
+                0 20px 60px rgba(0, 0, 0, 0.9),
+                0 0 0 1px rgba(15, 23, 42, 0.7);
+            padding: 18px 16px 20px;
         }
 
-        /* Top nav */
-        .mmc-nav {
+        /* ---------- HEADER ---------- */
+
+        .app-header {
+            border-radius: 24px;
+            padding: 12px 14px 14px;
+            background: radial-gradient(circle at top left, #020617, #020617);
+            border: 1px solid var(--glass-border);
+            margin-bottom: 14px;
+        }
+
+        .header-top {
             display: flex;
             align-items: center;
-            gap: 14px;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
         }
 
-        .mmc-brand {
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(51, 65, 85, 0.9);
+            background: rgba(15, 23, 42, 0.95);
+            font-size: 13px;
+            letter-spacing: 0.15em;
+        }
+
+        .brand span:nth-child(1) {
+            margin-right: 4px;
+        }
+
+        .brand span:nth-child(2) {
+            color: #f97316;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-admin {
+            font-size: 11px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            background: #020617;
+            color: #e5e7eb;
+            text-decoration: none;
+        }
+
+        .search-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .search-input-wrap {
+            flex: 1;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
             padding: 8px 12px;
             border-radius: 999px;
-            background: linear-gradient(135deg, rgba(248, 250, 252, 0.08), rgba(148, 163, 184, 0.12));
-            border: 1px solid rgba(148, 163, 184, 0.35);
-        }
-
-        .mmc-brand span {
-            color: var(--accent-rose);
-        }
-
-        .mmc-nav-center {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-        }
-
-        .mmc-tabs {
-            display: inline-flex;
-            padding: 3px;
-            border-radius: 999px;
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(15, 23, 42, 0.9);
-            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.9);
-            gap: 3px;
-        }
-
-        .mmc-tab-pill {
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            background: #020617;
+            color: #e5e7eb;
             font-size: 12px;
-            padding: 6px 16px;
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: rgba(148, 163, 184, 0.75);
+        }
+
+        .search-btn {
+            width: 30px;
+            height: 30px;
             border-radius: 999px;
             border: none;
-            outline: none;
-            cursor: default;
-            background: transparent;
-            color: var(--text-muted);
+            background: radial-gradient(circle at top, #22d3ee, #6366f1);
+            color: #020617;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
         }
 
-        .mmc-tab-pill.active {
-            background: linear-gradient(135deg, #f97316, #ec4899);
-            color: #fef2f2;
-            box-shadow: 0 7px 18px rgba(236, 72, 153, 0.6);
-        }
-
-        .mmc-nav-right {
+        .header-bottom {
+            margin-top: 10px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        /* Admin link */
-        .mmc-admin-link {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-decoration: none;
-            padding: 4px 10px;
+        .nav-toggle {
+            display: inline-flex;
+            padding: 3px;
             border-radius: 999px;
-            border: 1px solid rgba(148, 163, 184, 0.25);
-            background: rgba(15, 23, 42, 0.85);
+            background: radial-gradient(circle at top, #020617, #020617);
+            border: 1px solid rgba(30, 64, 175, 0.6);
+            gap: 4px;
         }
 
-        .mmc-admin-link:hover {
-            color: #e5e7eb;
-            border-color: rgba(248, 250, 252, 0.35);
-        }
+        /* ---------- SHARED PILL BUTTONS ---------- */
 
-        /* Search box */
-        .mmc-search {
-            position: relative;
-        }
-
-        .mmc-search form {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .mmc-search-input {
-            width: 190px;
-            padding: 7px 10px;
-            border-radius: 999px;
-            border: 1px solid rgba(15, 23, 42, 0.9);
-            background: rgba(15, 23, 42, 0.9);
-            color: var(--text-main);
-            font-size: 12px;
-        }
-
-        .mmc-search-input::placeholder {
-            color: var(--text-muted);
-        }
-
-        .mmc-search-btn {
-            border: none;
-            border-radius: 999px;
-            width: 26px;
-            height: 26px;
-            font-size: 13px;
-            cursor: pointer;
-            background: radial-gradient(circle at top, #38bdf8, #6366f1);
-            color: #e5e7eb;
+        .pill {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .mmc-avatar {
-            width: 28px;
-            height: 28px;
+            padding: 6px 14px;
             border-radius: 999px;
-            background: linear-gradient(135deg, #38bdf8, #6366f1);
-            border: 1px solid rgba(15, 23, 42, 0.9);
+            font-size: 12px;
+            border: 1px solid rgba(55, 65, 81, 0.95);
+            background: #020617;
+            color: #e5e7eb;
+            text-decoration: none;
+            transition:
+                background 0.25s ease,
+                color 0.25s ease,
+                border-color 0.25s ease,
+                transform 0.15s ease,
+                box-shadow 0.25s ease;
+            min-width: 72px;
+            justify-content: center;
         }
 
-        /* Content wrapper */
-        .mmc-content {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            max-height: calc(100vh - 80px);
-            overflow-y: auto;
-            padding-right: 4px;
+        .pill:hover {
+            transform: translateY(-1px);
+            border-color: rgba(148, 163, 184, 0.9);
         }
 
-        /* Simple scrollbar */
-        .mmc-content::-webkit-scrollbar {
-            width: 6px;
-        }
-        .mmc-content::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .mmc-content::-webkit-scrollbar-thumb {
-            background: rgba(148, 163, 184, 0.35);
-            border-radius: 999px;
+        .pill.active {
+            background: linear-gradient(135deg, #fb7185, #fb923c);
+            color: #020617;
+            border-color: transparent;
+            box-shadow: 0 10px 25px rgba(248, 113, 113, 0.65);
         }
 
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-            .mmc-shell {
-                padding: 14px 12px 16px;
-                border-radius: 24px;
-            }
-            .mmc-nav {
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-            .mmc-nav-center {
-                order: 3;
-                width: 100%;
-                justify-content: flex-start;
-            }
-            .mmc-search-input {
-                width: 150px;
+        /* ---------- MAIN CONTENT ---------- */
+
+        .app-main {
+            margin-top: 6px;
+        }
+
+        .footer {
+            margin-top: 18px;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        @media (min-width: 768px) {
+            .app-inner {
+                max-width: 520px;
             }
         }
     </style>
 </head>
 <body>
-
-<div class="mmc-shell">
-    <!-- Top header -->
-    <header class="mmc-nav">
-        <div class="mmc-brand">
-            MOVIES <span>MAGIC</span> CLUB
-        </div>
-
-        <div class="mmc-nav-center">
-            <div class="mmc-tabs">
-                <button class="mmc-tab-pill active">Movies</button>
-                <button class="mmc-tab-pill">Series</button>
+<div class="app-shell">
+    <div class="app-inner">
+        <header class="app-header">
+            <div class="header-top">
+                <div class="brand">
+                    <span>MOVIES</span><span>MAGIC</span><span>CLUB</span>
+                </div>
+                <div class="header-actions">
+                    <a href="/admin/movies" class="btn-admin">Admin</a>
+                </div>
             </div>
-        </div>
 
-        <div class="mmc-nav-right">
-            <!-- Admin link -->
-            <a href="/admin/login" class="mmc-admin-link">Admin</a>
-
-            <!-- Search -->
-            <div class="mmc-search">
-                <form action="/search" method="get">
+            <div class="search-wrap">
+                <form class="search-input-wrap" action="/search" method="get">
                     <input
                         type="text"
                         name="q"
+                        class="search-input"
                         placeholder="Search movies..."
-                        class="mmc-search-input"
-                    />
-                    <button type="submit" class="mmc-search-btn">🔍</button>
+                        value="{{ request.query_params.get('q') or '' }}"
+                    >
                 </form>
+                <button class="search-btn" onclick="document.querySelector('.search-input-wrap form').submit();">
+                    🔍
+                </button>
             </div>
 
-            <div class="mmc-avatar"></div>
-        </div>
-    </header>
+            <div class="header-bottom">
+                <div class="nav-toggle">
+                    <a href="/"
+                       class="pill {% if not request.url.path.startswith('/series') %}active{% endif %}">
+                        Movies
+                    </a>
+                    <a href="/series"
+                       class="pill {% if request.url.path.startswith('/series') %}active{% endif %}">
+                        Series
+                    </a>
+                </div>
+            </div>
+        </header>
 
-    <!-- Scrollable page content -->
-    <main class="mmc-content">
-        {% block content %}{% endblock %}
-    </main>
+        <main class="app-main">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="footer">
+            © {{ (now().year if now is defined else 2025) }} Movies Magic Club. All rights reserved.
+        </footer>
+    </div>
 </div>
-
 </body>
 </html>
