@@ -161,6 +161,8 @@
         border: 1px solid rgba(75, 85, 99, 0.9);
         background: #020617;
         color: #e5e7eb;
+        text-decoration: none;
+        display: inline-block;
     }
 
     /* TRENDING & CONTINUE */
@@ -179,6 +181,12 @@
         background: radial-gradient(circle at top, #1e293b, #020617);
         border: 1px solid rgba(55, 65, 81, 0.9);
         padding: 8px 8px 10px;
+    }
+
+    .tile-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
     }
 
     .tile-poster {
@@ -297,23 +305,28 @@
         {% endif %}
     </article>
 
-    <!-- GENRE ROW (no language rows) -->
+    <!-- GENRE ROW -->
     <article class="card genre-card">
         <div class="card-header">
             <div>
                 <div class="card-title">Browse by genre</div>
-                <div class="card-sub">Find the perfect web series mood for today.</div>
+                <div class="card-sub">
+                    Find the perfect web series mood for today.
+                    {% if active_genre %}
+                        Currently showing: {{ active_genre }}.
+                    {% endif %}
+                </div>
             </div>
         </div>
         <div class="genre-row">
-            <span class="genre-chip">Action</span>
-            <span class="genre-chip">Comedy</span>
-            <span class="genre-chip">Drama</span>
-            <span class="genre-chip">Thriller</span>
-            <span class="genre-chip">Fantasy</span>
-            <span class="genre-chip">Sci‑Fi</span>
-            <span class="genre-chip">Romance</span>
-            <span class="genre-chip">Crime</span>
+            <a href="/series?genre=Action" class="genre-chip">Action</a>
+            <a href="/series?genre=Comedy" class="genre-chip">Comedy</a>
+            <a href="/series?genre=Drama" class="genre-chip">Drama</a>
+            <a href="/series?genre=Thriller" class="genre-chip">Thriller</a>
+            <a href="/series?genre=Fantasy" class="genre-chip">Fantasy</a>
+            <a href="/series?genre=Sci-Fi" class="genre-chip">Sci‑Fi</a>
+            <a href="/series?genre=Romance" class="genre-chip">Romance</a>
+            <a href="/series?genre=Crime" class="genre-chip">Crime</a>
         </div>
     </article>
 
@@ -329,18 +342,20 @@
         <div class="horizontal-scroll">
             {% if latest_series and latest_series|length > 0 %}
                 {% for s in latest_series %}
-                <div class="tile">
-                    <div class="tile-poster">
-                        {% if s.poster_path %}
-                            <img src="{{ url_for('static', path=s.poster_path) }}"
-                                 alt="{{ s.title }} poster">
-                        {% endif %}
+                <a href="/series/{{ s.id }}" class="tile-link">
+                    <div class="tile">
+                        <div class="tile-poster">
+                            {% if s.poster_path %}
+                                <img src="{{ url_for('static', path=s.poster_path) }}"
+                                     alt="{{ s.title }} poster">
+                            {% endif %}
+                        </div>
+                        <div class="tile-title">{{ s.title }}</div>
+                        <div class="tile-meta">
+                            {{ s.year or "" }}{% if s.quality %} · {{ s.quality }}{% endif %}{% if s.category %} · {{ s.category }}{% endif %}
+                        </div>
                     </div>
-                    <div class="tile-title">{{ s.title }}</div>
-                    <div class="tile-meta">
-                        {{ s.year or "" }}{% if s.quality %} · {{ s.quality }}{% endif %}{% if s.category %} · {{ s.category }}{% endif %}
-                    </div>
-                </div>
+                </a>
                 {% endfor %}
             {% else %}
                 {% for i in range(8) %}
@@ -366,19 +381,21 @@
         <div class="horizontal-scroll">
             {% if latest_series and latest_series|length > 0 %}
                 {% for s in latest_series %}
-                <div class="tile">
-                    <div class="tile-poster">
-                        {% if s.poster_path %}
-                            <img src="{{ url_for('static', path=s.poster_path) }}"
-                                 alt="{{ s.title }} poster">
-                        {% endif %}
+                <a href="/series/{{ s.id }}" class="tile-link">
+                    <div class="tile">
+                        <div class="tile-poster">
+                            {% if s.poster_path %}
+                                <img src="{{ url_for('static', path=s.poster_path) }}"
+                                     alt="{{ s.title }} poster">
+                            {% endif %}
+                        </div>
+                        <div class="tile-title">{{ s.title }}</div>
+                        <div class="tile-meta">Progress · 45%</div>
+                        <div class="progress-bar">
+                            <div class="progress-inner"></div>
+                        </div>
                     </div>
-                    <div class="tile-title">{{ s.title }}</div>
-                    <div class="tile-meta">Progress · 45%</div>
-                    <div class="progress-bar">
-                        <div class="progress-inner"></div>
-                    </div>
-                </div>
+                </a>
                 {% endfor %}
             {% else %}
                 {% for i in range(6) %}
@@ -397,4 +414,4 @@
 
 </section>
 {% endblock %}
-            
+                                
