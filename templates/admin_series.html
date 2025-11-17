@@ -151,7 +151,7 @@
     }
 
     .message-bar {
-        margin-top: 6px;
+        margin-top: 2px;
         font-size: 11px;
         color: #bbf7d0;
     }
@@ -203,10 +203,14 @@
                 <div class="card-sub">
                     Create a new web series (seasons & episodes will be added later).
                 </div>
+                {% if message %}
+                <div class="message-bar">{{ message }}</div>
+                {% endif %}
             </div>
-            {% if message %}
-            <div class="message-bar">{{ message }}</div>
-            {% endif %}
+            <a href="/admin/movies"
+               style="font-size:11px; color:#a5b4fc; text-decoration:none;">
+                ← Back to Movies admin
+            </a>
         </div>
 
         <form action="/admin/series" method="post" enctype="multipart/form-data">
@@ -314,3 +318,4 @@
     </article>
 </section>
 {% endblock %}
+                            
