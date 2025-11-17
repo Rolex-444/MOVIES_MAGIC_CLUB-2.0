@@ -2,7 +2,39 @@
 
 {% block content %}
 <style>
-    /* Movies hero – similar to series hero */
+    .page-shell {
+        margin-top: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        font-size: 13px;
+    }
+
+    .card {
+        background: rgba(15, 23, 42, 0.96);
+        border-radius: 24px;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        padding: 14px 14px 16px;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 8px;
+    }
+
+    .card-title {
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .card-sub {
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    /* Movies hero (like series hero) */
     .movie-hero-shell {
         position: relative;
         overflow: hidden;
@@ -10,7 +42,6 @@
         background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.25), rgba(15, 23, 42, 0.98));
         border: 1px solid rgba(55, 65, 81, 0.9);
         padding: 14px 14px 16px;
-        margin-bottom: 16px;
     }
 
     .movie-hero-grid {
@@ -108,6 +139,71 @@
         background: #f97316;
     }
 
+    /* Genres line */
+    .genre-card {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .genre-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .genre-chip {
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 11px;
+        border: 1px solid rgba(75, 85, 99, 0.9);
+        background: #020617;
+        color: #e5e7eb;
+    }
+
+    /* Horizontal rows (Trending / All / language rows) */
+    .horizontal-scroll {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: thin;
+    }
+
+    .tile {
+        flex: 0 0 150px;
+        border-radius: 18px;
+        background: radial-gradient(circle at top, #1e293b, #020617);
+        border: 1px solid rgba(55, 65, 81, 0.9);
+        padding: 8px 8px 10px;
+    }
+
+    .tile-poster {
+        width: 100%;
+        border-radius: 14px;
+        overflow: hidden;
+        background: radial-gradient(circle at top, #1d4ed8, #020617);
+        margin-bottom: 6px;
+    }
+
+    .tile-poster img {
+        width: 100%;
+        height: 110px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .tile-title {
+        font-size: 12px;
+        font-weight: 500;
+        margin-bottom: 2px;
+    }
+
+    .tile-meta {
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
     @media (max-width: 768px) {
         .movie-hero-item {
             grid-template-columns: minmax(0, 1fr);
@@ -115,180 +211,351 @@
     }
 </style>
 
-<!-- Latest release hero slider -->
-<section class="movie-hero-shell">
-    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
-        <div>
-            <div style="font-size:15px; font-weight:600;">Latest release</div>
-            <div style="font-size:11px; color:var(--text-muted);">
-                Fresh movies added to Movies Magic Club · auto-sliding preview · last 5 uploads
-            </div>
-        </div>
-    </div>
+<section class="page-shell">
 
-    {% if latest_movies and latest_movies|length > 0 %}
-        {% set first = latest_movies[0] %}
-        <div class="movie-hero-grid">
-            <div class="movie-hero-item">
-                <div class="movie-hero-poster">
-                    {% if first.poster_path %}
-                        <img src="{{ url_for('static', path=first.poster_path) }}"
-                             alt="{{ first.title }} poster">
-                    {% endif %}
-                </div>
-                <div class="movie-hero-main">
-                    <div class="movie-hero-title">
-                        {{ first.title }}
-                    </div>
-                    <div class="movie-hero-meta">
-                        {{ first.year or "" }}{% if first.quality %} · {{ first.quality }}{% endif %}{% if first.category %} · {{ first.category }}{% endif %}
-                    </div>
-                    <div class="movie-hero-actions">
-                        {% if first.watch_url %}
-                            <a href="{{ first.watch_url }}" class="movie-btn-hero-primary" target="_blank" rel="noopener">
-                                ▶ Watch now
-                            </a>
-                        {% endif %}
-                        {% if first.download_url %}
-                            <a href="{{ first.download_url }}" class="movie-btn-hero-secondary" target="_blank" rel="noopener">
-                                ⬇ Download
-                            </a>
-                        {% endif %}
-                    </div>
+    <!-- Latest release hero slider -->
+    <article class="movie-hero-shell">
+        <div class="card-header" style="margin-bottom:8px;">
+            <div>
+                <div class="card-title">Latest release</div>
+                <div class="card-sub">
+                    Fresh movies added to Movies Magic Club · auto-sliding preview · last 5 uploads
                 </div>
             </div>
         </div>
 
-        <div class="movie-hero-dots">
-            {% set count = latest_movies|length if latest_movies|length < 5 else 5 %}
-            {% for i in range(count) %}
-                <div class="movie-hero-dot {% if i == 0 %}active{% endif %}"></div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="movie-hero-grid">
-            <div class="movie-hero-item">
-                <div class="movie-hero-poster"></div>
-                <div class="movie-hero-main">
-                    <div class="movie-hero-title">Sample Movie</div>
-                    <div class="movie-hero-meta">2024 · HD · Action / Adventure</div>
-                    <div class="movie-hero-actions">
-                        <a href="#" class="movie-btn-hero-primary">▶ Watch now</a>
+        {% if latest_movies and latest_movies|length > 0 %}
+            {% set first = latest_movies[0] %}
+            <div class="movie-hero-grid">
+                <div class="movie-hero-item">
+                    <div class="movie-hero-poster">
+                        {% if first.poster_path %}
+                            <img src="{{ url_for('static', path=first.poster_path) }}"
+                                 alt="{{ first.title }} poster">
+                        {% endif %}
+                    </div>
+                    <div class="movie-hero-main">
+                        <div class="movie-hero-title">
+                            {{ first.title }}
+                        </div>
+                        <div class="movie-hero-meta">
+                            {{ first.year or "" }}{% if first.quality %} · {{ first.quality }}{% endif %}{% if first.category %} · {{ first.category }}{% endif %}
+                        </div>
+                        <div class="movie-hero-actions">
+                            {% if first.watch_url %}
+                                <a href="{{ first.watch_url }}" class="movie-btn-hero-primary" target="_blank" rel="noopener">
+                                    ▶ Watch now
+                                </a>
+                            {% endif %}
+                            {% if first.download_url %}
+                                <a href="{{ first.download_url }}" class="movie-btn-hero-secondary" target="_blank" rel="noopener">
+                                    ⬇ Download
+                                </a>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <div class="movie-hero-dots">
+                {% set count = latest_movies|length if latest_movies|length < 5 else 5 %}
+                {% for i in range(count) %}
+                    <div class="movie-hero-dot {% if i == 0 %}active{% endif %}"></div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="movie-hero-grid">
+                <div class="movie-hero-item">
+                    <div class="movie-hero-poster"></div>
+                    <div class="movie-hero-main">
+                        <div class="movie-hero-title">Sample Movie</div>
+                        <div class="movie-hero-meta">2024 · HD · Action / Adventure</div>
+                        <div class="movie-hero-actions">
+                            <a href="#" class="movie-btn-hero-primary">▶ Watch now</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </article>
+
+    <!-- Browse by genre (static chips) -->
+    <article class="card genre-card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Browse by genre</div>
+                <div class="card-sub">Quick shortcuts to common movie moods.</div>
+            </div>
         </div>
-    {% endif %}
+        <div class="genre-row">
+            <span class="genre-chip">Action</span>
+            <span class="genre-chip">Comedy</span>
+            <span class="genre-chip">Drama</span>
+            <span class="genre-chip">Horror</span>
+            <span class="genre-chip">Crime</span>
+            <span class="genre-chip">Romance</span>
+        </div>
+    </article>
+
+    <!-- Trending now -->
+    <article class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Trending now</div>
+                <div class="card-sub">Popular across Movies Magic Club.</div>
+            </div>
+        </div>
+
+        <div class="horizontal-scroll">
+            {% if latest_movies and latest_movies|length > 0 %}
+                {% for m in latest_movies %}
+                <div class="tile">
+                    <div class="tile-poster">
+                        {% if m.poster_path %}
+                            <img src="{{ url_for('static', path=m.poster_path) }}"
+                                 alt="{{ m.title }} poster">
+                        {% endif %}
+                    </div>
+                    <div class="tile-title">{{ m.title }}</div>
+                    <div class="tile-meta">
+                        {{ m.year or "" }}{% if m.quality %} · {{ m.quality }}{% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                {% for i in range(8) %}
+                <div class="tile">
+                    <div class="tile-poster"></div>
+                    <div class="tile-title">Trending {{ i + 1 }}</div>
+                    <div class="tile-meta">HD · 2024 · Tamil</div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </article>
+
+    <!-- All movies (instead of Continue watching) -->
+    <article class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">All movies</div>
+                <div class="card-sub">Recently added across all languages.</div>
+            </div>
+        </div>
+
+        <div class="horizontal-scroll">
+            {% if latest_movies and latest_movies|length > 0 %}
+                {% for m in latest_movies %}
+                <div class="tile">
+                    <div class="tile-poster">
+                        {% if m.poster_path %}
+                            <img src="{{ url_for('static', path=m.poster_path) }}"
+                                 alt="{{ m.title }} poster">
+                        {% endif %}
+                    </div>
+                    <div class="tile-title">{{ m.title }}</div>
+                    <div class="tile-meta">
+                        {{ m.quality or "HD" }} · {{ m.year or "" }}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                {% for i in range(6) %}
+                <div class="tile">
+                    <div class="tile-poster"></div>
+                    <div class="tile-title">Movie {{ i + 1 }}</div>
+                    <div class="tile-meta">HD · 2024</div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </article>
+
+    <!-- Tamil movies -->
+    <article class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Tamil movies</div>
+                <div class="card-sub">Hand-picked Tamil releases.</div>
+            </div>
+        </div>
+
+        <div class="horizontal-scroll">
+            {% if tamil_movies and tamil_movies|length > 0 %}
+                {% for m in tamil_movies %}
+                <div class="tile">
+                    <div class="tile-poster">
+                        {% if m.poster_path %}
+                            <img src="{{ url_for('static', path=m.poster_path) }}"
+                                 alt="{{ m.title }} poster">
+                        {% endif %}
+                    </div>
+                    <div class="tile-title">{{ m.title }}</div>
+                    <div class="tile-meta">
+                        {{ m.quality or "HD" }} · {{ m.year or "" }} · {{ m.language or "Tamil" }}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                {% for i in range(8) %}
+                <div class="tile">
+                    <div class="tile-poster"></div>
+                    <div class="tile-title">Tamil Movie {{ i + 1 }}</div>
+                    <div class="tile-meta">HD · 2023 · Tamil</div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </article>
+
+    <!-- Telugu movies -->
+    <article class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Telugu movies</div>
+                <div class="card-sub">Top picks in Telugu.</div>
+            </div>
+        </div>
+
+        <div class="horizontal-scroll">
+            {% if telugu_movies and telugu_movies|length > 0 %}
+                {% for m in telugu_movies %}
+                <div class="tile">
+                    <div class="tile-poster">
+                        {% if m.poster_path %}
+                            <img src="{{ url_for('static', path=m.poster_path) }}"
+                                 alt="{{ m.title }} poster">
+                        {% endif %}
+                    </div>
+                    <div class="tile-title">{{ m.title }}</div>
+                    <div class="tile-meta">
+                        {{ m.quality or "HD" }} · {{ m.year or "" }} · {{ m.language or "Telugu" }}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                {% for i in range(8) %}
+                <div class="tile">
+                    <div class="tile-poster"></div>
+                    <div class="tile-title">Telugu Movie {{ i + 1 }}</div>
+                    <div class="tile-meta">HD · 2023 · Telugu</div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </article>
+
+    <!-- Hindi movies -->
+    <article class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Hindi movies</div>
+                <div class="card-sub">Bollywood & beyond.</div>
+            </div>
+        </div>
+
+        <div class="horizontal-scroll">
+            {% if hindi_movies and hindi_movies|length > 0 %}
+                {% for m in hindi_movies %}
+                <div class="tile">
+                    <div class="tile-poster">
+                        {% if m.poster_path %}
+                            <img src="{{ url_for('static', path=m.poster_path) }}"
+                                 alt="{{ m.title }} poster">
+                        {% endif %}
+                    </div>
+                    <div class="tile-title">{{ m.title }}</div>
+                    <div class="tile-meta">
+                        {{ m.quality or "HD" }} · {{ m.year or "" }} · {{ m.language or "Hindi" }}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                {% for i in range(8) %}
+                <div class="tile">
+                    <div class="tile-poster"></div>
+                    <div class="tile-title">Hindi Movie {{ i + 1 }}</div>
+                    <div class="tile-meta">HD · 2023 · Hindi</div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </article>
+
+    <!-- Malayalam movies -->
+    <article class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Malayalam movies</div>
+                <div class="card-sub">Critically acclaimed picks.</div>
+            </div>
+        </div>
+
+        <div class="horizontal-scroll">
+            {% if malayalam_movies and malayalam_movies|length > 0 %}
+                {% for m in malayalam_movies %}
+                <div class="tile">
+                    <div class="tile-poster">
+                        {% if m.poster_path %}
+                            <img src="{{ url_for('static', path=m.poster_path) }}"
+                                 alt="{{ m.title }} poster">
+                        {% endif %}
+                    </div>
+                    <div class="tile-title">{{ m.title }}</div>
+                    <div class="tile-meta">
+                        {{ m.quality or "HD" }} · {{ m.year or "" }} · {{ m.language or "Malayalam" }}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                {% for i in range(8) %}
+                <div class="tile">
+                    <div class="tile-poster"></div>
+                    <div class="tile-title">Malayalam {{ i + 1 }}</div>
+                    <div class="tile-meta">HD · 2023 · Malayalam</div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </article>
+
+    <!-- Kannada movies -->
+    <article class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Kannada movies</div>
+                <div class="card-sub">Latest from Sandalwood.</div>
+            </div>
+        </div>
+
+        <div class="horizontal-scroll">
+            {% if kannada_movies and kannada_movies|length > 0 %}
+                {% for m in kannada_movies %}
+                <div class="tile">
+                    <div class="tile-poster">
+                        {% if m.poster_path %}
+                            <img src="{{ url_for('static', path=m.poster_path) }}"
+                                 alt="{{ m.title }} poster">
+                        {% endif %}
+                    </div>
+                    <div class="tile-title">{{ m.title }}</div>
+                    <div class="tile-meta">
+                        {{ m.quality or "HD" }} · {{ m.year or "" }} · {{ m.language or "Kannada" }}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                {% for i in range(8) %}
+                <div class="tile">
+                    <div class="tile-poster"></div>
+                    <div class="tile-title">Kannada {{ i + 1 }}</div>
+                    <div class="tile-meta">HD · 2023 · Kannada</div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </article>
+
 </section>
-
-<!-- Original genre chips row -->
-Action
-Comedy
-Drama
-Horror
-Crime
-Romance
-
-<!-- Trending section (unchanged content) -->
-Trending now
-Popular across Movies Magic Club
-
-{% for i in range(8) %}
-Trending {{ i + 1 }}
-HD · 2024 · Tamil
-{% endfor %}
-
-<!-- All movies (replaces old Continue watching) -->
-All movies
-Recently added across all languages
-
-{% if latest_movies and latest_movies|length > 0 %}
-    {% for m in latest_movies %}
-        {{ m.title }}
-        {{ m.quality or "HD" }} · {{ m.year or "" }}
-    {% endfor %}
-{% else %}
-    {% for i in range(6) %}
-        Movie {{ i + 1 }}
-        HD · 2024
-    {% endfor %}
-{% endif %}
-
-<!-- Language-based rows below are your original ones, unchanged -->
-
-Tamil movies
-Hand-picked Tamil releases
-
-{% if tamil_movies and tamil_movies|length > 0 %}
-    {% for m in tamil_movies %}
-        {{ m.title }}
-        {{ m.quality or "HD" }} · {{ m.year or "" }} · {{ m.language or "Tamil" }}
-    {% endfor %}
-{% else %}
-    {% for i in range(8) %}
-        Tamil Movie {{ i + 1 }}
-        HD · 2024 · Tamil
-    {% endfor %}
-{% endif %}
-
-Telugu movies
-Curated Telugu picks
-
-{% if telugu_movies and telugu_movies|length > 0 %}
-    {% for m in telugu_movies %}
-        {{ m.title }}
-        {{ m.quality or "HD" }} · {{ m.year or "" }} · {{ m.language or "Telugu" }}
-    {% endfor %}
-{% else %}
-    {% for i in range(8) %}
-        Telugu Movie {{ i + 1 }}
-        HD · 2024 · Telugu
-    {% endfor %}
-{% endif %}
-
-Hindi movies
-Bollywood and beyond
-
-{% if hindi_movies and hindi_movies|length > 0 %}
-    {% for m in hindi_movies %}
-        {{ m.title }}
-        {{ m.quality or "HD" }} · {{ m.year or "" }} · {{ m.language or "Hindi" }}
-    {% endfor %}
-{% else %}
-    {% for i in range(8) %}
-        Hindi Movie {{ i + 1 }}
-        HD · 2024 · Hindi
-    {% endfor %}
-{% endif %}
-
-Malayalam movies
-Top Malayalam picks
-
-{% if malayalam_movies and malayalam_movies|length > 0 %}
-    {% for m in malayalam_movies %}
-        {{ m.title }}
-        {{ m.quality or "HD" }} · {{ m.year or "" }} · {{ m.language or "Malayalam" }}
-    {% endfor %}
-{% else %}
-    {% for i in range(8) %}
-        Malayalam Movie {{ i + 1 }}
-        HD · 2024 · Malayalam
-    {% endfor %}
-{% endif %}
-
-Kannada movies
-Hand-picked Kannada films
-
-{% if kannada_movies and kannada_movies|length > 0 %}
-    {% for m in kannada_movies %}
-        {{ m.title }}
-        {{ m.quality or "HD" }} · {{ m.year or "" }} · {{ m.language or "Kannada" }}
-    {% endfor %}
-{% else %}
-    {% for i in range(8) %}
-        Kannada Movie {{ i + 1 }}
-        HD · 2024 · Kannada
-    {% endfor %}
-{% endif %}
-
 {% endblock %}
+    
