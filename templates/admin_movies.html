@@ -175,7 +175,7 @@
     }
 
     .message-bar {
-        margin-top: 6px;
+        margin-top: 2px;
         font-size: 11px;
         color: #bbf7d0;
     }
@@ -228,9 +228,15 @@
                     Overview of Movies Magic Club library and quick actions.
                 </div>
             </div>
-            {% if message %}
-            <div class="message-bar">{{ message }}</div>
-            {% endif %}
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+                {% if message %}
+                <div class="message-bar">{{ message }}</div>
+                {% endif %}
+                <a href="/admin/series"
+                   style="font-size:11px; color:#a5b4fc; text-decoration:none;">
+                    Go to Series admin →
+                </a>
+            </div>
         </div>
 
         <div class="stats-grid">
@@ -261,7 +267,7 @@
         </div>
 
         <form action="/admin/movies" method="post" enctype="multipart/form-data" style="margin-top: 10px;">
-            <div class="card-header">
+            <div class="card-header" style="margin-bottom:4px;">
                 <div class="card-title">Add new movie</div>
                 <div class="card-sub">Fill details and upload poster</div>
             </div>
@@ -378,4 +384,4 @@
     </article>
 </section>
 {% endblock %}
-            
+                
