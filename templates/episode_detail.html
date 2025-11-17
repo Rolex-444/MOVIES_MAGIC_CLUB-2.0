@@ -157,7 +157,7 @@
 
             <div class="detail-meta">
                 {{ episode.title }}<br>
-                Duration: {{ episode.duration or "N/A" }}
+                Audio: {{ series.audio or series.language }}
             </div>
 
             <div class="detail-actions">
@@ -203,8 +203,8 @@
                 <div class="info-value">{{ episode.number }}</div>
             </div>
             <div>
-                <div class="info-label">Language</div>
-                <div class="info-value">{{ series.language }}</div>
+                <div class="info-label">Audio languages</div>
+                <div class="info-value">{{ series.audio or series.language }}</div>
             </div>
         </div>
     </article>
