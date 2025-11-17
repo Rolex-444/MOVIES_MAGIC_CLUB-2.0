@@ -171,6 +171,12 @@
         scrollbar-width: thin;
     }
 
+    .tile-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
     .tile {
         flex: 0 0 150px;
         border-radius: 18px;
@@ -231,8 +237,10 @@
                 <div class="movie-hero-item">
                     <div class="movie-hero-poster">
                         {% if first.poster_path %}
-                            <img src="{{ url_for('static', path=first.poster_path) }}"
-                                 alt="{{ first.title }} poster">
+                            <a href="/movie/{{ first.id }}" class="tile-link">
+                                <img src="{{ url_for('static', path=first.poster_path) }}"
+                                     alt="{{ first.title }} poster">
+                            </a>
                         {% endif %}
                     </div>
                     <div class="movie-hero-main">
@@ -310,18 +318,20 @@
         <div class="horizontal-scroll">
             {% if latest_movies and latest_movies|length > 0 %}
                 {% for m in latest_movies %}
-                <div class="tile">
-                    <div class="tile-poster">
-                        {% if m.poster_path %}
-                            <img src="{{ url_for('static', path=m.poster_path) }}"
-                                 alt="{{ m.title }} poster">
-                        {% endif %}
+                <a href="/movie/{{ m.id }}" class="tile-link">
+                    <div class="tile">
+                        <div class="tile-poster">
+                            {% if m.poster_path %}
+                                <img src="{{ url_for('static', path=m.poster_path) }}"
+                                     alt="{{ m.title }} poster">
+                            {% endif %}
+                        </div>
+                        <div class="tile-title">{{ m.title }}</div>
+                        <div class="tile-meta">
+                            {{ m.year or "" }}{% if m.quality %} · {{ m.quality }}{% endif %}
+                        </div>
                     </div>
-                    <div class="tile-title">{{ m.title }}</div>
-                    <div class="tile-meta">
-                        {{ m.year or "" }}{% if m.quality %} · {{ m.quality }}{% endif %}
-                    </div>
-                </div>
+                </a>
                 {% endfor %}
             {% else %}
                 {% for i in range(8) %}
@@ -353,18 +363,20 @@
         <div class="horizontal-scroll">
             {% if latest_movies and latest_movies|length > 0 %}
                 {% for m in latest_movies %}
-                <div class="tile">
-                    <div class="tile-poster">
-                        {% if m.poster_path %}
-                            <img src="{{ url_for('static', path=m.poster_path) }}"
-                                 alt="{{ m.title }} poster">
-                        {% endif %}
+                <a href="/movie/{{ m.id }}" class="tile-link">
+                    <div class="tile">
+                        <div class="tile-poster">
+                            {% if m.poster_path %}
+                                <img src="{{ url_for('static', path=m.poster_path) }}"
+                                     alt="{{ m.title }} poster">
+                            {% endif %}
+                        </div>
+                        <div class="tile-title">{{ m.title }}</div>
+                        <div class="tile-meta">
+                            {{ m.quality or "HD" }} · {{ m.year or "" }}
+                        </div>
                     </div>
-                    <div class="tile-title">{{ m.title }}</div>
-                    <div class="tile-meta">
-                        {{ m.quality or "HD" }} · {{ m.year or "" }}
-                    </div>
-                </div>
+                </a>
                 {% endfor %}
             {% else %}
                 {% for i in range(6) %}
@@ -382,7 +394,12 @@
     <article class="card">
         <div class="card-header">
             <div>
-                <div class="card-title">Tamil movies</div>
+                <div class="card-title">
+                    Tamil movies
+                    <a href="/movies/browse" style="margin-left:8px; font-size:11px; color:#a5b4fc; text-decoration:none;">
+                        See more →
+                    </a>
+                </div>
                 <div class="card-sub">Hand-picked Tamil releases.</div>
             </div>
         </div>
@@ -390,18 +407,20 @@
         <div class="horizontal-scroll">
             {% if tamil_movies and tamil_movies|length > 0 %}
                 {% for m in tamil_movies %}
-                <div class="tile">
-                    <div class="tile-poster">
-                        {% if m.poster_path %}
-                            <img src="{{ url_for('static', path=m.poster_path) }}"
-                                 alt="{{ m.title }} poster">
-                        {% endif %}
+                <a href="/movie/{{ m.id }}" class="tile-link">
+                    <div class="tile">
+                        <div class="tile-poster">
+                            {% if m.poster_path %}
+                                <img src="{{ url_for('static', path=m.poster_path) }}"
+                                     alt="{{ m.title }} poster">
+                            {% endif %}
+                        </div>
+                        <div class="tile-title">{{ m.title }}</div>
+                        <div class="tile-meta">
+                            {{ m.quality or "HD" }} · {{ m.year or "" }} · {{ m.language or "Tamil" }}
+                        </div>
                     </div>
-                    <div class="tile-title">{{ m.title }}</div>
-                    <div class="tile-meta">
-                        {{ m.quality or "HD" }} · {{ m.year or "" }} · {{ m.language or "Tamil" }}
-                    </div>
-                </div>
+                </a>
                 {% endfor %}
             {% else %}
                 {% for i in range(8) %}
@@ -419,7 +438,12 @@
     <article class="card">
         <div class="card-header">
             <div>
-                <div class="card-title">Telugu movies</div>
+                <div class="card-title">
+                    Telugu movies
+                    <a href="/movies/browse" style="margin-left:8px; font-size:11px; color:#a5b4fc; text-decoration:none;">
+                        See more →
+                    </a>
+                </div>
                 <div class="card-sub">Top picks in Telugu.</div>
             </div>
         </div>
@@ -427,18 +451,20 @@
         <div class="horizontal-scroll">
             {% if telugu_movies and telugu_movies|length > 0 %}
                 {% for m in telugu_movies %}
-                <div class="tile">
-                    <div class="tile-poster">
-                        {% if m.poster_path %}
-                            <img src="{{ url_for('static', path=m.poster_path) }}"
-                                 alt="{{ m.title }} poster">
-                        {% endif %}
+                <a href="/movie/{{ m.id }}" class="tile-link">
+                    <div class="tile">
+                        <div class="tile-poster">
+                            {% if m.poster_path %}
+                                <img src="{{ url_for('static', path=m.poster_path) }}"
+                                     alt="{{ m.title }} poster">
+                            {% endif %}
+                        </div>
+                        <div class="tile-title">{{ m.title }}</div>
+                        <div class="tile-meta">
+                            {{ m.quality or "HD" }} · {{ m.year or "" }} · {{ m.language or "Telugu" }}
+                        </div>
                     </div>
-                    <div class="tile-title">{{ m.title }}</div>
-                    <div class="tile-meta">
-                        {{ m.quality or "HD" }} · {{ m.year or "" }} · {{ m.language or "Telugu" }}
-                    </div>
-                </div>
+                </a>
                 {% endfor %}
             {% else %}
                 {% for i in range(8) %}
@@ -456,7 +482,12 @@
     <article class="card">
         <div class="card-header">
             <div>
-                <div class="card-title">Hindi movies</div>
+                <div class="card-title">
+                    Hindi movies
+                    <a href="/movies/browse" style="margin-left:8px; font-size:11px; color:#a5b4fc; text-decoration:none;">
+                        See more →
+                    </a>
+                </div>
                 <div class="card-sub">Bollywood and beyond.</div>
             </div>
         </div>
@@ -464,18 +495,20 @@
         <div class="horizontal-scroll">
             {% if hindi_movies and hindi_movies|length > 0 %}
                 {% for m in hindi_movies %}
-                <div class="tile">
-                    <div class="tile-poster">
-                        {% if m.poster_path %}
-                            <img src="{{ url_for('static', path=m.poster_path) }}"
-                                 alt="{{ m.title }} poster">
-                        {% endif %}
+                <a href="/movie/{{ m.id }}" class="tile-link">
+                    <div class="tile">
+                        <div class="tile-poster">
+                            {% if m.poster_path %}
+                                <img src="{{ url_for('static', path=m.poster_path) }}"
+                                     alt="{{ m.title }} poster">
+                            {% endif %}
+                        </div>
+                        <div class="tile-title">{{ m.title }}</div>
+                        <div class="tile-meta">
+                            {{ m.quality or "HD" }} · {{ m.year or "" }} · {{ m.language or "Hindi" }}
+                        </div>
                     </div>
-                    <div class="tile-title">{{ m.title }}</div>
-                    <div class="tile-meta">
-                        {{ m.quality or "HD" }} · {{ m.year or "" }} · {{ m.language or "Hindi" }}
-                    </div>
-                </div>
+                </a>
                 {% endfor %}
             {% else %}
                 {% for i in range(8) %}
@@ -493,7 +526,12 @@
     <article class="card">
         <div class="card-header">
             <div>
-                <div class="card-title">Malayalam movies</div>
+                <div class="card-title">
+                    Malayalam movies
+                    <a href="/movies/browse" style="margin-left:8px; font-size:11px; color:#a5b4fc; text-decoration:none;">
+                        See more →
+                    </a>
+                </div>
                 <div class="card-sub">Critically acclaimed picks.</div>
             </div>
         </div>
@@ -501,18 +539,20 @@
         <div class="horizontal-scroll">
             {% if malayalam_movies and malayalam_movies|length > 0 %}
                 {% for m in malayalam_movies %}
-                <div class="tile">
-                    <div class="tile-poster">
-                        {% if m.poster_path %}
-                            <img src="{{ url_for('static', path=m.poster_path) }}"
-                                 alt="{{ m.title }} poster">
-                        {% endif %}
+                <a href="/movie/{{ m.id }}" class="tile-link">
+                    <div class="tile">
+                        <div class="tile-poster">
+                            {% if m.poster_path %}
+                                <img src="{{ url_for('static', path=m.poster_path) }}"
+                                     alt="{{ m.title }} poster">
+                            {% endif %}
+                        </div>
+                        <div class="tile-title">{{ m.title }}</div>
+                        <div class="tile-meta">
+                            {{ m.quality or "HD" }} · {{ m.year or "" }} · {{ m.language or "Malayalam" }}
+                        </div>
                     </div>
-                    <div class="tile-title">{{ m.title }}</div>
-                    <div class="tile-meta">
-                        {{ m.quality or "HD" }} · {{ m.year or "" }} · {{ m.language or "Malayalam" }}
-                    </div>
-                </div>
+                </a>
                 {% endfor %}
             {% else %}
                 {% for i in range(8) %}
@@ -530,7 +570,12 @@
     <article class="card">
         <div class="card-header">
             <div>
-                <div class="card-title">Kannada movies</div>
+                <div class="card-title">
+                    Kannada movies
+                    <a href="/movies/browse" style="margin-left:8px; font-size:11px; color:#a5b4fc; text-decoration:none;">
+                        See more →
+                    </a>
+                </div>
                 <div class="card-sub">Latest from Sandalwood.</div>
             </div>
         </div>
@@ -538,18 +583,20 @@
         <div class="horizontal-scroll">
             {% if kannada_movies and kannada_movies|length > 0 %}
                 {% for m in kannada_movies %}
-                <div class="tile">
-                    <div class="tile-poster">
-                        {% if m.poster_path %}
-                            <img src="{{ url_for('static', path=m.poster_path) }}"
-                                 alt="{{ m.title }} poster">
-                        {% endif %}
+                <a href="/movie/{{ m.id }}" class="tile-link">
+                    <div class="tile">
+                        <div class="tile-poster">
+                            {% if m.poster_path %}
+                                <img src="{{ url_for('static', path=m.poster_path) }}"
+                                     alt="{{ m.title }} poster">
+                            {% endif %}
+                        </div>
+                        <div class="tile-title">{{ m.title }}</div>
+                        <div class="tile-meta">
+                            {{ m.quality or "HD" }} · {{ m.year or "" }} · {{ m.language or "Kannada" }}
+                        </div>
                     </div>
-                    <div class="tile-title">{{ m.title }}</div>
-                    <div class="tile-meta">
-                        {{ m.quality or "HD" }} · {{ m.year or "" }} · {{ m.language or "Kannada" }}
-                    </div>
-                </div>
+                </a>
                 {% endfor %}
             {% else %}
                 {% for i in range(8) %}
@@ -565,4 +612,3 @@
 
 </section>
 {% endblock %}
-            
