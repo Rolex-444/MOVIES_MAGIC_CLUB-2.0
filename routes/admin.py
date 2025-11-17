@@ -619,13 +619,20 @@ async def admin_series_seasons(request: Request, series_id: str, message: str = 
         )
 
     seasons = series.get("seasons", [])
+    # build audio text from multi-dub languages
+    languages = series.get("languages") or []
+    audio_text = ", ".join(languages) if languages else series.get("language", "Tamil")
+
     series_ctx = {
         "id": str(series.get("_id")),
-        "title": series.get("title", ""),
-        "language": series.get("language", "Tamil"),
+        "title": series.get("title", "Untitled series"),
+        "original language": series.get("orginal language", "Tamil"),   # primary
+        "category": series.get("category", ""),
         "poster_path": series.get("poster_path"),
+        "audio": audio_text,
+        "languages": languages,
     }
-
+    
     return templates.TemplateResponse(
         "admin_series_seasons.html",
         {
