@@ -13,7 +13,7 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 
-# --------- HELPERS ----------
+# ---------- HELPERS ----------
 
 
 def _movie_to_ctx(doc: dict) -> dict:
@@ -33,7 +33,7 @@ def _movie_to_ctx(doc: dict) -> dict:
     }
 
 
-# --------- MOVIES HOME (MOVIES TAB) ----------
+# ---------- MOVIES HOME (MOVIES TAB) ----------
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -90,7 +90,7 @@ async def movies_home(request: Request):
     )
 
 
-# --------- MOVIES BROWSE (BY GENRE OR ALL) ----------
+# ---------- MOVIES BROWSE (BY GENRE OR ALL) ----------
 
 
 @router.get("/movies/browse", response_class=HTMLResponse)
@@ -123,7 +123,7 @@ async def movies_browse(request: Request, genre: str = ""):
     )
 
 
-# --------- MOVIE DETAIL PAGE ----------
+# ---------- MOVIE DETAIL PAGE ----------
 
 
 @router.get("/movie/{movie_id}", response_class=HTMLResponse)
@@ -131,9 +131,20 @@ async def movie_detail(request: Request, movie_id: str):
     """
     Single movie detail page.
 
-    Uses template movie_detail.html, which expects:
-      movie.poster_path, title, year, quality, language,
-      category, audio, subtitles, is_multi_dubbed, watch_url, download_url.
+    Template movie_detail.html expects:
+
+      movie.poster_path
+      movie.title
+      movie.year
+      movie.quality
+      movie.language      (primary language)
+      movie.category
+      movie.audio         (all audio languages as a comma list)
+      movie.subtitles     (optional)
+      movie.is_multi_dubbed
+      movie.watch_url
+      movie.download_url
+      movie.description
     """
     db = get_db()
     movie_doc: Optional[dict] = None
@@ -167,14 +178,14 @@ async def movie_detail(request: Request, movie_id: str):
         "watch_url": movie_doc.get("watch_url"),
         "download_url": movie_doc.get("download_url"),
         "description": movie_doc.get("description", ""),
-        # fields specifically used in movie_detail.html
+        # fields used in movie_detail.html
         "audio": audio_text,
-        "subtitles": movie_doc.get("subtitles", ""),  # optional field
+        "subtitles": movie_doc.get("subtitles", ""),
         "is_multi_dubbed": len(languages) > 1,
     }
 
     return templates.TemplateResponse(
         "movie_detail.html",
         {"request": request, "movie": movie_ctx},
-                          )
+    )
     
