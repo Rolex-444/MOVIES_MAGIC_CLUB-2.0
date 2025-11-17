@@ -17,6 +17,9 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 
+# ---------- MOVIES ADMIN: LIST + SEARCH + ADD ----------
+
+
 @router.get("/admin/movies", response_class=HTMLResponse)
 async def admin_movies_dashboard(request: Request, message: str = ""):
     if not is_admin(request):
@@ -88,15 +91,17 @@ async def admin_create_movie(
     request: Request,
     title: str = Form(...),
     year: str = Form(""),
-    language: str = Form(...),
     quality: str = Form("HD"),
     category: str = Form(""),
     watch_url: str = Form(""),
     download_url: str = Form(""),
-    languages: List[str] = Form(default=[]),
+    languages: List[str] = Form(default=[]),  # checkbox languages
     description: str = Form(""),
     poster: UploadFile = File(None),
 ):
+    """
+    Create movie: primary language = first checked language, others in languages[].
+    """
     if not is_admin(request):
         return RedirectResponse("/admin/login", status_code=303)
 
@@ -129,10 +134,12 @@ async def admin_create_movie(
         except ValueError:
             year_int = None
 
+    primary_language = languages[0] if languages else "Tamil"
+
     movie_doc = {
         "title": title,
         "year": year_int,
-        "language": language,
+        "language": primary_language,
         "languages": languages,
         "quality": quality or "HD",
         "category": category,
@@ -149,6 +156,9 @@ async def admin_create_movie(
         "/admin/movies?message=Movie+saved+successfully+%E2%9C%85",
         status_code=303,
     )
+
+
+# ---------- MOVIES ADMIN: EDIT + DELETE ----------
 
 
 @router.get("/admin/movies/{movie_id}/edit", response_class=HTMLResponse)
@@ -201,7 +211,6 @@ async def admin_edit_movie(
     movie_id: str,
     title: str = Form(...),
     year: str = Form(""),
-    language: str = Form(...),
     quality: str = Form("HD"),
     category: str = Form(""),
     watch_url: str = Form(""),
@@ -228,9 +237,11 @@ async def admin_edit_movie(
             status_code=303,
         )
 
+    primary_language = languages[0] if languages else "Tamil"
+
     update = {
         "title": title,
-        "language": language,
+        "language": primary_language,
         "quality": quality or "HD",
         "category": category,
         "watch_url": watch_url,
@@ -287,3 +298,4 @@ async def admin_delete_movie(request: Request, movie_id: str):
         msg = "Failed+to+delete+movie"
 
     return RedirectResponse(f"/admin/movies?message={msg}", status_code=303)
+        
