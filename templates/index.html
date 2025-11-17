@@ -34,7 +34,7 @@
         color: var(--text-muted);
     }
 
-    /* Movies hero (like series hero) */
+    /* Movies hero (similar to series hero) */
     .movie-hero-shell {
         position: relative;
         overflow: hidden;
@@ -139,7 +139,7 @@
         background: #f97316;
     }
 
-    /* Genres line */
+    /* Genre chips */
     .genre-card {
         display: flex;
         flex-direction: column;
@@ -159,9 +159,10 @@
         border: 1px solid rgba(75, 85, 99, 0.9);
         background: #020617;
         color: #e5e7eb;
+        text-decoration: none;
     }
 
-    /* Horizontal rows (Trending / All / language rows) */
+    /* Horizontal rows */
     .horizontal-scroll {
         display: flex;
         gap: 10px;
@@ -279,7 +280,7 @@
         {% endif %}
     </article>
 
-    <!-- Browse by genre (static chips) -->
+    <!-- Browse by genre -->
     <article class="card genre-card">
         <div class="card-header">
             <div>
@@ -288,12 +289,12 @@
             </div>
         </div>
         <div class="genre-row">
-            <span class="genre-chip">Action</span>
-            <span class="genre-chip">Comedy</span>
-            <span class="genre-chip">Drama</span>
-            <span class="genre-chip">Horror</span>
-            <span class="genre-chip">Crime</span>
-            <span class="genre-chip">Romance</span>
+            <a href="/movies/browse?genre=Action" class="genre-chip">Action</a>
+            <a href="/movies/browse?genre=Comedy" class="genre-chip">Comedy</a>
+            <a href="/movies/browse?genre=Drama" class="genre-chip">Drama</a>
+            <a href="/movies/browse?genre=Horror" class="genre-chip">Horror</a>
+            <a href="/movies/browse?genre=Crime" class="genre-chip">Crime</a>
+            <a href="/movies/browse?genre=Romance" class="genre-chip">Romance</a>
         </div>
     </article>
 
@@ -334,13 +335,14 @@
         </div>
     </article>
 
-    <!-- All movies (instead of Continue watching) -->
+    <!-- All movies -->
     <article class="card">
         <div class="card-header">
             <div>
                 <div class="card-title">All movies</div>
                 <div class="card-sub">Recently added across all languages.</div>
             </div>
+            <a href="/movies/browse" style="font-size:11px; color:#a5b4fc; text-decoration:none;">See more →</a>
         </div>
 
         <div class="horizontal-scroll">
@@ -450,7 +452,7 @@
         <div class="card-header">
             <div>
                 <div class="card-title">Hindi movies</div>
-                <div class="card-sub">Bollywood & beyond.</div>
+                <div class="card-sub">Bollywood and beyond.</div>
             </div>
         </div>
 
@@ -558,4 +560,4 @@
 
 </section>
 {% endblock %}
-    
+                            
