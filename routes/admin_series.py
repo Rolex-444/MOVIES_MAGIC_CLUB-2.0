@@ -1,9 +1,10 @@
-# routes/admin_series.py  (public series pages + episode-wise watch/download)
+# routes/admin_series.py (public series pages + episode-wise watch/download)
 
 from typing import List, Optional
 
 from bson import ObjectId
-from fastapi import APIRouter, Request
+
+from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
@@ -14,6 +15,7 @@ from verification_utils import (
 )
 
 router = APIRouter()
+
 templates = Jinja2Templates(directory="templates")
 
 
@@ -57,7 +59,6 @@ def _series_to_ctx(doc: dict) -> dict:
 
 # ---------- SERIES HOME (tab) ----------
 
-
 @router.get("/series", response_class=HTMLResponse)
 async def series_home(request: Request):
     db = get_db()
@@ -66,7 +67,9 @@ async def series_home(request: Request):
     if db is not None:
         col = db["series"]
         cursor = col.find().sort("_id", -1).limit(20)
-        latest_series = [_series_to_ctx(doc) for doc in await cursor.to_list(length=20)]
+        latest_series = [
+            _series_to_ctx(doc) for doc in await cursor.to_list(length=20)
+        ]
 
     return templates.TemplateResponse(
         "series_index.html",
@@ -79,7 +82,6 @@ async def series_home(request: Request):
 
 
 # ---------- SERIES DETAIL ----------
-
 
 @router.get("/series/{series_id}", response_class=HTMLResponse)
 async def series_detail(request: Request, series_id: str):
@@ -117,7 +119,6 @@ async def series_detail(request: Request, series_id: str):
 
 # ---------- EPISODE WATCH / DOWNLOAD (with verification) ----------
 
-
 @router.get("/series/{series_id}/episode/{ep_index}/watch")
 async def series_episode_watch(request: Request, series_id: str, ep_index: int):
     """
@@ -136,6 +137,7 @@ async def series_episode_watch(request: Request, series_id: str, ep_index: int):
     # 3) Redirect to actual episode watch_url
     db = get_db()
     series_doc: Optional[dict] = None
+
     if db is not None:
         try:
             oid = ObjectId(series_id)
@@ -176,6 +178,7 @@ async def series_episode_download(request: Request, series_id: str, ep_index: in
     # 3) Redirect to actual episode download_url
     db = get_db()
     series_doc: Optional[dict] = None
+
     if db is not None:
         try:
             oid = ObjectId(series_id)
@@ -196,4 +199,85 @@ async def series_episode_download(request: Request, series_id: str, ep_index: in
         return RedirectResponse(url=f"/series/{series_id}", status_code=303)
 
     return RedirectResponse(url=download_url, status_code=302)
-                
+
+
+# ---------- ADMIN: SERIES DASHBOARD (list + add form) ----------
+
+@router.get("/admin/series", response_class=HTMLResponse)
+async def admin_series_dashboard(request: Request):
+    """
+    Admin page to view all series and show the 'Add new series' form.
+    """
+    db = get_db()
+    series_list: List[dict] = []
+
+    if db is not None:
+        col = db["series"]
+        cursor = col.find().sort("_id", -1)
+        docs = await cursor.to_list(length=100)
+        series_list = [_series_to_ctx(doc) for doc in docs]
+
+    return templates.TemplateResponse(
+        "admin_series.html",
+        {
+            "request": request,
+            "series_list": series_list,
+            "active_tab": "series_admin",
+        },
+    )
+
+
+@router.post("/admin/series", response_class=HTMLResponse)
+async def admin_series_create(
+    request: Request,
+    title: str = Form(...),
+    year: str = Form(""),
+    quality: str = Form(""),
+    category: str = Form(""),
+    poster_path: str = Form(""),
+    languages: List[str] = Form([]),
+    description: str = Form(""),
+):
+    """
+    Handle 'Save series' form from admin_series.html.
+    """
+    db = get_db()
+    if db is None:
+        return templates.TemplateResponse(
+            "admin_series.html",
+            {
+                "request": request,
+                "series_list": [],
+                "message": "❌ Database not connected.",
+            },
+        )
+
+    doc = {
+        "title": title.strip(),
+        "year": year.strip() or None,
+        "quality": quality.strip() or None,
+        "category": category.strip() or None,
+        "poster_path": poster_path.strip() or None,
+        "languages": languages,
+        "description": description.strip(),
+        "episodes": [],  # seasons/episodes will be added later
+    }
+
+    await db["series"].insert_one(doc)
+
+    # Reload list after insert
+    col = db["series"]
+    cursor = col.find().sort("_id", -1)
+    docs = await cursor.to_list(length=100)
+    series_list = [_series_to_ctx(d) for d in docs]
+
+    return templates.TemplateResponse(
+        "admin_series.html",
+        {
+            "request": request,
+            "series_list": series_list,
+            "message": "✅ Series added successfully!",
+            "active_tab": "series_admin",
+        },
+                       )
+            
