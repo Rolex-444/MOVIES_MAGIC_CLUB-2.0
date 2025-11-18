@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .page-shell {
+        margin-top: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        font-size: 13px;
+    }
+    .card {
+        background: rgba(15, 23, 42, 0.96);
+        border-radius: 24px;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        padding: 16px 14px 18px;
+    }
+    .title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+    .sub {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+    }
+    .btn-main,
+    .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 9px 18px;
+        border-radius: 999px;
+        font-size: 13px;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+    .btn-main {
+        background: linear-gradient(135deg, #f97316, #ec4899);
+        color: #020617;
+        box-shadow: 0 12px 30px rgba(248, 113, 113, 0.6);
+        margin-bottom: 8px;
+    }
+    .btn-secondary {
+        background: #020617;
+        color: #e5e7eb;
+        border: 1px solid rgba(148, 163, 184, 0.8);
+    }
+    .note {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-bottom: 10px;
+    }
+</style>
+
+<section class="page-shell">
+    <article class="card">
+        <div class="title">Verification required</div>
+        <div class="sub">
+            You have used today’s free limit. Complete a quick verification to unlock
+            unlimited access for a limited time.
+        </div>
+
+        <p class="note">
+            Step 1: Tap “Continue to verification” and finish the steps on the shortlink page.<br>
+            Step 2: Return here and tap “I completed verification”.
+        </p>
+
+        <a href="{{ short_url }}" class="btn-main" target="_blank" rel="noopener">
+            Continue to verification
+        </a>
+
+        <a href="/verify/complete?next={{ next | urlencode }}" class="btn-secondary">
+            I completed verification
+        </a>
+    </article>
+</section>
+{% endblock %}
