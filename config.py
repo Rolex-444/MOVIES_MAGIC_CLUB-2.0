@@ -9,8 +9,9 @@ VERIFICATION_DEFAULT_ENABLED = True
 VERIFICATION_DEFAULT_FREE_LIMIT = 3
 VERIFICATION_DEFAULT_VALID_MINUTES = 1440  # 24 hours
 
-SHORTLINK_API = "your-shortlink-api-key-here"
-SHORTLINK_URL = "https://your-shortlink-service-api-endpoint-here"
+# Shortlink settings for verification system (read from env)
+SHORTLINK_API = os.getenv("SHORTLINK_API", "")
+SHORTLINK_URL = os.getenv("SHORTLINK_URL", "")
 
 if not API_ID or not API_HASH or not BOT_TOKEN:
     print("❌ Please set API_ID, API_HASH, BOT_TOKEN as env variables")
