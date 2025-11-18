@@ -88,7 +88,6 @@
         margin-top: 10px;
     }
 
-    /* WATCH + DOWNLOAD: same colorful background */
     .btn-watch,
     .btn-download {
         display: inline-flex;
@@ -164,11 +163,20 @@
 
 <section class="detail-shell">
 
+    {% if not movie %}
+    <article class="card">
+        <div class="section-title">Movie not found</div>
+        <p class="section-sub">
+            The movie you are looking for is not available right now.
+        </p>
+    </article>
+    {% else %}
+
     <!-- HERO: poster + meta + actions -->
     <article class="card">
         <div class="hero-layout">
             <div class="poster-wrap">
-                {% if movie and movie.poster_path %}
+                {% if movie.poster_path %}
                     <img src="{{ url_for('static', path=movie.poster_path) }}"
                          alt="{{ movie.title }} poster">
                 {% endif %}
@@ -200,7 +208,7 @@
 
                 <div class="cta-row">
                     {% if movie.watch_url %}
-                        <a href="{{ movie.watch_url }}"
+                        <a href="/movie/{{ movie.id }}/watch"
                            class="btn-watch"
                            target="_blank"
                            rel="noopener">
@@ -208,7 +216,7 @@
                         </a>
                     {% endif %}
                     {% if movie.download_url %}
-                        <a href="{{ movie.download_url }}"
+                        <a href="/movie/{{ movie.id }}/download"
                            class="btn-download"
                            target="_blank"
                            rel="noopener">
@@ -239,7 +247,6 @@
                     </div>
                     <div>
                         <div class="fact-label">Language</div>
-                        <!-- show all audio languages here -->
                         <div class="fact-value">{{ movie.audio }}</div>
                     </div>
                     <div>
@@ -263,6 +270,8 @@
         </div>
     </article>
 
+    {% endif %}
+
 </section>
 {% endblock %}
-                
+                                               
