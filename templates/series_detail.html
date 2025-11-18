@@ -101,9 +101,18 @@
         border: none;
         cursor: pointer;
         white-space: nowrap;
+    }
+
+    .btn-watch {
         background: linear-gradient(135deg, #f97316, #ec4899);
         color: #020617;
         box-shadow: 0 12px 30px rgba(248, 113, 113, 0.6);
+    }
+
+    .btn-download {
+        background: #020617;
+        color: #e5e7eb;
+        border: 1px solid rgba(148, 163, 184, 0.9);
     }
 
     .section-title {
@@ -190,10 +199,13 @@
                     Audio: {{ series.audio }}
                 </div>
 
+                {% if series.languages and series.languages|length > 1 %}
                 <div class="pill-row">
-                    {% if series.languages and series.languages|length > 1 %}
-                        <span class="pill pill-accent">Multi audio</span>
-                    {% endif %}
+                    <span class="pill pill-accent">Multi audio</span>
+                </div>
+                {% endif %}
+
+                <div class="pill-row">
                     <span class="pill pill-secondary">HD ready</span>
                     <span class="pill">Secure download</span>
                 </div>
@@ -201,13 +213,17 @@
                 <div class="cta-row">
                     {% if series.watch_url %}
                         <a href="/series/{{ series.id }}/watch"
-                           class="btn-watch">
+                           class="btn-watch"
+                           target="_blank"
+                           rel="noopener">
                             ▶ Watch now
                         </a>
                     {% endif %}
                     {% if series.download_url %}
                         <a href="/series/{{ series.id }}/download"
-                           class="btn-download">
+                           class="btn-download"
+                           target="_blank"
+                           rel="noopener">
                             ⬇ Download
                         </a>
                     {% endif %}
@@ -243,10 +259,7 @@
                     </div>
                     <div>
                         <div class="fact-label">Episodes</div>
-                        <div class="fact-value">
-                            <!-- you can replace this with real episode count if stored -->
-                            Multiple episodes
-                        </div>
+                        <div class="fact-value">Multiple episodes</div>
                     </div>
                 </div>
             </div>
@@ -265,4 +278,3 @@
 
 </section>
 {% endblock %}
-    
