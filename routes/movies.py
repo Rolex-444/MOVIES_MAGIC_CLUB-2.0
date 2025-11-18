@@ -44,6 +44,7 @@ async def movies_home(request: Request):
     Provides:
       - latest_movies: for hero + Trending + All movies
       - tamil_movies / telugu_movies / hindi_movies / malayalam_movies / kannada_movies
+        based on the 'languages' array (checkbox selection).
     """
     db = get_db()
 
@@ -57,14 +58,14 @@ async def movies_home(request: Request):
     if db is not None:
         col = db["movies"]
 
-        # latest uploads (used in multiple sections)
+        # latest uploads (used in hero + trending + all movies)
         cursor = col.find().sort("_id", -1).limit(20)
         latest_movies = [_movie_to_ctx(doc) async for doc in cursor]
 
-        # language rows (limited list for UI)
+        # language rows: match inside languages[] array
         async def _lang_list(lang: str, limit: int = 12) -> List[dict]:
             cur = (
-                col.find({"language": lang})
+                col.find({"languages": lang})  # movie appears if that language was checked
                 .sort("_id", -1)
                 .limit(limit)
             )
