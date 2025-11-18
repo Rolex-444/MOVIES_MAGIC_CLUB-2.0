@@ -15,8 +15,8 @@ from routes.movies import router as movies_router
 from routes.web import router as web_router
 from routes.series_web import router as series_router
 
-# use the single admin router that contains /admin/login, /admin/movies, /admin/series, etc.
-from routes.admin import router as admin_router
+# NOTE: admin.py is at project root, not inside routes/
+from admin import router as admin_router
 
 from routes.verify import router as verify_router
 
@@ -26,7 +26,7 @@ SESSION_SECRET = os.getenv("SESSION_SECRET", "change-this-secret")
 
 app = FastAPI()
 
-# Sessions for admin login + verification cookies
+# Sessions for admin login + verification
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
 
 # Static files (posters, css, etc.)
@@ -40,7 +40,7 @@ app.include_router(series_router)
 # Admin (login + movies + series) router
 app.include_router(admin_router)
 
-# Verification pages (start + success)
+# Verification pages
 app.include_router(verify_router)
 
 # ---------- Pyrogram bot ----------
