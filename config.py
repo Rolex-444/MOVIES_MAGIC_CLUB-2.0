@@ -7,7 +7,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 
 VERIFICATION_DEFAULT_ENABLED = True
 VERIFICATION_DEFAULT_FREE_LIMIT = 3
-VERIFICATION_DEFAULT_VALID_MINUTES = 0  # 24 hours
+VERIFICATION_DEFAULT_VALID_MINUTES = 1440 # 24 hours
 
 # Shortlink settings for verification system (read from env)
 SHORTLINK_API = os.getenv("SHORTLINK_API", "")
