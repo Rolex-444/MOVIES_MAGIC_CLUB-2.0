@@ -67,13 +67,3 @@ async def verify_auto(request: Request, token: str):
     next_url = doc.get("next") or "/"
     return RedirectResponse(next_url, status_code=303)
 
-@router.get("/verify/reset-dev")
-async def verify_reset_dev(request: Request):
-    db = get_db()
-    if db is None:
-        return RedirectResponse("/", status_code=303)
-
-    sid = await get_or_create_session_id(request)
-    await db["verifications"].delete_one({"session_id": sid})
-    return RedirectResponse("/", status_code=303)
-    
