@@ -39,9 +39,6 @@ def _movie_to_ctx(doc: dict) -> dict:
 
 @router.get("/", response_class=HTMLResponse)
 async def movies_home(request: Request):
-    """
-    Home page for Movies tab.
-    """
     db = get_db()
 
     latest_movies: List[dict] = []
@@ -177,14 +174,17 @@ async def movie_watch(request: Request, movie_id: str):
     """
     Gate for Watch Now button.
     """
+    # 1) Check if verification required
     if await should_require_verification(request):
         return RedirectResponse(
             url=f"/verify/start?next=/movie/{movie_id}/watch",
             status_code=303,
         )
 
+    # 2) Passed → count this click
     await increment_free_used(request)
 
+    # 3) Redirect to actual watch_url
     db = get_db()
     movie_doc: Optional[dict] = None
     if db is not None:
@@ -205,14 +205,17 @@ async def movie_download(request: Request, movie_id: str):
     """
     Gate for Download button.
     """
+    # 1) Check if verification required
     if await should_require_verification(request):
         return RedirectResponse(
             url=f"/verify/start?next=/movie/{movie_id}/download",
             status_code=303,
         )
 
+    # 2) Passed → count this click
     await increment_free_used(request)
 
+    # 3) Redirect to actual download_url
     db = get_db()
     movie_doc: Optional[dict] = None
     if db is not None:
@@ -226,4 +229,4 @@ async def movie_download(request: Request, movie_id: str):
         return RedirectResponse(url=f"/movie/{movie_id}", status_code=303)
 
     return RedirectResponse(url=movie_doc["download_url"], status_code=302)
-        
+    
