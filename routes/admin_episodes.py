@@ -1,6 +1,9 @@
+# routes/admin_episodes.py
+
 from datetime import datetime
-from bson import ObjectId
 from typing import List
+
+from bson import ObjectId
 
 from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -18,6 +21,9 @@ def is_admin(request: Request) -> bool:
 
 @router.get("/admin/seasons/{season_id}/episodes", response_class=HTMLResponse)
 async def admin_list_episodes(request: Request, season_id: str, message: str = ""):
+    """
+    Episodes dashboard for a single season.
+    """
     if not is_admin(request):
         return RedirectResponse("/admin/login", status_code=303)
 
@@ -61,8 +67,10 @@ async def admin_list_episodes(request: Request, season_id: str, message: str = "
             },
         )
 
+    # parent series document
     series = await db["series"].find_one({"_id": season["series_id"]})
 
+    # all episodes for this season
     cursor = db["episodes"].find({"season_id": soid}).sort("number", 1)
     episodes = [
         {
@@ -97,6 +105,10 @@ async def admin_add_episode(
     download_link: str = Form(""),
     description: str = Form(""),
 ):
+    """
+    Create a new episode inside a season.
+    Also stores series_id so series detail page can query episodes easily.
+    """
     if not is_admin(request):
         return RedirectResponse("/admin/login", status_code=303)
 
@@ -115,8 +127,18 @@ async def admin_add_episode(
             status_code=303,
         )
 
+    season = await db["seasons"].find_one({"_id": soid})
+    if not season:
+        return RedirectResponse(
+            f"/admin/seasons/{season_id}/episodes?message=Season+not+found",
+            status_code=303,
+        )
+
+    series_id = season["series_id"]
+
     ep_doc = {
         "season_id": soid,
+        "series_id": series_id,
         "number": episode_number,
         "title": episode_title or f"Episode {episode_number}",
         "watch_url": watch_link,
@@ -124,9 +146,11 @@ async def admin_add_episode(
         "description": description,
         "created_at": datetime.utcnow(),
     }
+
     await db["episodes"].insert_one(ep_doc)
 
     return RedirectResponse(
         f"/admin/seasons/{season_id}/episodes?message=Episode+added",
         status_code=303,
     )
+    
