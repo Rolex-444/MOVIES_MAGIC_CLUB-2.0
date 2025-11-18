@@ -6,7 +6,7 @@ import asyncio
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
-from bson import ObjectId
+
 from pyrogram import Client, filters, idle
 
 from db import connect_to_mongo, close_mongo_connection
@@ -16,25 +16,32 @@ from routes.series_web import router as series_router
 from routes.admin_auth import router as admin_auth_router
 from routes.admin_movies import router as admin_movies_router
 from routes.admin_series import router as admin_series_router
-from config import API_ID, API_HASH, BOT_TOKEN  # from config.py
+from routes.admin_series_seasons import router as admin_series_seasons_router
 from routes.verify import router as verify_router
+
+from config import API_ID, API_HASH, BOT_TOKEN  # from config.py
 
 SESSION_SECRET = os.getenv("SESSION_SECRET", "change-this-secret")
 
 app = FastAPI()
 
+# sessions
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
 
+# static
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# routers
 app.include_router(movies_router)
 app.include_router(web_router)
 app.include_router(series_router)
 app.include_router(admin_auth_router)
 app.include_router(admin_movies_router)
 app.include_router(admin_series_router)
+app.include_router(admin_series_seasons_router)
 app.include_router(verify_router)
 
+# ---------- Pyrogram bot ----------
 
 bot = Client(
     "movie_webapp_bot",
