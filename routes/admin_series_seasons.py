@@ -89,3 +89,52 @@ async def admin_manage_seasons(request: Request, series_id: str, message: str = 
             "message": message,
         },
     )
+@router.post("/admin/series/{series_id}/seasons")
+async def admin_add_season(
+    request: Request,
+    series_id: str,
+    season_number: int = Form(...),
+    season_title: str = Form(""),
+    season_year: str = Form(""),
+):
+    if not is_admin(request):
+        return RedirectResponse("/admin/login", status_code=303)
+
+    db = get_db()
+    if db is None:
+        return RedirectResponse(
+            f"/admin/series/{series_id}/seasons?message=MongoDB+not+connected",
+            status_code=303,
+        )
+
+    try:
+        oid = ObjectId(series_id)
+    except Exception:
+        return RedirectResponse(
+            f"/admin/series/{series_id}/seasons?message=Invalid+series+id",
+            status_code=303,
+        )
+
+    year_int = None
+    if season_year.strip():
+        try:
+            year_int = int(season_year)
+        except ValueError:
+            year_int = None
+
+    season_doc = {
+        "series_id": oid,
+        "number": season_number,
+        "title": season_title or f"Season {season_number}",
+        "year": year_int,
+        "created_at": datetime.utcnow(),
+    }
+
+    result = await db["seasons"].insert_one(season_doc)
+    new_sid = str(result.inserted_id)
+
+    # Redirect straight to episodes dashboard for this new season
+    return RedirectResponse(
+        f"/admin/seasons/{new_sid}/episodes?message=Season+added",
+        status_code=303,
+        )
