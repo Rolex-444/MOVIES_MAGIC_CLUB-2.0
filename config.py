@@ -11,3 +11,4 @@ VERIFICATION_DEFAULT_VALID_MINUTES = 1440  # 24 hours
 
 if not API_ID or not API_HASH or not BOT_TOKEN:
     print("❌ Please set API_ID, API_HASH, BOT_TOKEN as env variables")
+
