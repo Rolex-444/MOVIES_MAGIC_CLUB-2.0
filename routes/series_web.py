@@ -112,19 +112,12 @@ async def series_browse(request: Request, genre: str = ""):
 
 # ---------- SERIES DETAIL (SEASONS + EPISODES) ----------
 
-
 @router.get("/series/{series_id}", response_class=HTMLResponse)
-async def series_detail(
-    request: Request,
-    series_id: str,
-    season: int = 1,
-):
-    """
-    Series detail page with seasons + episodes.
-    ?season=N chooses which season to show; default 1.
-    """
+async def series_detail(request: Request, series_id: str):
     db = get_db()
     series = None
+    episodes = []
+    primary_episode = None
 
     if db is not None:
         try:
@@ -133,44 +126,35 @@ async def series_detail(
         except Exception:
             series = None
 
-    if not series:
-        return templates.TemplateResponse(
-            "series_detail.html",
-            {
-                "request": request,
-                "series": None,
-                "selected_season": None,
-                "episodes": [],
-            },
-        )
+        if series:
+            # all episodes for this series (across seasons)
+            cur = (
+                db["episodes"]
+                .find({"series_id": series["_id"]})
+                .sort([("season_id", 1), ("number", 1)])
+            )
+            episodes = [
+                {
+                    "id": str(doc["_id"]),
+                    "number": doc.get("number"),
+                    "title": doc.get("title", f"Episode {doc.get('number')}"),
+                    "watch_url": doc.get("watch_url"),
+                    "download_url": doc.get("download_url"),
+                }
+                async for doc in cur
+            ]
+            if episodes:
+                primary_episode = episodes[0]
 
-    seasons = series.get("seasons", [])
-    if not seasons:
-        selected_season = None
-        episodes = []
-    else:
-        selected_season = _find_season(series, season) or seasons[0]
-        episodes = selected_season.get("episodes", [])
-
-    series_ctx = {
-        "id": str(series.get("_id")),
-        "title": series.get("title", "Untitled series"),
-        "language": series.get("language", "Tamil"),
-        "category": series.get("category", ""),
-        "description": series.get("description", ""),
-        "poster_path": series.get("poster_path"),
-        "seasons": seasons,
+    ctx = {
+        "request": request,
+        "series": series,
+        "episodes": episodes,
+        "episodes_count": len(episodes),
+        "primary_episode": primary_episode,
     }
-
-    return templates.TemplateResponse(
-        "series_detail.html",
-        {
-            "request": request,
-            "series": series_ctx,
-            "selected_season": selected_season,
-            "episodes": episodes,
-        },
-    )
+    return templates.TemplateResponse("series_detail.html", ctx)
+    
 
 
 # ---------- EPISODE DETAIL (WATCH / DOWNLOAD) ----------
