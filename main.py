@@ -18,7 +18,7 @@ from routes.admin_movies import router as admin_movies_router
 from routes.admin_series import router as admin_series_router
 from routes.admin_series_seasons import router as admin_series_seasons_router
 from routes.verify import router as verify_router
-
+from routes.admin_episodes import router as admin_episodes_router
 from config import API_ID, API_HASH, BOT_TOKEN  # from config.py
 
 SESSION_SECRET = os.getenv("SESSION_SECRET", "change-this-secret")
@@ -40,6 +40,7 @@ app.include_router(admin_movies_router)
 app.include_router(admin_series_router)
 app.include_router(admin_series_seasons_router)
 app.include_router(verify_router)
+app.include_router(admin_episodes_router)
 
 # ---------- Pyrogram bot ----------
 
