@@ -4,16 +4,17 @@ from typing import List, Optional
 
 from bson import ObjectId
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from db import get_db
+from verification_utils import (
+    should_require_verification,
+    increment_free_used,
+)
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
-
-
-# ---------- HELPERS ----------
 
 
 def _movie_to_ctx(doc: dict) -> dict:
@@ -40,11 +41,6 @@ def _movie_to_ctx(doc: dict) -> dict:
 async def movies_home(request: Request):
     """
     Home page for Movies tab.
-
-    Provides:
-      - latest_movies: for hero + Trending + All movies
-      - tamil_movies / telugu_movies / hindi_movies / malayalam_movies / kannada_movies
-        based on the 'languages' array (checkbox selection).
     """
     db = get_db()
 
@@ -58,17 +54,11 @@ async def movies_home(request: Request):
     if db is not None:
         col = db["movies"]
 
-        # latest uploads (used in hero + trending + all movies)
         cursor = col.find().sort("_id", -1).limit(20)
         latest_movies = [_movie_to_ctx(doc) async for doc in cursor]
 
-        # language rows: match inside languages[] array
         async def _lang_list(lang: str, limit: int = 12) -> List[dict]:
-            cur = (
-                col.find({"languages": lang})  # movie appears if that language was checked
-                .sort("_id", -1)
-                .limit(limit)
-            )
+            cur = col.find({"languages": lang}).sort("_id", -1).limit(limit)
             return [_movie_to_ctx(doc) async for doc in cur]
 
         tamil_movies = await _lang_list("Tamil")
@@ -87,6 +77,7 @@ async def movies_home(request: Request):
             "hindi_movies": hindi_movies,
             "malayalam_movies": malayalam_movies,
             "kannada_movies": kannada_movies,
+            "active_tab": "movies",
         },
     )
 
@@ -96,12 +87,6 @@ async def movies_home(request: Request):
 
 @router.get("/movies/browse", response_class=HTMLResponse)
 async def movies_browse(request: Request, genre: str = ""):
-    """
-    Browse page for movies.
-
-    - /movies/browse              -> all movies
-    - /movies/browse?genre=Action -> movies whose category contains 'Action'
-    """
     db = get_db()
     movies_list: List[dict] = []
 
@@ -120,6 +105,7 @@ async def movies_browse(request: Request, genre: str = ""):
             "request": request,
             "movies_list": movies_list,
             "genre": genre,
+            "active_tab": "movies",
         },
     )
 
@@ -130,22 +116,8 @@ async def movies_browse(request: Request, genre: str = ""):
 @router.get("/movie/{movie_id}", response_class=HTMLResponse)
 async def movie_detail(request: Request, movie_id: str):
     """
-    Single movie detail page.
-
-    Template movie_detail.html expects:
-
-      movie.poster_path
-      movie.title
-      movie.year
-      movie.quality
-      movie.language      (primary language)
-      movie.category
-      movie.audio         (all audio languages as a comma list)
-      movie.subtitles     (optional)
-      movie.is_multi_dubbed
-      movie.watch_url
-      movie.download_url
-      movie.description
+    Plain detail page. Verification is enforced in watch/download routes,
+    not when opening this page.
     """
     db = get_db()
     movie_doc: Optional[dict] = None
@@ -160,10 +132,13 @@ async def movie_detail(request: Request, movie_id: str):
     if not movie_doc:
         return templates.TemplateResponse(
             "movie_detail.html",
-            {"request": request, "movie": None},
+            {
+                "request": request,
+                "movie": None,
+                "active_tab": "movies",
+            },
         )
 
-    # Build audio text from languages[]
     languages = movie_doc.get("languages") or []
     primary_language = movie_doc.get("language") or (languages[0] if languages else "Tamil")
     audio_text = ", ".join(languages) if languages else primary_language
@@ -179,7 +154,6 @@ async def movie_detail(request: Request, movie_id: str):
         "watch_url": movie_doc.get("watch_url"),
         "download_url": movie_doc.get("download_url"),
         "description": movie_doc.get("description", ""),
-        # fields used in movie_detail.html
         "audio": audio_text,
         "subtitles": movie_doc.get("subtitles", ""),
         "is_multi_dubbed": len(languages) > 1,
@@ -187,6 +161,69 @@ async def movie_detail(request: Request, movie_id: str):
 
     return templates.TemplateResponse(
         "movie_detail.html",
-        {"request": request, "movie": movie_ctx},
+        {
+            "request": request,
+            "movie": movie_ctx,
+            "active_tab": "movies",
+        },
     )
-    
+
+
+# ---------- WATCH / DOWNLOAD GATES (with verification) ----------
+
+
+@router.get("/movie/{movie_id}/watch")
+async def movie_watch(request: Request, movie_id: str):
+    """
+    Gate for Watch Now button.
+    """
+    if await should_require_verification(request):
+        return RedirectResponse(
+            url=f"/verify/start?next=/movie/{movie_id}/watch",
+            status_code=303,
+        )
+
+    await increment_free_used(request)
+
+    db = get_db()
+    movie_doc: Optional[dict] = None
+    if db is not None:
+        try:
+            oid = ObjectId(movie_id)
+            movie_doc = await db["movies"].find_one({"_id": oid})
+        except Exception:
+            movie_doc = None
+
+    if not movie_doc or not movie_doc.get("watch_url"):
+        return RedirectResponse(url=f"/movie/{movie_id}", status_code=303)
+
+    return RedirectResponse(url=movie_doc["watch_url"], status_code=302)
+
+
+@router.get("/movie/{movie_id}/download")
+async def movie_download(request: Request, movie_id: str):
+    """
+    Gate for Download button.
+    """
+    if await should_require_verification(request):
+        return RedirectResponse(
+            url=f"/verify/start?next=/movie/{movie_id}/download",
+            status_code=303,
+        )
+
+    await increment_free_used(request)
+
+    db = get_db()
+    movie_doc: Optional[dict] = None
+    if db is not None:
+        try:
+            oid = ObjectId(movie_id)
+            movie_doc = await db["movies"].find_one({"_id": oid})
+        except Exception:
+            movie_doc = None
+
+    if not movie_doc or not movie_doc.get("download_url"):
+        return RedirectResponse(url=f"/movie/{movie_id}", status_code=303)
+
+    return RedirectResponse(url=movie_doc["download_url"], status_code=302)
+        
