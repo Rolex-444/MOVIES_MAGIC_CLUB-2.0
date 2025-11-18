@@ -2,214 +2,267 @@
 
 {% block content %}
 <style>
-    .series-shell {
-        display: grid;
-        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
+    .detail-shell {
+        max-width: 960px;
+        margin: 12px auto 0;
+        display: flex;
+        flex-direction: column;
         gap: 16px;
-        margin-top: 8px;
+        font-size: 13px;
     }
 
-    .series-left {
+    .card {
         background: rgba(15, 23, 42, 0.96);
         border-radius: 24px;
         border: 1px solid rgba(148, 163, 184, 0.5);
         padding: 14px 14px 16px;
-        display: flex;
-        gap: 12px;
     }
 
-    .series-poster {
-        width: 120px;
-        border-radius: 18px;
-        background: radial-gradient(circle at top, #1d4ed8, #020617);
-        flex-shrink: 0;
+    .hero-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.3fr);
+        gap: 14px;
+        align-items: stretch;
+    }
+
+    .poster-wrap {
+        border-radius: 22px;
         overflow: hidden;
+        background: radial-gradient(circle at top, #1d4ed8, #020617);
     }
 
-    .series-poster img {
+    .poster-wrap img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         display: block;
     }
 
-    .series-main {
+    .meta-main {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 8px;
     }
 
-    .series-title {
-        font-size: 17px;
-        font-weight: 600;
+    .title {
+        font-size: 20px;
+        font-weight: 650;
     }
 
-    .series-sub {
+    .meta-line {
         font-size: 12px;
         color: var(--text-muted);
     }
 
-    .series-meta {
-        font-size: 11px;
-        color: var(--text-muted);
-    }
-
-    .season-chip-row {
-        margin-top: 8px;
+    .pill-row {
         display: flex;
         flex-wrap: wrap;
-        gap: 6px;
+        gap: 8px;
+        margin-top: 4px;
     }
 
-    .season-chip {
-        font-size: 11px;
-        padding: 4px 10px;
+    .pill {
+        padding: 6px 12px;
         border-radius: 999px;
+        font-size: 11px;
         border: 1px solid rgba(55, 65, 81, 0.9);
         background: #020617;
-        color: #e5e7eb;
-        text-decoration: none;
     }
 
-    .season-chip.active {
-        background: linear-gradient(135deg, #fb7185, #fb923c);
-        color: #020617;
-        border-color: transparent;
+    .pill-accent {
+        border-color: rgba(248, 113, 113, 0.9);
+        color: #fecaca;
+        background: rgba(127, 29, 29, 0.6);
     }
 
-    .series-right {
-        background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.16), rgba(15, 23, 42, 0.98));
-        border-radius: 24px;
-        border: 1px solid rgba(51, 65, 85, 0.9);
-        padding: 16px 16px 18px;
+    .pill-secondary {
+        border-color: rgba(59, 130, 246, 0.9);
+        color: #dbeafe;
+        background: rgba(30, 64, 175, 0.6);
+    }
+
+    .cta-row {
         display: flex;
-        flex-direction: column;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .btn-watch,
+    .btn-download {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 9px 18px;
+        border-radius: 999px;
+        font-size: 13px;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        white-space: nowrap;
+        background: linear-gradient(135deg, #f97316, #ec4899);
+        color: #020617;
+        box-shadow: 0 12px 30px rgba(248, 113, 113, 0.6);
+    }
+
+    .section-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .section-sub {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+    }
+
+    .synopsis-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
         gap: 10px;
     }
 
-    .episodes-title {
-        font-size: 14px;
-        font-weight: 600;
+    .synopsis-text {
+        font-size: 12px;
+        line-height: 1.4;
     }
 
-    .episode-list {
-        margin-top: 4px;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .episode-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 10px;
-        border-radius: 12px;
-        background: rgba(15, 23, 42, 0.95);
-        border: 1px solid rgba(55, 65, 81, 0.9);
-        text-decoration: none;
-        color: inherit;
+    .facts-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px 14px;
         font-size: 12px;
     }
 
-    .episode-main {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .episode-name {
-        font-weight: 500;
-    }
-
-    .episode-meta {
+    .fact-label {
         font-size: 11px;
         color: var(--text-muted);
     }
 
-    .episode-cta {
-        font-size: 11px;
-        color: #a5b4fc;
+    .fact-value {
+        font-size: 12px;
+    }
+
+    .comments-text {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-top: 4px;
     }
 
     @media (max-width: 768px) {
-        .series-shell {
+        .hero-layout {
+            grid-template-columns: minmax(0, 1fr);
+        }
+        .synopsis-grid {
             grid-template-columns: minmax(0, 1fr);
         }
     }
 </style>
 
-{% if not series %}
-    <p style="margin-top: 12px; font-size: 12px; color: var(--text-muted);">
-        Series not found.
-    </p>
-{% else %}
-<section class="series-shell">
-    <article class="series-left">
-        <div class="series-poster">
-            {% if series.poster_path %}
-                <img src="{{ url_for('static', path=series.poster_path) }}"
-                     alt="{{ series.title }} poster">
-            {% endif %}
-        </div>
+<section class="detail-shell">
 
-        <div class="series-main">
-            <div class="series-title">{{ series.title }}</div>
-            <div class="series-sub">
-                {{ series.language }}{% if series.category %} · {{ series.category }}{% endif %}
-            </div>
-            <div class="series-meta">
-                {{ series.description or "Web series with multiple seasons and episodes." }}
-            </div>
-
-            <div class="season-chip-row">
-                {% for s in series.seasons %}
-                    <a href="/series/{{ series.id }}?season={{ s.number }}"
-                       class="season-chip {% if selected_season and s.number == selected_season.number %}active{% endif %}">
-                        Season {{ s.number }}
-                    </a>
-                {% endfor %}
-            </div>
-        </div>
+    {% if not series %}
+    <article class="card">
+        <div class="section-title">Series not found</div>
+        <p class="section-sub">
+            The series you are looking for is not available right now.
+        </p>
     </article>
+    {% else %}
 
-    <article class="series-right">
-        <div>
-            <div class="episodes-title">
-                {% if selected_season %}
-                    Episodes · Season {{ selected_season.number }}
-                {% else %}
-                    Episodes
+    <!-- HERO: poster + meta + actions -->
+    <article class="card">
+        <div class="hero-layout">
+            <div class="poster-wrap">
+                {% if series.poster_path %}
+                    <img src="{{ url_for('static', path=series.poster_path) }}"
+                         alt="{{ series.title }} poster">
                 {% endif %}
             </div>
-        </div>
-
-        <div class="episode-list">
-            {% if episodes and episodes|length > 0 %}
-                {% for e in episodes %}
-                <a href="/series/{{ series.id }}/season/{{ selected_season.number }}/episode/{{ e.number }}"
-                   class="episode-item">
-                    <div class="episode-main">
-                        <div class="episode-name">
-                            E{{ "%02d"|format(e.number) }} · {{ e.title or "Episode" }}
-                        </div>
-                        <div class="episode-meta">
-                            {{ e.duration or "" }}
-                        </div>
-                    </div>
-                    <div class="episode-cta">
-                        ▶ Watch / ⬇ Download
-                    </div>
-                </a>
-                {% endfor %}
-            {% else %}
-                <div class="episode-meta">
-                    No episodes added for this season yet.
+            <div class="meta-main">
+                <div class="title">{{ series.title }}</div>
+                <div class="meta-line">
+                    {{ series.year }} · {{ series.language }}
                 </div>
-            {% endif %}
+                <div class="meta-line">
+                    Audio: {{ series.audio }}
+                </div>
+
+                <div class="pill-row">
+                    {% if series.languages and series.languages|length > 1 %}
+                        <span class="pill pill-accent">Multi audio</span>
+                    {% endif %}
+                    <span class="pill pill-secondary">HD ready</span>
+                    <span class="pill">Secure download</span>
+                </div>
+
+                <div class="cta-row">
+                    {% if series.watch_url %}
+                        <a href="/series/{{ series.id }}/watch"
+                           class="btn-watch">
+                            ▶ Watch now
+                        </a>
+                    {% endif %}
+                    {% if series.download_url %}
+                        <a href="/series/{{ series.id }}/download"
+                           class="btn-download">
+                            ⬇ Download
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </article>
-</section>
-{% endif %}
 
+    <!-- SYNOPSIS + FACTS -->
+    <article class="card">
+        <div class="section-title">Synopsis</div>
+        <div class="section-sub">
+            Binge‑worthy series with engaging story and stunning visuals.
+        </div>
+
+        <div class="synopsis-grid">
+            <div class="synopsis-text">
+                {{ series.description or "Synopsis coming soon." }}
+            </div>
+            <div>
+                <div class="facts-grid">
+                    <div>
+                        <div class="fact-label">Year</div>
+                        <div class="fact-value">{{ series.year }}</div>
+                    </div>
+                    <div>
+                        <div class="fact-label">Language</div>
+                        <div class="fact-value">{{ series.audio }}</div>
+                    </div>
+                    <div>
+                        <div class="fact-label">Primary</div>
+                        <div class="fact-value">{{ series.language }}</div>
+                    </div>
+                    <div>
+                        <div class="fact-label">Episodes</div>
+                        <div class="fact-value">
+                            <!-- you can replace this with real episode count if stored -->
+                            Multiple episodes
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:12px;">
+            <div class="section-title" style="font-size:13px;">Comments</div>
+            <p class="comments-text">
+                Comments feature coming soon. Share this series with your friends and
+                collect their feedback in your channel.
+            </p>
+        </div>
+    </article>
+
+    {% endif %}
+
+</section>
 {% endblock %}
+    
