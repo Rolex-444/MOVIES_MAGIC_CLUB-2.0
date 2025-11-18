@@ -1,339 +1,313 @@
-{% extends "base.html" %}
+{% extends "admin_base.html" %}
+{% block title %}Series Admin – MOVIES MAGIC CLUB{% endblock %}
 
 {% block content %}
-<style>
-    .admin-shell {
-        display: grid;
-        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
-        gap: 16px;
-        margin-top: 10px;
-        font-size: 13px;
-    }
+<div class="admin-page">
 
-    .card {
-        background: rgba(15, 23, 42, 0.96);
-        border-radius: 20px;
-        border: 1px solid rgba(148, 163, 184, 0.5);
-        padding: 14px 14px 16px;
-    }
+  <!-- Top bar / breadcrumb -->
+  <div class="admin-header">
+    <h1>Series dashboard</h1>
+    <a href="/admin/movies" class="btn btn-secondary">← Back to Movies admin</a>
+  </div>
 
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        margin-bottom: 8px;
-    }
+  <!-- Flash message -->
+  {% if message %}
+    <div class="alert alert-info" style="margin-top: 10px;">
+      {{ message }}
+    </div>
+  {% endif %}
 
-    .card-title {
-        font-size: 14px;
-        font-weight: 600;
-    }
+  <div class="admin-grid">
+    <!-- LEFT: Existing series list -->
+    <div class="admin-list">
+      <h2>All series</h2>
 
-    .card-sub {
-        font-size: 11px;
-        color: var(--text-muted);
-    }
-
-    .form-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px 12px;
-        margin-top: 6px;
-    }
-
-    .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .form-label {
-        font-size: 11px;
-        color: var(--text-muted);
-    }
-
-    .form-input,
-    .form-select,
-    .form-textarea {
-        border-radius: 999px;
-        border: 1px solid rgba(55, 65, 81, 0.9);
-        background: #020617;
-        color: #e5e7eb;
-        font-size: 12px;
-        padding: 7px 10px;
-        outline: none;
-    }
-
-    .form-textarea {
-        border-radius: 14px;
-        min-height: 70px;
-        resize: vertical;
-    }
-
-    .form-input[type="file"] {
-        padding: 6px 8px;
-    }
-
-    .checkbox-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px 10px;
-        font-size: 11px;
-    }
-
-    .checkbox-row label {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .btn-primary {
-        margin-top: 10px;
-        padding: 8px 16px;
-        border-radius: 999px;
-        border: none;
-        background: linear-gradient(135deg, #22c55e, #14b8a6);
-        color: #020617;
-        font-size: 12px;
-        font-weight: 500;
-        cursor: pointer;
-        box-shadow: 0 10px 25px rgba(34, 197, 94, 0.6);
-    }
-
-    .series-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 12px;
-        margin-top: 6px;
-    }
-
-    .series-table th,
-    .series-table td {
-        padding: 6px 6px;
-        text-align: left;
-        border-bottom: 1px solid rgba(31, 41, 55, 0.7);
-    }
-
-    .series-table th {
-        font-size: 11px;
-        color: var(--text-muted);
-        font-weight: 500;
-    }
-
-    .series-table tbody tr:hover {
-        background: rgba(15, 23, 42, 0.85);
-    }
-
-    .btn-small-danger,
-    .btn-small-secondary,
-    .btn-small-primary {
-        padding: 4px 8px;
-        border-radius: 999px;
-        font-size: 11px;
-        cursor: pointer;
-        border: 1px solid transparent;
-        background: transparent;
-    }
-
-    .btn-small-danger {
-        border-color: rgba(248, 113, 113, 0.8);
-        background: rgba(127, 29, 29, 0.5);
-        color: #fecaca;
-    }
-
-    .btn-small-secondary {
-        border-color: rgba(59, 130, 246, 0.8);
-        background: rgba(30, 64, 175, 0.5);
-        color: #bfdbfe;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .btn-small-primary {
-        border-color: rgba(34, 197, 94, 0.8);
-        background: rgba(21, 128, 61, 0.5);
-        color: #bbf7d0;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        margin-right: 4px;
-    }
-
-    .message-bar {
-        margin-top: 2px;
-        font-size: 11px;
-        color: #bbf7d0;
-    }
-
-    .search-inline-form {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .search-inline-input {
-        flex: 1;
-        border-radius: 999px;
-        border: 1px solid rgba(55, 65, 81, 0.9);
-        background: #020617;
-        color: #e5e7eb;
-        font-size: 11px;
-        padding: 6px 10px;
-        outline: none;
-    }
-
-    .search-inline-btn {
-        padding: 6px 10px;
-        border-radius: 999px;
-        border: none;
-        font-size: 11px;
-        background: rgba(51, 65, 85, 0.9);
-        color: #e5e7eb;
-        cursor: pointer;
-    }
-
-    @media (max-width: 768px) {
-        .admin-shell {
-            grid-template-columns: minmax(0, 1fr);
-        }
-
-        .form-grid {
-            grid-template-columns: minmax(0, 1fr);
-        }
-    }
-</style>
-
-<section class="admin-shell">
-    <!-- LEFT: Add series -->
-    <article class="card">
-        <div class="card-header">
-            <div>
-                <div class="card-title">Add new series</div>
-                <div class="card-sub">
-                    Create a new web series (seasons & episodes will be added later).
-                </div>
-                {% if message %}
-                <div class="message-bar">{{ message }}</div>
-                {% endif %}
-            </div>
-            <a href="/admin/movies"
-               style="font-size:11px; color:#a5b4fc; text-decoration:none;">
-                ← Back to Movies admin
-            </a>
-        </div>
-
-        <form action="/admin/series" method="post" enctype="multipart/form-data">
-            <div class="form-grid">
-                <div class="form-group">
-                    <label class="form-label">Title</label>
-                    <input class="form-input" type="text" name="title" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Year</label>
-                    <input class="form-input" type="text" name="year" placeholder="2025">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Quality</label>
-                    <input class="form-input" type="text" name="quality" value="1080P">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Category / Genre</label>
-                    <input class="form-input" type="text" name="category" placeholder="Thriller, Sci-Fi">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Poster image</label>
-                    <input class="form-input" type="file" name="poster" accept="image/*">
-                </div>
-            </div>
-
-            <div class="form-group" style="margin-top: 8px;">
-                <label class="form-label">Languages (select one or more)</label>
-                <div class="checkbox-row">
-                    <label><input type="checkbox" name="languages" value="Tamil"> Tamil</label>
-                    <label><input type="checkbox" name="languages" value="Telugu"> Telugu</label>
-                    <label><input type="checkbox" name="languages" value="Hindi"> Hindi</label>
-                    <label><input type="checkbox" name="languages" value="Malayalam"> Malayalam</label>
-                    <label><input type="checkbox" name="languages" value="Kannada"> Kannada</label>
-                    <label><input type="checkbox" name="languages" value="English"> English</label>
-                </div>
-            </div>
-
-            <div class="form-group" style="margin-top: 6px;">
-                <label class="form-label">Short description</label>
-                <textarea class="form-textarea" name="description" placeholder="Short description for this series."></textarea>
-            </div>
-
-            <button type="submit" class="btn-primary">Save series</button>
-        </form>
-    </article>
-
-    <!-- RIGHT: Series list / search / manage -->
-    <article class="card">
-        <div class="card-header">
-            <div>
-                <div class="card-title">All series</div>
-                <div class="card-sub">Top-level series with seasons & episodes managed separately</div>
-            </div>
-            <form class="search-inline-form" method="get" action="/admin/series">
-                <input
-                    type="text"
-                    name="q"
-                    class="search-inline-input"
-                    placeholder="Search by title..."
-                    value="{{ q or '' }}"
-                >
-                <button type="submit" class="search-inline-btn">Search</button>
-            </form>
-        </div>
-
-        <table class="series-table">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Year</th>
-                    <th>Lang</th>
-                    <th>Seasons</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for s in series_list %}
-                <tr>
-                    <td>{{ s.title }}</td>
-                    <td>{{ s.year or "" }}</td>
-                    <td>{{ s.language or "" }}</td>
-                    <td>{{ s.seasons_count }}</td>
-                    <td>
-                        <a href="/admin/series/{{ s.id }}/seasons"
-                           class="btn-small-primary">
-                            Manage seasons
-                        </a>
-                        <a href="/admin/series/{{ s.id }}/edit"
-                           class="btn-small-secondary">
-                            Edit
-                        </a>
-                        <form method="post"
-                              action="/admin/series/{{ s.id }}/delete"
-                              style="display:inline;">
-                            <button type="submit" class="btn-small-danger">
-                                Delete
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-                {% if series_list|length == 0 %}
-                <tr>
-                    <td colspan="5" style="font-size:11px; color:var(--text-muted);">
-                        No series created yet.
-                    </td>
-                </tr>
-                {% endif %}
-            </tbody>
+      {% if series_list and series_list|length > 0 %}
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Poster</th>
+              <th>Title</th>
+              <th>Year</th>
+              <th>Quality</th>
+              <th>Languages</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in series_list %}
+              <tr>
+                <td>
+                  {% if s.poster_path %}
+                    <img src="{{ s.poster_path }}" alt="{{ s.title }}" style="height:60px;border-radius:4px;">
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="/series/{{ s.id }}" target="_blank">
+                    {{ s.title }}
+                  </a>
+                </td>
+                <td>{{ s.year or "" }}</td>
+                <td>{{ s.quality or "" }}</td>
+                <td>
+                  {% if s.languages %}
+                    {{ s.languages | join(", ") }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
         </table>
-    </article>
-</section>
+      {% else %}
+        <p>No series found yet. Use the form on the right to add a new series.</p>
+      {% endif %}
+    </div>
+
+    <!-- RIGHT: Add new series form -->
+    <div class="admin-form">
+      <h2>Add new series</h2>
+      <p class="text-muted">Create a new web series (seasons &amp; episodes will be added later).</p>
+
+      <form action="/admin/series" method="post">
+        <!-- Title -->
+        <div class="form-group">
+          <label for="title">Title</label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            class="form-control"
+            placeholder="Series title"
+            required
+          >
+        </div>
+
+        <!-- Year -->
+        <div class="form-group">
+          <label for="year">Year</label>
+          <input
+            type="text"
+            id="year"
+            name="year"
+            class="form-control"
+            placeholder="2024"
+          >
+        </div>
+
+        <!-- Quality -->
+        <div class="form-group">
+          <label for="quality">Quality</label>
+          <input
+            type="text"
+            id="quality"
+            name="quality"
+            class="form-control"
+            placeholder="HD, 1080p, 4K"
+          >
+        </div>
+
+        <!-- Category / Genre -->
+        <div class="form-group">
+          <label for="category">Category / Genre</label>
+          <input
+            type="text"
+            id="category"
+            name="category"
+            class="form-control"
+            placeholder="Action, Romance, Sci‑Fi + Fantasy"
+          >
+        </div>
+
+        <!-- Poster image -->
+        <div class="form-group">
+          <label for="poster_path">Poster image URL</label>
+          <input
+            type="text"
+            id="poster_path"
+            name="poster_path"
+            class="form-control"
+            placeholder="/static/posters/my-series.jpg or https://..."
+          >
+        </div>
+
+        <!-- Languages -->
+        <div class="form-group">
+          <label>Languages (select one or more)</label>
+          <div class="language-grid">
+            <label>
+              <input type="checkbox" name="languages" value="Tamil">
+              Tamil
+            </label>
+            <label>
+              <input type="checkbox" name="languages" value="Telugu">
+              Telugu
+            </label>
+            <label>
+              <input type="checkbox" name="languages" value="Hindi">
+              Hindi
+            </label>
+            <label>
+              <input type="checkbox" name="languages" value="Malayalam">
+              Malayalam
+            </label>
+            <label>
+              <input type="checkbox" name="languages" value="Kannada">
+              Kannada
+            </label>
+            <label>
+              <input type="checkbox" name="languages" value="English">
+              English
+            </label>
+          </div>
+        </div>
+
+        <!-- Short description -->
+        <div class="form-group">
+          <label for="description">Short description</label>
+          <textarea
+            id="description"
+            name="description"
+            class="form-control"
+            rows="4"
+            placeholder="Write a short synopsis of the series..."
+          ></textarea>
+        </div>
+
+        <!-- Submit -->
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            Save series
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+  .admin-page {
+    padding: 16px;
+  }
+
+  .admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .admin-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 16px;
+  }
+
+  .admin-list, .admin-form {
+    background: #111827;
+    border-radius: 8px;
+    padding: 16px;
+    color: #e5e7eb;
+  }
+
+  .admin-form h2, .admin-list h2 {
+    margin-top: 0;
+  }
+
+  .form-group {
+    margin-bottom: 12px;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 14px;
+  }
+
+  .form-control, textarea.form-control {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 4px;
+    border: 1px solid #374151;
+    background: #020617;
+    color: #e5e7eb;
+  }
+
+  .form-control::placeholder,
+  textarea.form-control::placeholder {
+    color: #6b7280;
+  }
+
+  .language-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    font-size: 14px;
+  }
+
+  .language-grid label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .form-actions {
+    margin-top: 12px;
+    text-align: right;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-primary {
+    background: #2563eb;
+    color: #ffffff;
+  }
+
+  .btn-secondary {
+    background: #374151;
+    color: #e5e7eb;
+  }
+
+  .alert {
+    padding: 8px 12px;
+    border-radius: 4px;
+    background: #1d4ed8;
+    color: #e5e7eb;
+  }
+
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .table th,
+  .table td {
+    border-bottom: 1px solid #374151;
+    padding: 6px 8px;
+    text-align: left;
+  }
+
+  .table-striped tbody tr:nth-child(odd) {
+    background: #020617;
+  }
+
+  @media (max-width: 900px) {
+    .admin-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
 {% endblock %}
+              
