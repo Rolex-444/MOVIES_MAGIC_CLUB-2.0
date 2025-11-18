@@ -1,31 +1,25 @@
 # routes/admin_series_seasons.py
 
-import os
 from datetime import datetime
-from typing import List
-from uuid import uuid4
+from bson import ObjectId
 
-from fastapi import APIRouter, Request, Form, File, UploadFile
+from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from bson import ObjectId
 
 from db import get_db
 
-templates = Jinja2Templates(directory="templates")
-
 router = APIRouter()
+templates = Jinja2Templates(directory="templates")
 
 
 def is_admin(request: Request) -> bool:
     return request.session.get("is_admin") is True
 
 
+# GET: Seasons dashboard for one series
 @router.get("/admin/series/{series_id}/seasons", response_class=HTMLResponse)
 async def admin_manage_seasons(request: Request, series_id: str, message: str = ""):
-    """
-    Seasons management page for one series.
-    """
     if not is_admin(request):
         return RedirectResponse("/admin/login", status_code=303)
 
@@ -36,6 +30,7 @@ async def admin_manage_seasons(request: Request, series_id: str, message: str = 
             {
                 "request": request,
                 "series": None,
+                "series_id": series_id,
                 "seasons": [],
                 "message": "MongoDB not connected",
             },
@@ -49,6 +44,7 @@ async def admin_manage_seasons(request: Request, series_id: str, message: str = 
             {
                 "request": request,
                 "series": None,
+                "series_id": series_id,
                 "seasons": [],
                 "message": "Invalid series id",
             },
@@ -61,16 +57,13 @@ async def admin_manage_seasons(request: Request, series_id: str, message: str = 
             {
                 "request": request,
                 "series": None,
+                "series_id": series_id,
                 "seasons": [],
                 "message": "Series not found",
             },
         )
 
-    cursor = (
-        db["seasons"]
-        .find({"series_id": oid})
-        .sort("number", 1)
-    )
+    cursor = db["seasons"].find({"series_id": oid}).sort("number", 1)
     seasons = [
         {
             "id": str(doc["_id"]),
@@ -85,10 +78,14 @@ async def admin_manage_seasons(request: Request, series_id: str, message: str = 
         {
             "request": request,
             "series": series,
+            "series_id": series_id,
             "seasons": seasons,
             "message": message,
         },
     )
+
+
+# POST: Add season, then go to episodes page
 @router.post("/admin/series/{series_id}/seasons")
 async def admin_add_season(
     request: Request,
@@ -133,8 +130,9 @@ async def admin_add_season(
     result = await db["seasons"].insert_one(season_doc)
     new_sid = str(result.inserted_id)
 
-    # Redirect straight to episodes dashboard for this new season
+    # Redirect directly to episodes dashboard for this season
     return RedirectResponse(
         f"/admin/seasons/{new_sid}/episodes?message=Season+added",
         status_code=303,
-        )
+    )
+    
