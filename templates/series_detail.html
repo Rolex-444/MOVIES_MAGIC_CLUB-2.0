@@ -160,12 +160,47 @@
         margin-top: 4px;
     }
 
+    /* Episodes list */
+    .episode-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 4px;
+    }
+
+    .episode-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 14px;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(51, 65, 85, 0.9);
+    }
+
+    .episode-title {
+        font-size: 12px;
+    }
+
+    .episode-actions {
+        display: flex;
+        gap: 6px;
+    }
+
     @media (max-width: 768px) {
         .hero-layout {
             grid-template-columns: minmax(0, 1fr);
         }
         .synopsis-grid {
             grid-template-columns: minmax(0, 1fr);
+        }
+        .episode-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .episode-actions {
+            margin-top: 4px;
         }
     }
 </style>
@@ -209,34 +244,15 @@
                     <span class="pill pill-secondary">HD ready</span>
                     <span class="pill">Secure download</span>
                 </div>
-
-                <div class="cta-row">
-                    {% if series.watch_url %}
-                        <a href="/series/{{ series.id }}/watch"
-                           class="btn-watch"
-                           target="_blank"
-                           rel="noopener">
-                            ▶ Watch now
-                        </a>
-                    {% endif %}
-                    {% if series.download_url %}
-                        <a href="/series/{{ series.id }}/download"
-                           class="btn-download"
-                           target="_blank"
-                           rel="noopener">
-                            ⬇ Download
-                        </a>
-                    {% endif %}
-                </div>
             </div>
         </div>
     </article>
 
-    <!-- SYNOPSIS + FACTS -->
+    <!-- SYNOPSIS + FACTS + EPISODES -->
     <article class="card">
         <div class="section-title">Synopsis</div>
         <div class="section-sub">
-            Binge‑worthy series with engaging story and stunning visuals.
+            Binge-worthy series with engaging story and stunning visuals.
         </div>
 
         <div class="synopsis-grid">
@@ -259,10 +275,54 @@
                     </div>
                     <div>
                         <div class="fact-label">Episodes</div>
-                        <div class="fact-value">Multiple episodes</div>
+                        <div class="fact-value">
+                            {{ series.episodes|length if series.episodes else 0 }}
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Episodes list -->
+        <div style="margin-top:14px;">
+            <div class="section-title">Episodes</div>
+            <div class="section-sub">
+                Choose an episode to watch or download.
+            </div>
+
+            {% if series.episodes and series.episodes|length > 0 %}
+                <div class="episode-list">
+                    {% for ep in series.episodes %}
+                        <div class="episode-row">
+                            <div class="episode-title">
+                                Ep {{ ep.number }} — {{ ep.name }}
+                            </div>
+                            <div class="episode-actions">
+                                {% if ep.watch_url %}
+                                    <a href="/series/{{ series.id }}/episode/{{ ep.index }}/watch"
+                                       class="btn-watch"
+                                       target="_blank"
+                                       rel="noopener">
+                                        ▶ Watch
+                                    </a>
+                                {% endif %}
+                                {% if ep.download_url %}
+                                    <a href="/series/{{ series.id }}/episode/{{ ep.index }}/download"
+                                       class="btn-download"
+                                       target="_blank"
+                                       rel="noopener">
+                                        ⬇ Download
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="comments-text">
+                    Episodes will be added soon.
+                </p>
+            {% endif %}
         </div>
 
         <div style="margin-top:12px;">
@@ -278,3 +338,4 @@
 
 </section>
 {% endblock %}
+    
