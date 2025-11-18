@@ -3,69 +3,111 @@
 {% block content %}
 <style>
     .page-shell {
-        margin-top: 12px;
+        margin-top: 16px;
         display: flex;
         flex-direction: column;
-        gap: 16px;
-        font-size: 13px;
+        gap: 18px;
+        font-size: 14px;
     }
     .card {
         background: rgba(15, 23, 42, 0.96);
         border-radius: 24px;
         border: 1px solid rgba(148, 163, 184, 0.5);
-        padding: 16px 14px 18px;
+        padding: 18px 16px 20px;
     }
     .title {
-        font-size: 16px;
-        font-weight: 600;
-        margin-bottom: 6px;
+        font-size: 18px;
+        font-weight: 650;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .title-emoji {
+        font-size: 20px;
     }
     .sub {
-        font-size: 12px;
+        font-size: 13px;
         color: var(--text-muted);
         margin-bottom: 12px;
+        line-height: 1.5;
     }
-    .btn-main {
+    .highlight {
+        color: #fbbf24;
+        font-weight: 600;
+    }
+    .btn-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    .btn-main,
+    .btn-secondary {
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 6px;
-        padding: 9px 18px;
+        padding: 10px 20px;
         border-radius: 999px;
-        font-size: 13px;
+        font-size: 14px;
         text-decoration: none;
         border: none;
         cursor: pointer;
         white-space: nowrap;
+    }
+    .btn-main {
         background: linear-gradient(135deg, #f97316, #ec4899);
         color: #020617;
         box-shadow: 0 12px 30px rgba(248, 113, 113, 0.6);
-        margin-top: 4px;
+    }
+    .btn-secondary {
+        background: #020617;
+        color: #e5e7eb;
+        border: 1px solid rgba(148, 163, 184, 0.9);
     }
     .note {
-        font-size: 11px;
+        font-size: 12px;
         color: var(--text-muted);
-        margin-bottom: 10px;
+        margin-top: 8px;
+        line-height: 1.5;
     }
 </style>
 
 <section class="page-shell">
     <article class="card">
-        <div class="title">Verification required</div>
+        <div class="title">
+            <span class="title-emoji">👋</span>
+            <span>Hello dear friend</span>
+        </div>
+
         <div class="sub">
-            You have used today’s free limit. Complete a quick verification to unlock
-            unlimited access for a limited time.
+            You have reached today’s free limit on this device. 
+            You can watch or download <span class="highlight">{{ daily_limit }}</span> movies or series for free every day. 
+            To continue, please complete a quick verification and unlock access for the next
+            <span class="highlight">{{ valid_hours }}</span> hours.
+        </div>
+
+        <div class="sub">
+            After you finish the verification, you can enjoy unlimited
+            watch and download within the validity time. 
+            This helps us keep the website online and free for you. 💖
+        </div>
+
+        <div class="btn-row">
+            <a href="{{ short_url }}" class="btn-main" target="_blank" rel="noopener">
+                🚀 Continue to verification
+            </a>
+
+            <a href="https://t.me/Sr_Movie_Links/52" class="btn-secondary" target="_blank" rel="noopener">
+                📘 How to verify
+            </a>
         </div>
 
         <p class="note">
-            Tap the button below and complete the short verification steps.<br>
-            When the verification is finished, you will be automatically redirected
-            back to this site and your access will be unlocked.
+            Tip: Just tap “Continue to verification”, finish the steps on the shortlink page,
+            and you will be redirected back here automatically.
         </p>
-
-        <a href="{{ short_url }}" class="btn-main" target="_blank" rel="noopener">
-            Continue to verification
-        </a>
     </article>
 </section>
 {% endblock %}
