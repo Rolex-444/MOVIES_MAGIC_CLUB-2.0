@@ -1,4 +1,14 @@
 # verification_utils.py
+#
+# Dynamic verification logic for Movies + Series.
+# - Global settings are read from Mongo collection "settings", _id="verification".
+# - Per-user usage is tracked in "verifications" collection based on session_id.
+#
+# Functions used by routes:
+#   - get_verification_settings()
+#   - should_require_verification(request)
+#   - increment_free_used(request)
+#   - mark_verified(request)
 
 import secrets
 from datetime import datetime, timedelta
@@ -21,9 +31,18 @@ async def get_verification_settings() -> Dict[str, Any]:
     """
     Read global verification settings from Mongo.
     Falls back to config defaults if document not present.
+
+    Document in Mongo (db.settings):
+    {
+        _id: "verification",
+        enabled: true/false,
+        free_limit: int,
+        valid_minutes: int
+    }
     """
     db = get_db()
     if db is None:
+        # No DB → use config defaults
         return {
             "enabled": VERIFICATION_DEFAULT_ENABLED,
             "free_limit": VERIFICATION_DEFAULT_FREE_LIMIT,
@@ -34,7 +53,9 @@ async def get_verification_settings() -> Dict[str, Any]:
     return {
         "enabled": bool(doc.get("enabled", VERIFICATION_DEFAULT_ENABLED)),
         "free_limit": int(doc.get("free_limit", VERIFICATION_DEFAULT_FREE_LIMIT)),
-        "valid_minutes": int(doc.get("valid_minutes", VERIFICATION_DEFAULT_VALID_MINUTES)),
+        "valid_minutes": int(
+            doc.get("valid_minutes", VERIFICATION_DEFAULT_VALID_MINUTES)
+        ),
     }
 
 
@@ -56,8 +77,9 @@ async def get_user_verification_state(
     Load or initialise verification state for current session_id.
 
     Returns: (settings, state, today_str)
-      - settings: {enabled, free_limit, valid_minutes}
-      - state:    {free_used, verified_until (datetime | None)}
+
+    - settings: {enabled, free_limit, valid_minutes}
+    - state: {free_used, verified_until (datetime | None)}
     """
     settings = await get_verification_settings()
     db = get_db()
@@ -75,6 +97,7 @@ async def get_user_verification_state(
         # New day or first time
         state = {"free_used": 0, "verified_until": None}
         now_utc = datetime.utcnow()
+
         if not doc:
             await col.insert_one(
                 {
@@ -97,6 +120,7 @@ async def get_user_verification_state(
                     }
                 },
             )
+
         return settings, state, today
 
     verified_until = doc.get("verified_until")
@@ -132,7 +156,7 @@ async def should_require_verification(request: Request) -> bool:
     if state["free_used"] < settings["free_limit"]:
         return False
 
-    # Free limit finish & not currently verified
+    # Free limit finished & not currently verified → require verification
     return True
 
 
@@ -140,14 +164,17 @@ async def increment_free_used(request: Request) -> None:
     """
     Increment free_used when user actually accesses watch/download
     (after passing verification checks).
+    Movies + series both call this.
     """
     settings, state, today = await get_user_verification_state(request)
     db = get_db()
     if db is None:
         return
+
     sid = await get_or_create_session_id(request)
     col = db["verifications"]
     now_utc = datetime.utcnow()
+
     await col.update_one(
         {"session_id": sid},
         {
@@ -164,18 +191,22 @@ async def increment_free_used(request: Request) -> None:
 async def mark_verified(request: Request) -> None:
     """
     Mark current user as verified until now + settings.valid_minutes.
+    Called from /verify/success flow once user completes shortlink or task.
     """
     settings, state, today = await get_user_verification_state(request)
     db = get_db()
     if db is None:
         return
+
     sid = await get_or_create_session_id(request)
     col = db["verifications"]
 
     if settings["valid_minutes"] <= 0:
         verified_until = None
     else:
-        verified_until = datetime.utcnow() + timedelta(minutes=settings["valid_minutes"])
+        verified_until = datetime.utcnow() + timedelta(
+            minutes=settings["valid_minutes"]
+        )
 
     await col.update_one(
         {"session_id": sid},
@@ -187,4 +218,5 @@ async def mark_verified(request: Request) -> None:
             }
         },
         upsert=True,
-    )
+            )
+    
