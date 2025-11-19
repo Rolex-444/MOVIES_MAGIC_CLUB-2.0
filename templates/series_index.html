@@ -176,10 +176,16 @@
         display: block;
     }
     .series-title {
-        font-size: 14px;
+        font-size: 16px;
         font-weight: 600;
-        color: #f9fafb;          /* white text */
-        text-decoration: none;   /* remove underline */
+        color: #f9fafb;          /* white link text */
+        text-decoration: none;
+    }
+    .series-title:visited {
+        color: #f9fafb;          /* keep white after click */
+    }
+    .series-title:hover {
+        color: #fee2e2;          /* optional hover color */
     }
     .series-meta {
         font-size: 11px;
@@ -216,7 +222,6 @@
                             <div>
                                 <div class="hero-title">
                                     {{ s.title }}
-                                    {% if s.year %} · S1E01{% endif %}
                                 </div>
                                 <div class="hero-meta">
                                     {{ s.year or "" }}
@@ -245,7 +250,7 @@
                 <div class="hero-slide active">
                     <div class="hero-poster"></div>
                     <div class="hero-main">
-                        <div class="hero-title">Sample Series · S1E01</div>
+                        <div class="hero-title">Sample Series</div>
                         <div class="hero-meta">2024 · HD · Web series</div>
                         <div class="hero-actions">
                             <a href="/series/browse" class="btn-primary">
@@ -381,3 +386,4 @@
 })();
 </script>
 {% endblock %}
+                                
