@@ -169,11 +169,19 @@
         text-decoration: none;
     }
 
-    /* MOVIE CARDS (TRENDING / ALL / LANGUAGE ROWS) */
+    /* MOVIE CARDS (TRENDING / ALL) */
     .row-shell {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         gap: 10px;
+    }
+
+    /* LANGUAGE ROWS – fixed-width cards so poster not full width */
+    .lang-row-shell {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 180px));
+        gap: 10px;
+        justify-content: flex-start;
     }
 
     .movie-card {
@@ -190,7 +198,8 @@
         border-radius: 16px;
         overflow: hidden;
         background: radial-gradient(circle at top, #1d4ed8, #020617);
-        min-height: 160px;
+        min-height: 150px;
+        max-height: 200px;
     }
 
     .movie-poster img {
@@ -392,7 +401,7 @@
                 </a>
             </div>
 
-            <div class="row-shell">
+            <div class="lang-row-shell">
                 {% for m in movies_list %}
                     <article class="movie-card">
                         <a href="/movie/{{ m.id }}" class="movie-poster">
@@ -446,4 +455,4 @@
 })();
 </script>
 {% endblock %}
-                    
+                                
