@@ -11,8 +11,8 @@
     /* Global dark theme */
     body {
         margin: 0;
-        background: #020617;          /* almost black */
-        color: #e5e7eb;               /* white-ish text */
+        background: #020617; /* near black */
+        color: #e5e7eb;      /* white-ish text */
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
@@ -56,6 +56,12 @@
         color: #f97316;
     }
 
+    .mmc-top-buttons {
+        display: inline-flex;
+        gap: 6px;
+    }
+
+    .mmc-home-btn,
     .mmc-admin-btn {
         padding: 4px 12px;
         border-radius: 999px;
@@ -64,6 +70,13 @@
         text-decoration: none;
         color: #e5e7eb;
         background: rgba(15, 23, 42, 0.9);
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .mmc-home-btn {
+        border-color: rgba(52, 211, 153, 0.9);
     }
 
     .mmc-search {
@@ -115,7 +128,7 @@
         top: 3px;
         bottom: 3px;
         left: 3px;
-        width: calc(50% - 3px); /* covers one tab */
+        width: calc(50% - 3px); /* width of one tab */
         border-radius: 999px;
         background: linear-gradient(135deg, #f97316, #ec4899);
         box-shadow: 0 8px 20px rgba(248, 113, 113, 0.7);
@@ -124,7 +137,7 @@
         z-index: 0;
     }
 
-    /* When on series page, move orange background to Series tab */
+    /* When series active, move orange BG to Series side */
     .mmc-tabs.is-series .mmc-tab-highlight {
         transform: translateX(100%);
     }
@@ -139,16 +152,16 @@
         font-size: 13px;
         border: none;
         background: transparent;
-        color: #e5e7eb;      /* white text */
+        color: #e5e7eb;
         text-decoration: none;
         cursor: pointer;
     }
 
     .mmc-tab.active {
-        color: #020617;      /* dark text on orange background */
+        color: #020617; /* dark text on orange background */
     }
 
-    /* Optional: center content a bit on large screens */
+    /* Optional: center layout a bit on large screens */
     @media (min-width: 1024px) {
         .mmc-shell {
             max-width: 1100px;
@@ -165,7 +178,15 @@
                 <div class="mmc-logo">
                     MOVIES <span>MAGIC</span> CLUB
                 </div>
-                <a href="/admin/movies" class="mmc-admin-btn">Admin</a>
+                <div class="mmc-top-buttons">
+                    <!-- Home always goes to movies home -->
+                    <a href="/" class="mmc-home-btn">
+                        🏠 Home
+                    </a>
+                    <a href="/admin/movies" class="mmc-admin-btn">
+                        Admin
+                    </a>
+                </div>
             </div>
 
             <form class="mmc-search" action="/search" method="get">
@@ -176,16 +197,16 @@
                 <button class="mmc-search-btn" type="submit">🔍</button>
             </form>
 
-            {# Tabs: add is-series class when active_tab == "series" #}
-            <div class="mmc-tabs {% if active_tab == 'series' %}is-series{% else %}is-movies{% endif %}">
+            {# Tabs: use 'activetab' from routes (movies / series) #}
+            <div class="mmc-tabs {% if activetab == 'series' %}is-series{% else %}is-movies{% endif %}">
                 <div class="mmc-tab-highlight"></div>
 
                 <a href="/"
-                   class="mmc-tab {% if active_tab == 'movies' or not active_tab %}active{% endif %}">
+                   class="mmc-tab {% if activetab != 'series' %}active{% endif %}">
                     Movies
                 </a>
                 <a href="/series"
-                   class="mmc-tab {% if active_tab == 'series' %}active{% endif %}">
+                   class="mmc-tab {% if activetab == 'series' %}active{% endif %}">
                     Series
                 </a>
             </div>
