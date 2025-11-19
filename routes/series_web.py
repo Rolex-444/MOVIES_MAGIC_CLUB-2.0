@@ -4,14 +4,17 @@ from typing import List, Optional
 
 from bson import ObjectId
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from db import get_db
+from verification_utils import (
+    should_require_verification,
+    increment_free_used,
+)
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
-
 
 # ---------- HELPERS (old nested structure, still used by /series/.../episode/... if you want) ----------
 
@@ -20,7 +23,6 @@ def _find_season(series: dict, season_number: int) -> Optional[dict]:
         if int(s.get("number", 0)) == season_number:
             return s
     return None
-
 
 def _find_episode(season: dict, episode_number: int) -> Optional[dict]:
     for e in season.get("episodes", []):
@@ -129,38 +131,39 @@ async def series_detail(request: Request, series_id: str):
         except Exception:
             series = None
 
-        if series:
-            # fetch seasons for this series
-            seasons_cursor = (
-                db["seasons"]
-                .find({"series_id": series["_id"]})
+    if series:
+        # fetch seasons for this series
+        seasons_cursor = (
+            db["seasons"]
+            .find({"series_id": series["_id"]})
+            .sort("number", 1)
+        )
+
+        async for s in seasons_cursor:
+            soid = s["_id"]
+            eps_cursor = (
+                db["episodes"]
+                .find({ "season_id": soid })
                 .sort("number", 1)
             )
-            async for s in seasons_cursor:
-                soid = s["_id"]
-                eps_cursor = (
-                    db["episodes"]
-                    .find({"season_id": soid})
-                    .sort("number", 1)
-                )
-                eps = [
-                    {
-                        "id": str(e["_id"]),
-                        "number": e.get("number"),
-                        "title": e.get("title", f"Episode {e.get('number')}"),
-                    }
-                    async for e in eps_cursor
-                ]
-                total_episodes += len(eps)
-                seasons.append(
-                    {
-                        "id": str(soid),
-                        "number": s.get("number"),
-                        "title": s.get("title", f"Season {s.get('number')}"),
-                        "year": s.get("year"),
-                        "episodes": eps,
-                    }
-                )
+            eps = [
+                {
+                    "id": str(e["_id"]),
+                    "number": e.get("number"),
+                    "title": e.get("title", f"Episode {e.get('number')}"),
+                }
+                async for e in eps_cursor
+            ]
+            total_episodes += len(eps)
+            seasons.append(
+                {
+                    "id": str(soid),
+                    "number": s.get("number"),
+                    "title": s.get("title", f"Season {s.get('number')}"),
+                    "year": s.get("year"),
+                    "episodes": eps,
+                }
+            )
 
     ctx = {
         "request": request,
@@ -180,20 +183,30 @@ async def episode_detail_page(request: Request, episode_id: str):
     episode -> seasons collection -> series collection.
     """
     db = get_db()
-    episode = None
+    episode_doc = None
     series = None
     season = None
+    episode_ctx = None
 
     if db is not None:
         try:
             eid = ObjectId(episode_id)
-            episode = await db["episodes"].find_one({"_id": eid})
+            episode_doc = await db["episodes"].find_one({"_id": eid})
         except Exception:
-            episode = None
+            episode_doc = None
 
-        if episode:
-            series = await db["series"].find_one({"_id": episode["series_id"]})
-            season = await db["seasons"].find_one({"_id": episode["season_id"]})
+    if episode_doc:
+        series = await db["series"].find_one({"_id": episode_doc["series_id"]})
+        season = await db["seasons"].find_one({"_id": episode_doc["season_id"]})
+
+        episode_ctx = {
+            "id": str(episode_doc["_id"]),
+            "number": episode_doc.get("number"),
+            "title": episode_doc.get("title", f"Episode {episode_doc.get('number')}"),
+            "description": episode_doc.get("description", ""),
+            "watch_url": episode_doc.get("watch_url", ""),
+            "download_url": episode_doc.get("download_url", ""),
+        }
 
     return templates.TemplateResponse(
         "episode_detail.html",
@@ -201,9 +214,75 @@ async def episode_detail_page(request: Request, episode_id: str):
             "request": request,
             "series": series,
             "season": season,
-            "episode": episode,
+            "episode": episode_ctx,
         },
     )
+
+
+# ---------- EPISODE WATCH/DOWNLOAD GATES (WITH VERIFICATION) ----------
+
+@router.get("/episode/{episode_id}/watch")
+async def episode_watch(request: Request, episode_id: str):
+    """
+    Gate for episode Watch button.
+    Uses same verification + counter as movies.
+    """
+    # 1) Check if verification required
+    if await should_require_verification(request):
+        return RedirectResponse(
+            url=f"/verify/start?next=/episode/{episode_id}/watch",
+            status_code=303,
+        )
+
+    # 2) Passed → count this click
+    await increment_free_used(request)
+
+    # 3) Redirect to actual watch_url
+    db = get_db()
+    episode_doc: Optional[dict] = None
+    if db is not None:
+        try:
+            eid = ObjectId(episode_id)
+            episode_doc = await db["episodes"].find_one({"_id": eid})
+        except Exception:
+            episode_doc = None
+
+    if not episode_doc or not episode_doc.get("watch_url"):
+        return RedirectResponse(url=f"/episode/{episode_id}", status_code=303)
+
+    return RedirectResponse(url=episode_doc["watch_url"], status_code=302)
+
+
+@router.get("/episode/{episode_id}/download")
+async def episode_download(request: Request, episode_id: str):
+    """
+    Gate for episode Download button.
+    Uses same verification + counter as movies.
+    """
+    # 1) Check if verification required
+    if await should_require_verification(request):
+        return RedirectResponse(
+            url=f"/verify/start?next=/episode/{episode_id}/download",
+            status_code=303,
+        )
+
+    # 2) Passed → count this click
+    await increment_free_used(request)
+
+    # 3) Redirect to actual download_url
+    db = get_db()
+    episode_doc: Optional[dict] = None
+    if db is not None:
+        try:
+            eid = ObjectId(episode_id)
+            episode_doc = await db["episodes"].find_one({"_id": eid})
+        except Exception:
+            episode_doc = None
+
+    if not episode_doc or not episode_doc.get("download_url"):
+        return RedirectResponse(url=f"/episode/{episode_id}", status_code=303)
+
+    return RedirectResponse(url=episode_doc["download_url"], status_code=302)
 
 
 # ---------- OLD NESTED EPISODE ROUTE (optional legacy) ----------
@@ -261,6 +340,8 @@ async def episode_detail(
     }
 
     episode_ctx = {
+        # legacy embedded episodes usually don't have an _id → no gated URL
+        "id": None,
         "number": episode.get("number"),
         "title": episode.get("title", ""),
         "description": episode.get("description", ""),
@@ -282,5 +363,5 @@ async def episode_detail(
             "season": season_ctx,
             "episode": episode_ctx,
         },
-        )
-        
+    )
+    
