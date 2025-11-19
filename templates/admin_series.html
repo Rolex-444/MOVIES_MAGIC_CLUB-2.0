@@ -2,292 +2,273 @@
 
 {% block content %}
 <style>
-  .admin-shell {
-      max-width: 960px;
-      margin: 0 auto;
-  }
-  .admin-title {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 6px;
-  }
-  .admin-sub {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-bottom: 12px;
-  }
+    .admin-shell {
+        margin-top: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        font-size: 13px;
+    }
+    .card {
+        background: rgba(15,23,42,0.96);
+        border-radius: 24px;
+        border: 1px solid rgba(148,163,184,0.5);
+        padding: 14px 14px 16px;
+    }
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 10px;
+    }
+    .card-title { font-size: 15px; font-weight: 600; }
+    .card-sub { font-size: 11px; color: var(--text-muted); }
+    .msg {
+        margin-top: 6px;
+        font-size: 12px;
+    }
+    .msg-ok { color: #4ade80; }
+    .msg-error { color: #f87171; }
 
-  .admin-tabs {
-      margin-top: 4px;
-      display: inline-flex;
-      gap: 6px;
-      padding: 4px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(30, 64, 175, 0.7);
-      margin-bottom: 10px;
-  }
-  .admin-tab-btn {
-      border: none;
-      border-radius: 999px;
-      padding: 6px 14px;
-      font-size: 12px;
-      cursor: pointer;
-      background: transparent;
-      color: var(--text-muted);
-  }
-  .admin-tab-btn.active {
-      background: linear-gradient(135deg, #f97316, #ec4899);
-      color: #fef2f2;
-      box-shadow: 0 6px 14px rgba(236, 72, 153, 0.6);
-  }
+    /* series list table */
+    .series-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+    }
+    .series-table th,
+    .series-table td {
+        padding: 7px 8px;
+        border-bottom: 1px solid rgba(51,65,85,0.5);
+        text-align: left;
+    }
+    .series-table th {
+        color: var(--text-muted);
+        font-weight: 600;
+        font-size: 11px;
+    }
+    .series-actions {
+        display: flex;
+        gap: 6px;
+    }
+    .btn-sm {
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 11px;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+    }
+    .btn-edit {
+        background: rgba(59,130,246,0.15);
+        color: #93c5fd;
+        border: 1px solid rgba(59,130,246,0.7);
+    }
+    .btn-delete {
+        background: rgba(248,113,113,0.12);
+        color: #fecaca;
+        border: 1px solid rgba(248,113,113,0.7);
+    }
 
-  .admin-card {
-      background: rgba(15, 23, 42, 0.95);
-      border-radius: 20px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      padding: 14px 14px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-  }
+    /* form styles */
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2,minmax(0,1fr));
+        gap: 10px 18px;
+    }
+    .form-field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .form-label {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+    .form-input,
+    .form-textarea,
+    .form-select {
+        background: #020617;
+        border-radius: 999px;
+        border: 1px solid rgba(75,85,99,0.9);
+        padding: 7px 11px;
+        font-size: 13px;
+        color: #e5e7eb;
+        outline: none;
+    }
+    .form-textarea {
+        border-radius: 16px;
+        min-height: 60px;
+        resize: vertical;
+    }
+    .lang-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 10px;
+        margin-top: 4px;
+    }
+    .lang-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        color: #e5e7eb;
+    }
+    .form-submit {
+        margin-top: 10px;
+        display: flex;
+        justify-content: flex-end;
+    }
+    .btn-primary {
+        background: linear-gradient(135deg,#f97316,#ec4899);
+        color: #020617;
+        border-radius: 999px;
+        padding: 8px 18px;
+        border: none;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+    }
 
-  .admin-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 10px 12px;
-  }
-  .admin-field label {
-      font-size: 11px;
-      color: var(--text-muted);
-      display: block;
-      margin-bottom: 2px;
-  }
-  .admin-input, .admin-select, .admin-textarea {
-      width: 100%;
-      border-radius: 10px;
-      border: 1px solid rgba(55, 65, 81, 0.9);
-      background: #020617;
-      color: #e5e7eb;
-      font-size: 12px;
-      padding: 6px 8px;
-  }
-  .admin-textarea {
-      min-height: 70px;
-      resize: vertical;
-  }
-
-  .lang-multi {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px 10px;
-      margin-top: 4px;
-  }
-  .lang-chip {
-      font-size: 11px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(55, 65, 81, 0.9);
-      background: #020617;
-  }
-
-  .admin-actions {
-      margin-top: 10px;
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-  }
-  .admin-btn-primary {
-      border-radius: 999px;
-      border: none;
-      padding: 7px 16px;
-      font-size: 13px;
-      cursor: pointer;
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      color: #ecfdf5;
-  }
-  .admin-btn-secondary {
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.7);
-      padding: 5px 10px;
-      font-size: 11px;
-      cursor: pointer;
-      background: #020617;
-      color: #e5e7eb;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-  }
-  .admin-msg {
-      margin-top: 8px;
-      font-size: 12px;
-      color: var(--accent-emerald);
-  }
-
-  .admin-panel {
-      display: none;
-  }
-  .admin-panel.active {
-      display: block;
-  }
-
-  .admin-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 11px;
-  }
-  .admin-table th,
-  .admin-table td {
-      padding: 6px 8px;
-      border-bottom: 1px solid rgba(51, 65, 85, 0.8);
-  }
-  .admin-table th {
-      text-align: left;
-      color: var(--text-muted);
-      font-weight: 500;
-  }
+    @media (max-width: 700px) {
+        .form-grid { grid-template-columns: minmax(0,1fr); }
+        .series-table { font-size: 11px; }
+    }
 </style>
 
 <section class="admin-shell">
-  <h1 class="admin-title">Admin · Series dashboard</h1>
-  <p class="admin-sub">
-      Add and manage web series, seasons and episodes.
-  </p>
 
-  <div style="font-size:11px; margin-bottom:6px;">
-      <a href="/admin/movies" style="color:#38bdf8; text-decoration:none;">← Back to Movies admin</a>
-  </div>
+    <!-- LIST ALL SERIES WITH EDIT/DELETE -->
+    <article class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">All series</div>
+                <div class="card-sub">Manage existing web series. Use Edit to update, Delete to remove.</div>
+            </div>
+        </div>
 
-  <div class="admin-tabs">
-      <button type="button" class="admin-tab-btn active" data-panel="panel-add">Add new series</button>
-      <button type="button" class="admin-tab-btn" data-panel="panel-list">All series</button>
-  </div>
+        {% if series_list and series_list|length > 0 %}
+        <table class="series-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Year</th>
+                    <th>Lang</th>
+                    <th>Quality</th>
+                    <th>Category</th>
+                    <th>Audio</th>
+                    <th style="width:110px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in series_list %}
+                <tr>
+                    <td>{{ s.title }}</td>
+                    <td>{{ s.year or "-" }}</td>
+                    <td>{{ s.language or "-" }}</td>
+                    <td>{{ s.quality or "-" }}</td>
+                    <td>{{ s.category or "-" }}</td>
+                    <td>{{ s.audio or "-" }}</td>
+                    <td>
+                        <div class="series-actions">
+                            <a class="btn-sm btn-edit" href="/admin/series/{{ s.id }}/edit">Edit</a>
 
-  <!-- ADD SERIES PANEL -->
-  <section id="panel-add" class="admin-panel active">
-      <article class="admin-card">
-          <form action="/admin/series" method="post" enctype="multipart/form-data">
-              <div class="admin-grid">
-                  <div class="admin-field">
-                      <label>Title</label>
-                      <input name="title" class="admin-input" required />
-                  </div>
-                  <div class="admin-field">
-                      <label>Year</label>
-                      <input name="year" class="admin-input" placeholder="2024" />
-                  </div>
-                  <div class="admin-field">
-                      <label>Quality</label>
-                      <input name="quality" class="admin-input" placeholder="HD / 1080p" />
-                  </div>
-                  <div class="admin-field">
-                      <label>Category / Genre</label>
-                      <input name="category" class="admin-input" placeholder="Thriller / Drama ..." />
-                  </div>
-                  <div class="admin-field">
-                      <label>Poster image</label>
-                      <input type="file" name="poster" class="admin-input" accept="image/*" />
-                      <small style="font-size:10px; color:var(--text-muted);">
-                          Upload a vertical poster for this series.
-                      </small>
-                  </div>
-              </div>
+                            <form method="post" action="/admin/series/{{ s.id }}/delete"
+                                  onsubmit="return confirm('Delete this series and its episodes?');">
+                                <button type="submit" class="btn-sm btn-delete">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <div class="msg msg-error">No series added yet.</div>
+        {% endif %}
+    </article>
 
-              <div class="admin-field" style="margin-top:8px;">
-                  <label>Languages (select one or more)</label>
-                  <div class="lang-multi">
-                      <label class="lang-chip">
-                          <input type="checkbox" name="languages" value="Tamil" /> Tamil
-                      </label>
-                      <label class="lang-chip">
-                          <input type="checkbox" name="languages" value="Telugu" /> Telugu
-                      </label>
-                      <label class="lang-chip">
-                          <input type="checkbox" name="languages" value="Hindi" /> Hindi
-                      </label>
-                      <label class="lang-chip">
-                          <input type="checkbox" name="languages" value="Malayalam" /> Malayalam
-                      </label>
-                      <label class="lang-chip">
-                          <input type="checkbox" name="languages" value="Kannada" /> Kannada
-                      </label>
-                      <label class="lang-chip">
-                          <input type="checkbox" name="languages" value="English" /> English
-                      </label>
-                  </div>
-              </div>
+    <!-- ADD NEW SERIES FORM -->
+    <article class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Add new series</div>
+                <div class="card-sub">Create a new web series entry with poster and languages.</div>
+            </div>
+        </div>
 
-              <div class="admin-field" style="margin-top:8px;">
-                  <label>Short description</label>
-                  <textarea name="description" class="admin-textarea"
-                            placeholder="Short description about the series..."></textarea>
-              </div>
+        <form method="post" action="/admin/series" enctype="multipart/form-data">
+            <div class="form-grid">
+                <div class="form-field">
+                    <label class="form-label">Title</label>
+                    <input class="form-input" type="text" name="title" required>
+                </div>
 
-              <div class="admin-actions">
-                  <button type="submit" class="admin-btn-primary">Save series</button>
-              </div>
+                <div class="form-field">
+                    <label class="form-label">Year</label>
+                    <input class="form-input" type="text" name="year" placeholder="2025">
+                </div>
 
-              {% if message %}
-              <div class="admin-msg">{{ message }}</div>
-              {% endif %}
-          </form>
-      </article>
-  </section>
+                <div class="form-field">
+                    <label class="form-label">Quality</label>
+                    <input class="form-input" type="text" name="quality" placeholder="1080P">
+                </div>
 
-  <!-- SERIES LIST PANEL -->
-  <section id="panel-list" class="admin-panel">
-      <article class="admin-card">
-          <div style="font-size:12px; color:var(--text-muted); margin-bottom:6px;">
-              Existing series – click Manage seasons to add episodes later.
-          </div>
-          <div style="max-height:260px; overflow-y:auto;">
-              <table class="admin-table">
-                  <thead>
-                      <tr>
-                          <th>Title</th>
-                          <th>Year</th>
-                          <th>Langs</th>
-                          <th></th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      {% for s in series_list %}
-                      <tr>
-                          <td>{{ s.title }}</td>
-                          <td>{{ s.year or "" }}</td>
-                          <td>{{ s.languages or "" }}</td>
-                          <td>
-                              <!-- IMPORTANT: Manage seasons link path -->
-                              <a href="/admin/series/{{ s.id }}/seasons"
-                                 class="admin-btn-secondary">
-                                  Manage seasons
-                              </a>
-                          </td>
-                      </tr>
-                      {% endfor %}
-                  </tbody>
-              </table>
-          </div>
-      </article>
-  </section>
+                <div class="form-field">
+                    <label class="form-label">Category / Genre</label>
+                    <input class="form-input" type="text" name="category" placeholder="Fantasy\\Adventure">
+                </div>
+
+                <div class="form-field">
+                    <label class="form-label">Poster image</label>
+                    <input class="form-input" type="file" name="poster" accept="image/*">
+                    <div class="card-sub" style="margin-top:2px;">Upload a vertical poster for this series.</div>
+                </div>
+
+                <div class="form-field">
+                    <label class="form-label">Languages (select one or more)</label>
+                    <div class="lang-row">
+                        <label class="lang-chip">
+                            <input type="checkbox" name="languages" value="Tamil"> Tamil
+                        </label>
+                        <label class="lang-chip">
+                            <input type="checkbox" name="languages" value="Telugu"> Telugu
+                        </label>
+                        <label class="lang-chip">
+                            <input type="checkbox" name="languages" value="Hindi"> Hindi
+                        </label>
+                        <label class="lang-chip">
+                            <input type="checkbox" name="languages" value="Malayalam"> Malayalam
+                        </label>
+                        <label class="lang-chip">
+                            <input type="checkbox" name="languages" value="Kannada"> Kannada
+                        </label>
+                        <label class="lang-chip">
+                            <input type="checkbox" name="languages" value="English"> English
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-field" style="grid-column:1 / -1;">
+                    <label class="form-label">Short description</label>
+                    <textarea class="form-textarea" name="description"
+                              placeholder="Binge-worthy series with engaging story and stunning visuals."></textarea>
+                </div>
+            </div>
+
+            <div class="form-submit">
+                <button type="submit" class="btn-primary">Save series</button>
+            </div>
+
+            {% if message %}
+                <div class="msg msg-ok">{{ message }}</div>
+            {% endif %}
+        </form>
+    </article>
 </section>
-
-<script>
-  const seriesTabButtons = document.querySelectorAll(".admin-tab-btn");
-  const seriesPanels = document.querySelectorAll(".admin-panel");
-
-  seriesTabButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-          const target = btn.getAttribute("data-panel");
-          seriesTabButtons.forEach(b => b.classList.remove("active"));
-          seriesPanels.forEach(p => p.classList.remove("active"));
-          btn.classList.add("active");
-          document.getElementById(target).classList.add("active");
-      });
-  });
-</script>
 {% endblock %}
+                              
