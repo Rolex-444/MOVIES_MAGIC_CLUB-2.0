@@ -220,73 +220,72 @@
 
 <section class="page-shell">
 
-    <!-- Latest release hero slider -->
-<article class="card">
-    <div class="card-header">
-        <div>
-            <h2 class="card-title">Latest release</h2>
-            <p class="card-sub">
-                Fresh movies added to Movies Magic Club · auto-sliding preview · last 5 uploads
-            </p>
+    {# ---------- LATEST RELEASE HERO (SLIDER) ---------- #}
+    <article class="card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Latest release</h2>
+                <p class="card-sub">
+                    Fresh movies added to Movies Magic Club · auto-sliding preview · last 5 uploads
+                </p>
+            </div>
         </div>
-    </div>
 
-    <div class="hero-shell" id="hero-slider-movies">
-        {% if latest_movies and latest_movies|length > 0 %}
-            {% set max_count = 5 %}
-            {% set count = latest_movies|length if latest_movies|length < max_count else max_count %}
+        <div class="hero-shell" id="hero-slider-movies">
+            {% if latest_movies and latest_movies|length > 0 %}
+                {% set max_count = 5 %}
+                {% set count = latest_movies|length if latest_movies|length < max_count else max_count %}
 
-            {% for m in latest_movies[:max_count] %}
-                <div class="hero-slide {% if loop.index0 == 0 %}active{% endif %}" data-index="{{ loop.index0 }}">
-                    <div class="hero-poster">
-                        {% if m.poster_path %}
-                            <img src="{{ m.poster_path }}" alt="{{ m.title }} Poster">
-                        {% endif %}
-                    </div>
-                    <div class="hero-main">
-                        <div>
-                            <div class="hero-title">
-                                {{ m.title }}
-                            </div>
-                            <div class="hero-meta">
-                                {{ m.year or "" }}
-                                {% if m.quality %} · {{ m.quality }}{% endif %}
-                                {% if m.category %} · {{ m.category }}{% endif %}
-                            </div>
-                        </div>
-                        <div class="hero-actions">
-                            {% if m.watch_url %}
-                                <a href="{{ m.watch_url }}" class="btn-primary">▶ Watch now</a>
-                            {% endif %}
-                            {% if m.download_url %}
-                                <a href="{{ m.download_url }}" class="btn-secondary">↓ Download</a>
+                {% for m in latest_movies[:max_count] %}
+                    <div class="hero-slide {% if loop.index0 == 0 %}active{% endif %}" data-index="{{ loop.index0 }}">
+                        <div class="hero-poster">
+                            {% if m.poster_path %}
+                                <img src="{{ m.poster_path }}" alt="{{ m.title }} Poster">
                             {% endif %}
                         </div>
+                        <div class="hero-main">
+                            <div>
+                                <div class="hero-title">
+                                    {{ m.title }}
+                                </div>
+                                <div class="hero-meta">
+                                    {{ m.year or "" }}
+                                    {% if m.quality %} · {{ m.quality }}{% endif %}
+                                    {% if m.category %} · {{ m.category }}{% endif %}
+                                </div>
+                            </div>
+                            <div class="hero-actions">
+                                {% if m.watch_url %}
+                                    <a href="{{ m.watch_url }}" class="btn-primary">▶ Watch now</a>
+                                {% endif %}
+                                {% if m.download_url %}
+                                    <a href="{{ m.download_url }}" class="btn-secondary">↓ Download</a>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
-                </div>
-            {% endfor %}
-
-            <div class="hero-dot-row">
-                {% for i in range(count) %}
-                    <button class="hero-dot {% if i == 0 %}active{% endif %}" data-index="{{ i }}"></button>
                 {% endfor %}
-            </div>
-        {% else %}
-            <div class="hero-slide active">
-                <div class="hero-poster"></div>
-                <div class="hero-main">
-                    <div class="hero-title">Sample movie</div>
-                    <div class="hero-meta">2024 · HD · Action / Adventure</div>
-                    <div class="hero-actions">
-                        <a href="/movies/browse" class="btn-primary">▶ Watch now</a>
-                        <a href="/movies/browse" class="btn-secondary">Browse all movies</a>
+
+                <div class="hero-dot-row">
+                    {% for i in range(count) %}
+                        <button class="hero-dot {% if i == 0 %}active{% endif %}" data-index="{{ i }}"></button>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="hero-slide active">
+                    <div class="hero-poster"></div>
+                    <div class="hero-main">
+                        <div class="hero-title">Sample movie</div>
+                        <div class="hero-meta">2024 · HD · Action / Adventure</div>
+                        <div class="hero-actions">
+                            <a href="/movies/browse" class="btn-primary">▶ Watch now</a>
+                            <a href="/movies/browse" class="btn-secondary">Browse all movies</a>
+                        </div>
                     </div>
                 </div>
-            </div>
-        {% endif %}
-    </div>
-</article>
-    
+            {% endif %}
+        </div>
+    </article>
     
      
 
