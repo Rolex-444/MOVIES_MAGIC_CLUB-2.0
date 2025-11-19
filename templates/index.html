@@ -219,75 +219,74 @@
 </style>
 
 <section class="page-shell">
-
-    <!-- Latest release hero slider -->
-    <article class="movie-hero-shell">
-        <div class="card-header" style="margin-bottom:8px;">
+    
+    <!-- LATEST RELEASE (HERO SLIDER) -->
+    <article class="card">
+        <div class="card-header">
             <div>
-                <div class="card-title">Latest release</div>
-                <div class="card-sub">
-                    Fresh movies added to Movies Magic Club
-                </div>
+                <h2 class="card-title">Latest release</h2>
+                <p class="card-sub">
+                    Fresh movies added to Movies Magic Club · auto-sliding preview · last 5 uploads
+                </p>
             </div>
         </div>
 
-        {% if latest_movies and latest_movies|length > 0 %}
-            {% set first = latest_movies[0] %}
-            <div class="movie-hero-grid">
-                <div class="movie-hero-item">
-                    <div class="movie-hero-poster">
-                        {% if first.poster_path %}
-                            <a href="/movie/{{ first.id }}" class="tile-link">
-                                <img src="{{ url_for('static', path=first.poster_path) }}"
-                                     alt="{{ first.title }} poster">
-                            </a>
-                        {% endif %}
-                    </div>
-                    <div class="movie-hero-main">
-                        <div class="movie-hero-title">
-                            {{ first.title }}
-                        </div>
-                        <div class="movie-hero-meta">
-                            {{ first.year or "" }}{% if first.quality %} · {{ first.quality }}{% endif %}{% if first.category %} · {{ first.category }}{% endif %}
-                        </div>
-                        <div class="movie-hero-actions">
-                            {% if first.watch_url %}
-                                <a href="{{ first.watch_url }}" class="movie-btn-hero-primary" target="_blank" rel="noopener">
-                                    ▶ Watch now
-                                </a>
-                            {% endif %}
-                            {% if first.download_url %}
-                                <a href="{{ first.download_url }}" class="movie-btn-hero-secondary" target="_blank" rel="noopener">
-                                    ⬇ Download
-                                </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="hero-shell" id="hero-slider-movies">
+            {% if latest_movies and latest_movies|length > 0 %}
+                {% set max_count = 5 %}
+                {% set count = latest_movies|length if latest_movies|length < max_count else max_count %}
 
-            <div class="movie-hero-dots">
-                {% set count = latest_movies|length if latest_movies|length < 5 else 5 %}
-                {% for i in range(count) %}
-                    <div class="movie-hero-dot {% if i == 0 %}active{% endif %}"></div>
+                {% for m in latest_movies[:max_count] %}
+                    <div class="hero-slide {% if loop.index0 == 0 %}active{% endif %}" data-index="{{ loop.index0 }}">
+                        <div class="hero-poster">
+                            {% if m.poster_path %}
+                                <img src="{{ m.poster_path }}" alt="{{ m.title }} Poster">
+                            {% endif %}
+                        </div>
+                        <div class="hero-main">
+                            <div>
+                                <div class="hero-title">
+                                    {{ m.title }}
+                                </div>
+                                <div class="hero-meta">
+                                    {{ m.year or "" }}
+                                    {% if m.quality %} · {{ m.quality }}{% endif %}
+                                    {% if m.category %} · {{ m.category }}{% endif %}
+                                </div>
+                            </div>
+                            <div class="hero-actions">
+                                {% if m.watch_url %}
+                                    <a href="{{ m.watch_url }}" class="btn-primary">▶ Watch now</a>
+                                {% endif %}
+                                {% if m.download_url %}
+                                    <a href="{{ m.download_url }}" class="btn-secondary">↓ Download</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
                 {% endfor %}
-            </div>
-        {% else %}
-            <div class="movie-hero-grid">
-                <div class="movie-hero-item">
-                    <div class="movie-hero-poster"></div>
-                    <div class="movie-hero-main">
-                        <div class="movie-hero-title">Sample Movie</div>
-                        <div class="movie-hero-meta">2024 · HD · Action / Adventure</div>
-                        <div class="movie-hero-actions">
-                            <a href="#" class="movie-btn-hero-primary">▶ Watch now</a>
+
+                <div class="hero-dot-row">
+                    {% for i in range(count) %}
+                        <button class="hero-dot {% if i == 0 %}active{% endif %}" data-index="{{ i }}"></button>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="hero-slide active">
+                    <div class="hero-poster"></div>
+                    <div class="hero-main">
+                        <div class="hero-title">Sample movie</div>
+                        <div class="hero-meta">2024 · HD · Action / Adventure</div>
+                        <div class="hero-actions">
+                            <a href="/movies/browse" class="btn-primary">▶ Watch now</a>
+                            <a href="/movies/browse" class="btn-secondary">Browse all movies</a>
                         </div>
                     </div>
                 </div>
-            </div>
-        {% endif %}
+            {% endif %}
+        </div>
     </article>
-
+    
     <!-- Browse by genre -->
     <article class="card genre-card">
         <div class="card-header">
@@ -614,3 +613,34 @@
 
 </section>
 {% endblock %}
+
+<script>
+(function () {
+    const slider = document.getElementById('hero-slider-movies');
+    if (!slider) return;
+
+    const slides = slider.querySelectorAll('.hero-slide');
+    const dots = slider.querySelectorAll('.hero-dot');
+    if (slides.length <= 1) return;
+
+    let index = 0;
+
+    function show(i) {
+        slides[index].classList.remove('active');
+        dots[index].classList.remove('active');
+        index = i;
+        slides[index].classList.add('active');
+        dots[index].classList.add('active');
+    }
+
+    dots.forEach((dot, i) => {
+        dot.addEventListener('click', () => show(i));
+    });
+
+    setInterval(() => {
+        const next = (index + 1) % slides.length;
+        show(next);
+    }, 5000); // 5 seconds
+})();
+</script>
+
