@@ -3,9 +3,9 @@
 {% block content %}
 <section class="mmc-main">
   <div class="mmc-layout">
-    <!-- Left: hero / info -->
     <div class="mmc-left-column">
 
+      <!-- HERO / HEADER -->
       <section class="detail-hero-card">
         <header class="detail-hero-header">
           <div>
@@ -14,7 +14,7 @@
             </h1>
             {% if series %}
             <p class="detail-hero-sub">
-              {{ series.year or "" }} · {{ series.primary_language or series.language or "Tamil" }} · Series
+              {{ series.year or "" }} · {{ series.language or "Tamil" }} · Series
             </p>
             {% endif %}
           </div>
@@ -25,38 +25,6 @@
           <p class="detail-hero-text">
             {{ series.description or "Binge-worthy series with engaging story and stunning visuals." }}
           </p>
-
-          <!-- WATCH / DOWNLOAD BUTTONS -->
-          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-            {% if primary_episode %}
-              {% if primary_episode.watch_url %}
-              <a href="{{ primary_episode.watch_url }}"
-                 class="btn-main-primary" target="_blank" rel="noopener">
-                ▶ Watch now
-              </a>
-              {% endif %}
-              {% if primary_episode.download_url %}
-              <a href="{{ primary_episode.download_url }}"
-                 class="btn-main-secondary" target="_blank" rel="noopener">
-                ⬇ Secure download
-              </a>
-              {% endif %}
-            {% elif series.watch_url or series.download_url %}
-              {% if series.watch_url %}
-              <a href="{{ series.watch_url }}"
-                 class="btn-main-primary" target="_blank" rel="noopener">
-                ▶ Watch now
-              </a>
-              {% endif %}
-              {% if series.download_url %}
-              <a href="{{ series.download_url }}"
-                 class="btn-main-secondary" target="_blank" rel="noopener">
-                ⬇ Secure download
-              </a>
-              {% endif %}
-            {% endif %}
-          </div>
-
           {% else %}
           <p class="detail-hero-text">
             The series you are looking for is not available right now.
@@ -65,9 +33,9 @@
         </div>
       </section>
 
-      <!-- SYNOPSIS + INFO -->
+      <!-- SYNOPSIS + META -->
       <section class="detail-info-card">
-        <h2 class="detail-section-title">Synopsis</h2>
+        <h2 class="detail-section-title">SynoPsis</h2>
         <p class="detail-body-text">
           {% if series and series.description %}
             {{ series.description }}
@@ -88,7 +56,7 @@
           <div>
             <div class="info-label">Primary</div>
             <div class="info-value">
-              {{ series.primary_language or series.language or "Tamil" if series else "—" }}
+              {{ series.language or "Tamil" if series else "—" }}
             </div>
           </div>
           <div>
@@ -98,7 +66,7 @@
             </div>
           </div>
           <div>
-            <div class="info-label">Episodes</div>
+            <div class="info-label">EPisodes</div>
             <div class="info-value">
               {{ episodes_count if episodes_count is defined else 0 }}
             </div>
@@ -106,48 +74,52 @@
         </div>
       </section>
 
-      <!-- EPISODES BLOCK -->
+      <!-- SEASONS + EPISODES SELECTOR -->
       <section class="detail-info-card">
-        <h2 class="detail-section-title">Episodes</h2>
-        {% if episodes_count is defined and episodes_count > 0 %}
+        <h2 class="detail-section-title">EPisodes</h2>
+
+        {% if seasons and seasons|length > 0 %}
           <p class="detail-body-text">
-            Choose an episode to watch or download.
+            Choose an ePisode to watch or download.
           </p>
-          <table class="episodes-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Title</th>
-                <th>Watch</th>
-                <th>Download</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for e in episodes %}
-              <tr>
-                <td>{{ e.number }}</td>
-                <td>{{ e.title }}</td>
-                <td>
-                  {% if e.watch_url %}
-                    <a href="{{ e.watch_url }}" target="_blank" rel="noopener">Watch</a>
-                  {% else %}
-                    —
-                  {% endif %}
-                </td>
-                <td>
-                  {% if e.download_url %}
-                    <a href="{{ e.download_url }}" target="_blank" rel="noopener">Download</a>
-                  {% else %}
-                    —
-                  {% endif %}
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+
+          {% for s in seasons %}
+          <div style="margin-top:10px;">
+            <div style="font-size:13px; font-weight:600; margin-bottom:4px;">
+              Season {{ s.number }}{% if s.title %} — {{ s.title }}{% endif %}
+            </div>
+            <table class="episodes-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Title</th>
+                  <th>Open</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for e in s.episodes %}
+                <tr>
+                  <td>{{ e.number }}</td>
+                  <td>{{ e.title }}</td>
+                  <td>
+                    <a href="/episode/{{ e.id }}">Open episode</a>
+                  </td>
+                </tr>
+                {% endfor %}
+                {% if s.episodes|length == 0 %}
+                <tr>
+                  <td colspan="3" style="color:var(--text-muted); padding:6px 4px;">
+                    No episodes added yet for this season.
+                  </td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+          {% endfor %}
         {% else %}
           <p class="detail-body-text">
-            Choose an episode to watch or download. Episodes will be added soon.
+            Choose an ePisode to watch or download. EPisodes will be added soon.
           </p>
         {% endif %}
       </section>
@@ -161,8 +133,6 @@
         </p>
       </section>
     </div>
-
-    <!-- Right side can be kept for sidebar / recommendations if you already have it -->
   </div>
 </section>
 {% endblock %}
