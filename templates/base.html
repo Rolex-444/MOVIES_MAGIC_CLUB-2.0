@@ -1,216 +1,192 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <title>Movies Magic Club</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/png" href="{{ url_for('static', path='favicon.png') }}">
-    <style>
-        :root {
-            --bg-main: #020617;
-            --bg-card: #020617;
-            --text-main: #e5e7eb;
-            --text-muted: #9ca3af;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
-                "Segoe UI", sans-serif;
-            background: radial-gradient(circle at top, #0f172a 0, #020617 45%, #000 100%);
-            color: var(--text-main);
-        }
-
-        a {
-            color: inherit;
-        }
-
-        .app-shell {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .app-main {
-            flex: 1;
-        }
-
-        /* Top bar */
-
-        .top-shell {
-            max-width: 960px;
-            margin: 12px auto 0;
-            padding: 6px 10px 10px;
-        }
-
-        .top-card {
-            border-radius: 24px;
-            border: 1px solid rgba(148, 163, 184, 0.6);
-            background: radial-gradient(circle at top left, #020617, #020617);
-            padding: 10px 12px 12px;
-        }
-
-        .top-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-
-        .brand-pill {
-            border-radius: 999px;
-            padding: 6px 16px;
-            border: 1px solid rgba(148, 163, 184, 0.8);
-            font-size: 12px;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-        }
-
-        .btn-admin {
-            border-radius: 999px;
-            padding: 6px 14px;
-            font-size: 12px;
-            border: 1px solid rgba(148, 163, 184, 0.9);
-            background: #020617;
-            color: #e5e7eb;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .search-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-
-        .search-input {
-            flex: 1;
-            border-radius: 999px;
-            border: 1px solid rgba(51, 65, 85, 0.9);
-            background: rgba(15, 23, 42, 0.95);
-            color: var(--text-main);
-            padding: 8px 14px;
-            font-size: 13px;
-            outline: none;
-        }
-
-        .btn-search {
-            width: 40px;
-            height: 40px;
-            border-radius: 999px;
-            border: none;
-            background: radial-gradient(circle at top, #22c55e, #0ea5e9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: #020617;
-            font-size: 18px;
-        }
-
-        .tab-row {
-            display: flex;
-            gap: 10px;
-            margin-top: 6px;
-        }
-
-        .tab-pill {
-            flex: 1;
-            text-align: center;
-            border-radius: 999px;
-            padding: 9px 0;
-            font-size: 13px;
-            cursor: pointer;
-            text-decoration: none;
-            border: 1px solid transparent;
-        }
-
-        .tab-pill--active {
-            background: linear-gradient(90deg, #f97316, #ec4899);
-            color: #020617;
-            box-shadow: 0 10px 30px rgba(248, 113, 113, 0.7);
-        }
-
-        .tab-pill--ghost {
-            background: rgba(15, 23, 42, 0.95);
-            border-color: rgba(51, 65, 85, 0.9);
-            color: var(--text-main);
-        }
-
-        /* Footer */
-
-        .footer {
-            margin-top: 24px;
-            padding: 16px 0 18px;
-            font-size: 11px;
-            color: var(--text-muted);
-            text-align: center;
-        }
-
-        @media (max-width: 768px) {
-            .top-shell {
-                padding: 6px 8px 10px;
-            }
-            .top-row {
-                align-items: flex-start;
-            }
-        }
-    </style>
-</head>
 <body>
-<div class="app-shell">
-    <header class="top-shell">
-        <div class="top-card">
-            <div class="top-row">
-                <div class="brand-pill">
-                    MOVIES MAGIC CLUB
+<style>
+    .mmc-shell {
+        max-width: 960px;
+        margin: 14px auto 24px auto;
+        padding: 0 10px;
+    }
+
+    .mmc-header-card {
+        background: rgba(15,23,42,0.98);
+        border-radius: 30px;
+        border: 1px solid rgba(148,163,184,0.7);
+        padding: 14px 16px 16px;
+        display: grid;
+        grid-template-columns: minmax(0,1.4fr) auto;
+        gap: 10px;
+        box-shadow: 0 18px 52px rgba(15,23,42,0.9);
+    }
+
+    .mmc-header-left {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .mmc-logo-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .mmc-logo {
+        font-size: 15px;
+        letter-spacing: 0.14em;
+    }
+
+    .mmc-logo span {
+        color: #f97316;
+    }
+
+    .mmc-top-buttons {
+        display: inline-flex;
+        gap: 6px;
+    }
+
+    .mmc-home-btn,
+    .mmc-admin-btn {
+        padding: 5px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(148,163,184,0.8);
+        font-size: 11px;
+        text-decoration: none;
+        color: #e5e7eb;
+        background: rgba(15,23,42,0.9);
+    }
+
+    .mmc-home-btn {
+        border-color: rgba(52,211,153,0.9);
+    }
+
+    .mmc-search {
+        background: rgba(15,23,42,1);
+        border-radius: 999px;
+        border: 1px solid rgba(51,65,85,0.95);
+        padding: 7px 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .mmc-search input {
+        flex: 1;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: #e5e7eb;
+        font-size: 13px;
+    }
+
+    .mmc-search-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        border: none;
+        background: radial-gradient(circle at 30% 0,#22c55e,#0ea5e9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    /* Tabs with animated highlight */
+    .mmc-tabs {
+        position: relative;
+        display: inline-flex;
+        background: rgba(15,23,42,0.98);
+        border-radius: 999px;
+        border: 1px solid rgba(148,163,184,0.7);
+        padding: 3px;
+        gap: 4px;
+        overflow: hidden;
+    }
+
+    .mmc-tab-highlight {
+        position: absolute;
+        top: 3px;
+        bottom: 3px;
+        left: 3px;
+        width: calc(50% - 3px);
+        border-radius: 999px;
+        background: linear-gradient(135deg,#f97316,#ec4899);
+        box-shadow: 0 10px 24px rgba(248,113,113,0.7);
+        transform: translateX(0%);
+        transition: transform 0.25s ease;
+        z-index: 0;
+    }
+
+    .mmc-tabs.is-series .mmc-tab-highlight {
+        transform: translateX(100%);
+    }
+
+    .mmc-tab {
+        position: relative;
+        z-index: 1;
+        border-radius: 999px;
+        padding: 6px 20px;
+        font-size: 13px;
+        border: none;
+        background: transparent;
+        color: #e5e7eb;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .mmc-tab.active {
+        color: #020617;
+    }
+
+    @media (max-width: 700px) {
+        .mmc-header-card {
+            grid-template-columns: minmax(0,1fr);
+        }
+    }
+</style>
+
+<div class="mmc-shell">
+    <header class="mmc-header-card">
+        <div class="mmc-header-left">
+            <div class="mmc-logo-row">
+                <div class="mmc-logo">
+                    MOVIES <span>MAGIC</span> CLUB
                 </div>
-                <!-- Admin button now points to a valid route -->
-                <a href="/admin/movies" class="btn-admin">
-                    Admin
-                </a>
+                <div class="mmc-top-buttons">
+                    <!-- Home button goes to main page -->
+                    <a href="/" class="mmc-home-btn">Home</a>
+                    <a href="/admin/movies" class="mmc-admin-btn">Admin</a>
+                </div>
             </div>
 
-            <div class="search-row">
-                <form action="/" method="get" style="display:flex;flex:1;gap:8px;">
-                    <input
-                        type="text"
-                        name="q"
-                        value="{{ request.query_params.get('q') or '' }}"
-                        placeholder="Search movies..."
-                        class="search-input"
-                    />
-                    <button type="submit" class="btn-search">🔍</button>
-                </form>
-            </div>
+            <form class="mmc-search" action="/search" method="get">
+                <input type="text"
+                       name="q"
+                       placeholder="Search movies..."
+                       value="{{ request.query_params.get('q','') }}">
+                <button class="mmc-search-btn" type="submit">
+                    🔍
+                </button>
+            </form>
 
-            <div class="tab-row">
+            {# Movies/Series tabs with animated slider #}
+            <div class="mmc-tabs
+                {% if active_tab == 'series' %}is-series{% else %}is-movies{% endif %}">
+                <div class="mmc-tab-highlight"></div>
+
                 <a href="/"
-                   class="tab-pill {{ 'tab-pill--active' if active_tab == 'movies' else 'tab-pill--ghost' }}">
+                   class="mmc-tab {% if active_tab == 'movies' or not active_tab %}active{% endif %}">
                     Movies
                 </a>
                 <a href="/series"
-                   class="tab-pill {{ 'tab-pill--active' if active_tab == 'series' else 'tab-pill--ghost' }}">
+                   class="mmc-tab {% if active_tab == 'series' %}active{% endif %}">
                     Series
                 </a>
             </div>
         </div>
     </header>
 
-    <main class="app-main">
+    <main>
         {% block content %}{% endblock %}
     </main>
-
-    <footer class="footer">
-        © 2025 Movies Magic Club. All rights reserved.
-    </footer>
 </div>
 </body>
-</html>
