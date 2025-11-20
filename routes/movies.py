@@ -11,10 +11,13 @@ import random
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
-def _prepare_movie_for_template(doc: dict) -> dict:
+def _prepare_movie_for_template(doc: dict) -> Optional[dict]:
     """Convert MongoDB movie doc to template-friendly format"""
+    if not doc or "_id" not in doc:
+        return None
+    
     return {
-        "id": str(doc.get("_id")),
+        "id": str(doc["_id"]),
         "title": doc.get("title", "Untitled"),
         "year": doc.get("year"),
         "language": doc.get("language"),
@@ -24,7 +27,7 @@ def _prepare_movie_for_template(doc: dict) -> dict:
         "poster_path": doc.get("poster_path"),
         "watch_url": doc.get("watch_url"),
         "download_url": doc.get("download_url"),
-        "qualities": doc.get("qualities", {}),  # ⭐ CRITICAL: Add this line
+        "qualities": doc.get("qualities", {}),  # ⭐ FIX: Add quality links
         "description": doc.get("description", ""),
         "is_multi_dubbed": doc.get("is_multi_dubbed", False),
         "created_at": doc.get("created_at"),
@@ -43,8 +46,8 @@ async def home(request: Request):
     movies_cursor = db["movies"].find().sort("created_at", -1)
     raw_movies = await movies_cursor.to_list(length=50)
     
-    # Convert to template format
-    movies = [_prepare_movie_for_template(m) for m in raw_movies]
+    # Convert to template format (filter out None values)
+    movies = [_prepare_movie_for_template(m) for m in raw_movies if _prepare_movie_for_template(m)]
 
     # Prepare trending (random sample) and recent
     trending_movies = random.sample(movies, min(8, len(movies))) if movies else []
@@ -98,8 +101,8 @@ async def movies_page(
     movies_cursor = db["movies"].find(query).sort("created_at", -1)
     raw_movies = await movies_cursor.to_list(length=100)
     
-    # Convert to template format
-    movies = [_prepare_movie_for_template(m) for m in raw_movies]
+    # Convert to template format (filter out None values)
+    movies = [_prepare_movie_for_template(m) for m in raw_movies if _prepare_movie_for_template(m)]
 
     return templates.TemplateResponse(
         "movies.html",
@@ -122,44 +125,54 @@ async def movie_detail(request: Request, movie_id: str):
             {"request": request, "movie": None, "error": "Database not connected"},
         )
 
-    try:
-        movie_doc = await db["movies"].find_one({"_id": ObjectId(movie_id)})
-    except:
+    # Validate movie_id format
+    if not movie_id or len(movie_id) != 24:
         return templates.TemplateResponse(
             "movie_detail.html",
-            {"request": request, "movie": None, "error": "Invalid movie ID"},
+            {"request": request, "movie": None, "error": "Invalid movie ID format"},
+        )
+
+    try:
+        movie_doc = await db["movies"].find_one({"_id": ObjectId(movie_id)})
+    except Exception as e:
+        return templates.TemplateResponse(
+            "movie_detail.html",
+            {"request": request, "movie": None, "error": f"Error finding movie: {e}"},
         )
 
     if not movie_doc:
         return templates.TemplateResponse(
             "movie_detail.html",
-            {"request": request, "movie": None, "error": "Movie not found"},
+            {"request": request, "movie": None, "error": "Movie not found in database"},
         )
 
-    # ⭐ Convert to template format (includes qualities)
+    # Convert to template format
     movie = _prepare_movie_for_template(movie_doc)
 
-    # Get related movies (same language/category)
-    related_query = {
-        "$and": [
-            {"_id": {"$ne": ObjectId(movie_id)}},
-            {
-                "$or": [
-                    {"language": movie_doc.get("language")},
-                    {"category": movie_doc.get("category")},
-                ]
-            },
-        ]
-    }
-    related_cursor = db["movies"].find(related_query).limit(8)
-    raw_related = await related_cursor.to_list(length=8)
-    related_movies = [_prepare_movie_for_template(m) for m in raw_related]
+    # Get related movies (handle errors gracefully)
+    try:
+        related_query = {
+            "$and": [
+                {"_id": {"$ne": ObjectId(movie_id)}},
+                {
+                    "$or": [
+                        {"language": movie_doc.get("language")},
+                        {"category": movie_doc.get("category")},
+                    ]
+                },
+            ]
+        }
+        related_cursor = db["movies"].find(related_query).limit(8)
+        raw_related = await related_cursor.to_list(length=8)
+        related_movies = [_prepare_movie_for_template(m) for m in raw_related if _prepare_movie_for_template(m)]
+    except:
+        related_movies = []
 
     return templates.TemplateResponse(
         "movie_detail.html",
         {
             "request": request,
-            "movie": movie,  # ⭐ This now includes qualities
+            "movie": movie,
             "related_movies": related_movies,
         },
         )
