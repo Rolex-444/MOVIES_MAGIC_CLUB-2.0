@@ -22,7 +22,7 @@ def is_admin(request: Request) -> bool:
 @router.get("/admin/verification", response_class=HTMLResponse)
 async def admin_verification_settings(request: Request):
     """
-    Admin page to manage 3-free-movies verification settings.
+    Admin page for 3-free-movies verification settings.
     """
     # Authentication check
     if not is_admin(request):
@@ -43,7 +43,7 @@ async def admin_verification_settings(request: Request):
             },
         )
     
-    # Fetch current settings from correct collection
+    # ✅ CORRECT: Read from "settings" collection with _id "verification"
     settings = await db["settings"].find_one({"_id": "verification"})
     
     if not settings:
@@ -69,7 +69,7 @@ async def admin_verification_settings(request: Request):
 @router.post("/admin/verification", response_class=HTMLResponse)
 async def admin_verification_update(
     request: Request,
-    enabled: str = Form("off"),  # checkbox sends "on" if checked, "off" if unchecked
+    enabled: str = Form("off"),
     free_limit: int = Form(3),
     valid_minutes: int = Form(1440),
 ):
@@ -87,10 +87,10 @@ async def admin_verification_update(
             status_code=303,
         )
     
-    # Convert checkbox value to boolean
+    # Convert checkbox to boolean
     enabled_bool = (enabled == "on")
     
-    # Save to correct collection and document ID
+    # ✅ CORRECT: Save to "settings" collection with _id "verification"
     await db["settings"].update_one(
         {"_id": "verification"},
         {
@@ -106,5 +106,5 @@ async def admin_verification_update(
     return RedirectResponse(
         "/admin/verification?message=Settings+updated+successfully",
         status_code=303,
-                )
+    )
     
