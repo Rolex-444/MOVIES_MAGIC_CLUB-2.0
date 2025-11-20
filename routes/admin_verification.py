@@ -14,20 +14,11 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 
-def is_admin(request: Request) -> bool:
-    """Check if current session is admin."""
-    return request.session.get("admin_logged_in", False)
-
-
 @router.get("/admin/verification", response_class=HTMLResponse)
 async def admin_verification_settings(request: Request):
     """
-    Admin page for 3-free-movies verification settings.
+    Admin page for verification settings (TEMP: No auth check).
     """
-    # Authentication check
-    if not is_admin(request):
-        return RedirectResponse("/admin/login", status_code=303)
-    
     db = get_db()
     message = request.query_params.get("message", "")
     
@@ -43,11 +34,10 @@ async def admin_verification_settings(request: Request):
             },
         )
     
-    # ✅ CORRECT: Read from "settings" collection with _id "verification"
+    # Read from correct collection
     settings = await db["settings"].find_one({"_id": "verification"})
     
     if not settings:
-        # Use config defaults
         settings = {
             "enabled": VERIFICATION_DEFAULT_ENABLED,
             "free_limit": VERIFICATION_DEFAULT_FREE_LIMIT,
@@ -74,12 +64,8 @@ async def admin_verification_update(
     valid_minutes: int = Form(1440),
 ):
     """
-    Update 3-free-movies verification settings.
+    Update verification settings (TEMP: No auth check).
     """
-    # Authentication check
-    if not is_admin(request):
-        return RedirectResponse("/admin/login", status_code=303)
-    
     db = get_db()
     if db is None:
         return RedirectResponse(
@@ -87,10 +73,9 @@ async def admin_verification_update(
             status_code=303,
         )
     
-    # Convert checkbox to boolean
     enabled_bool = (enabled == "on")
     
-    # ✅ CORRECT: Save to "settings" collection with _id "verification"
+    # Save to correct collection
     await db["settings"].update_one(
         {"_id": "verification"},
         {
