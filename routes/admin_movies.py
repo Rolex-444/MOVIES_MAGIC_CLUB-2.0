@@ -1,31 +1,27 @@
 # routes/admin_movies.py
 
 import os
+import shutil
 from datetime import datetime
 from typing import List
 from uuid import uuid4
-
 from bson import ObjectId
 from fastapi import APIRouter, Request, Form, File, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-
 from db import get_db
 from .admin_auth import is_admin
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
-
-# ---------- MOVIES ADMIN: LIST + SEARCH + ADD ----------
-
-
+# ---------- ADMIN MOVIES DASHBOARD ----------
 @router.get("/admin/movies", response_class=HTMLResponse)
-async def admin_movies_dashboard(request: Request, message: str = ""):
+async def admin_movies_dashboard(request: Request, message: str = "", q: str = ""):
+    """Main admin dashboard for movies"""
     if not is_admin(request):
         return RedirectResponse("/admin/login", status_code=303)
-
-    q = request.query_params.get("q", "").strip()
+    
     db = get_db()
     if db is None:
         return templates.TemplateResponse(
@@ -34,58 +30,47 @@ async def admin_movies_dashboard(request: Request, message: str = ""):
                 "request": request,
                 "message": "MongoDB not connected",
                 "q": q,
+                "movies": [],
                 "total_movies": 0,
                 "tamil_count": 0,
                 "telugu_count": 0,
                 "hindi_count": 0,
-                "malayalam_count": 0,
-                "kannada_count": 0,
-                "movies": [],
             },
         )
-
-    movies_col = db["movies"]
-
-    total_movies = await movies_col.count_documents({})
-    tamil_count = await movies_col.count_documents({"language": "Tamil"})
-    telugu_count = await movies_col.count_documents({"language": "Telugu"})
-    hindi_count = await movies_col.count_documents({"language": "Hindi"})
-    malayalam_count = await movies_col.count_documents({"language": "Malayalam"})
-    kannada_count = await movies_col.count_documents({"language": "Kannada"})
-
+    
+    # Build query
     query = {}
-    if q:
-        query = {"title": {"$regex": q, "$options": "i"}}
-
-    cursor = movies_col.find(query).sort("_id", -1).limit(50)
-    movies = [
-        {
-            "id": str(doc.get("_id")),
-            "title": doc.get("title", "Untitled"),
-            "year": doc.get("year"),
-            "language": doc.get("language"),
-            "quality": doc.get("quality", "HD"),
-        }
-        async for doc in cursor
-    ]
-
+    if q.strip():
+        query["$or"] = [
+            {"title": {"$regex": q, "$options": "i"}},
+            {"category": {"$regex": q, "$options": "i"}},
+            {"language": {"$regex": q, "$options": "i"}},
+        ]
+    
+    # Get movies
+    movies_cursor = db["movies"].find(query).sort("created_at", -1)
+    movies = await movies_cursor.to_list(length=100)
+    
+    # Get language counts
+    tamil_count = await db["movies"].count_documents({"language": "Tamil"})
+    telugu_count = await db["movies"].count_documents({"language": "Telugu"})
+    hindi_count = await db["movies"].count_documents({"language": "Hindi"})
+    
     return templates.TemplateResponse(
         "admin_movies.html",
         {
             "request": request,
             "message": message,
             "q": q,
-            "total_movies": total_movies,
+            "movies": movies,
+            "total_movies": len(movies),
             "tamil_count": tamil_count,
             "telugu_count": telugu_count,
             "hindi_count": hindi_count,
-            "malayalam_count": malayalam_count,
-            "kannada_count": kannada_count,
-            "movies": movies,
         },
     )
 
-
+# ---------- CREATE MOVIE ----------
 @router.post("/admin/movies", response_class=HTMLResponse)
 async def admin_create_movie(
     request: Request,
@@ -93,9 +78,9 @@ async def admin_create_movie(
     year: str = Form(""),
     quality: str = Form("HD"),
     category: str = Form(""),
-    watch_url: str = Form(""),  # Fallback single URL
-    download_url: str = Form(""),  # Fallback single URL
-    # ⭐ NEW: Quality-specific URLs
+    watch_url: str = Form(""),
+    download_url: str = Form(""),
+    # Quality-specific URLs
     quality_480p_watch: str = Form(""),
     quality_480p_download: str = Form(""),
     quality_720p_watch: str = Form(""),
@@ -106,13 +91,12 @@ async def admin_create_movie(
     quality_2k_download: str = Form(""),
     quality_4k_watch: str = Form(""),
     quality_4k_download: str = Form(""),
+    # Multi-language support
     languages: List[str] = Form(default=[]),
     description: str = Form(""),
     poster: UploadFile = File(None),
 ):
-    """
-    Create movie with multiple quality options
-    """
+    """Create a new movie with all fields including qualities"""
     if not is_admin(request):
         return RedirectResponse("/admin/login", status_code=303)
 
@@ -126,7 +110,7 @@ async def admin_create_movie(
     # Handle poster upload
     poster_path = None
     if poster and poster.filename:
-        poster_dir = os.path.join("static", "posters")
+        poster_dir = "static/posters"
         os.makedirs(poster_dir, exist_ok=True)
         ext = os.path.splitext(poster.filename)[1].lower()
         filename = f"{uuid4().hex}{ext}"
@@ -143,7 +127,7 @@ async def admin_create_movie(
         except ValueError:
             year_int = None
 
-    # ⭐ NEW: Build qualities dict
+    # Build qualities dict
     qualities = {}
     
     if quality_480p_watch.strip() or quality_480p_download.strip():
@@ -176,26 +160,31 @@ async def admin_create_movie(
             "download_url": quality_4k_download.strip() or None,
         }
 
-    # Determine quality label for display
+    # Determine quality label
     if qualities:
         quality_label = ", ".join(qualities.keys())
     else:
-        quality_label = quality or "HD"
+        quality_label = quality
 
+    # Primary language (first checked)
     primary_language = languages[0] if languages else "Tamil"
+    
+    # Check if multi-dubbed
+    is_multi_dubbed = len(languages) > 1
 
     movie_doc = {
-        "title": title,
+        "title": title.strip(),
         "year": year_int,
         "language": primary_language,
         "languages": languages,
         "quality": quality_label,
-        "category": category,
-        "watch_url": watch_url or None,  # Fallback
-        "download_url": download_url or None,  # Fallback
-        "qualities": qualities,  # ⭐ NEW: Store all quality options
+        "category": category.strip() or None,
+        "watch_url": watch_url.strip() or None,
+        "download_url": download_url.strip() or None,
+        "qualities": qualities,
         "poster_path": poster_path,
-        "description": description,
+        "description": description.strip(),
+        "is_multi_dubbed": is_multi_dubbed,
         "created_at": datetime.utcnow(),
     }
 
@@ -203,15 +192,12 @@ async def admin_create_movie(
     return RedirectResponse(
         "/admin/movies?message=Movie+saved+successfully+%E2%9C%85",
         status_code=303,
-    ) 
-    
+    )
 
-
-# ---------- MOVIES ADMIN: EDIT + DELETE ----------
-
-
-@router.get("/admin/movies/{movie_id}/edit", response_class=HTMLResponse)
+# ---------- EDIT MOVIE (SHOW FORM) ----------
+@router.get("/admin/movies/edit/{movie_id}", response_class=HTMLResponse)
 async def admin_edit_movie_form(request: Request, movie_id: str):
+    """Show edit form for a movie"""
     if not is_admin(request):
         return RedirectResponse("/admin/login", status_code=303)
 
@@ -223,39 +209,30 @@ async def admin_edit_movie_form(request: Request, movie_id: str):
         )
 
     try:
-        oid = ObjectId(movie_id)
-        movie = await db["movies"].find_one({"_id": oid})
-    except Exception:
-        movie = None
+        movie_doc = await db["movies"].find_one({"_id": ObjectId(movie_id)})
+    except:
+        return RedirectResponse(
+            "/admin/movies?message=Invalid+movie+ID",
+            status_code=303,
+        )
 
-    if not movie:
+    if not movie_doc:
         return RedirectResponse(
             "/admin/movies?message=Movie+not+found",
             status_code=303,
         )
 
-    movie_ctx = {
-        "id": str(movie.get("_id")),
-        "title": movie.get("title", ""),
-        "year": movie.get("year") or "",
-        "language": movie.get("language", "Tamil"),
-        "quality": movie.get("quality", "HD"),
-        "category": movie.get("category", ""),
-        "watch_url": movie.get("watch_url", ""),
-        "download_url": movie.get("download_url", ""),
-        "languages": movie.get("languages", []),
-        "description": movie.get("description", ""),
-        "poster_path": movie.get("poster_path"),
-    }
-
     return templates.TemplateResponse(
         "admin_edit_movie.html",
-        {"request": request, "movie": movie_ctx},
+        {
+            "request": request,
+            "movie": movie_doc,
+        },
     )
 
-
-@router.post("/admin/movies/{movie_id}/edit", response_class=HTMLResponse)
-async def admin_edit_movie(
+# ---------- EDIT MOVIE (HANDLE SUBMIT) ----------
+@router.post("/admin/movies/edit/{movie_id}", response_class=HTMLResponse)
+async def admin_update_movie(
     request: Request,
     movie_id: str,
     title: str = Form(...),
@@ -264,10 +241,23 @@ async def admin_edit_movie(
     category: str = Form(""),
     watch_url: str = Form(""),
     download_url: str = Form(""),
+    # Quality-specific URLs
+    quality_480p_watch: str = Form(""),
+    quality_480p_download: str = Form(""),
+    quality_720p_watch: str = Form(""),
+    quality_720p_download: str = Form(""),
+    quality_1080p_watch: str = Form(""),
+    quality_1080p_download: str = Form(""),
+    quality_2k_watch: str = Form(""),
+    quality_2k_download: str = Form(""),
+    quality_4k_watch: str = Form(""),
+    quality_4k_download: str = Form(""),
+    # Multi-language support
     languages: List[str] = Form(default=[]),
     description: str = Form(""),
     poster: UploadFile = File(None),
 ):
+    """Update an existing movie"""
     if not is_admin(request):
         return RedirectResponse("/admin/login", status_code=303)
 
@@ -280,35 +270,16 @@ async def admin_edit_movie(
 
     try:
         oid = ObjectId(movie_id)
-    except Exception:
+    except:
         return RedirectResponse(
-            "/admin/movies?message=Invalid+movie+id",
+            "/admin/movies?message=Invalid+movie+ID",
             status_code=303,
         )
 
-    primary_language = languages[0] if languages else "Tamil"
-
-    update = {
-        "title": title,
-        "language": primary_language,
-        "quality": quality or "HD",
-        "category": category,
-        "watch_url": watch_url,
-        "download_url": download_url,
-        "languages": languages,
-        "description": description,
-    }
-
-    if year.strip():
-        try:
-            update["year"] = int(year)
-        except ValueError:
-            update["year"] = None
-    else:
-        update["year"] = None
-
+    # Handle poster upload (if new poster provided)
+    poster_path = None
     if poster and poster.filename:
-        poster_dir = os.path.join("static", "posters")
+        poster_dir = "static/posters"
         os.makedirs(poster_dir, exist_ok=True)
         ext = os.path.splitext(poster.filename)[1].lower()
         filename = f"{uuid4().hex}{ext}"
@@ -317,18 +288,96 @@ async def admin_edit_movie(
         with open(filepath, "wb") as f:
             f.write(content)
         poster_path = f"posters/{filename}"
-        update["poster_path"] = poster_path
 
-    await db["movies"].update_one({"_id": oid}, {"$set": update})
+    year_int = None
+    if year.strip():
+        try:
+            year_int = int(year)
+        except ValueError:
+            year_int = None
+
+    # Build qualities dict
+    qualities = {}
+    
+    if quality_480p_watch.strip() or quality_480p_download.strip():
+        qualities["480p"] = {
+            "watch_url": quality_480p_watch.strip() or None,
+            "download_url": quality_480p_download.strip() or None,
+        }
+    
+    if quality_720p_watch.strip() or quality_720p_download.strip():
+        qualities["720p"] = {
+            "watch_url": quality_720p_watch.strip() or None,
+            "download_url": quality_720p_download.strip() or None,
+        }
+    
+    if quality_1080p_watch.strip() or quality_1080p_download.strip():
+        qualities["1080p"] = {
+            "watch_url": quality_1080p_watch.strip() or None,
+            "download_url": quality_1080p_download.strip() or None,
+        }
+    
+    if quality_2k_watch.strip() or quality_2k_download.strip():
+        qualities["2k"] = {
+            "watch_url": quality_2k_watch.strip() or None,
+            "download_url": quality_2k_download.strip() or None,
+        }
+    
+    if quality_4k_watch.strip() or quality_4k_download.strip():
+        qualities["4k"] = {
+            "watch_url": quality_4k_watch.strip() or None,
+            "download_url": quality_4k_download.strip() or None,
+        }
+
+    # Determine quality label
+    if qualities:
+        quality_label = ", ".join(qualities.keys())
+    else:
+        quality_label = quality
+
+    # Primary language
+    primary_language = languages[0] if languages else "Tamil"
+    is_multi_dubbed = len(languages) > 1
+
+    # Update document
+    update_data = {
+        "title": title.strip(),
+        "year": year_int,
+        "language": primary_language,
+        "languages": languages,
+        "quality": quality_label,
+        "category": category.strip() or None,
+        "watch_url": watch_url.strip() or None,
+        "download_url": download_url.strip() or None,
+        "qualities": qualities,
+        "description": description.strip(),
+        "is_multi_dubbed": is_multi_dubbed,
+    }
+
+    # Only update poster if new one provided
+    if poster_path:
+        update_data["poster_path"] = poster_path
+
+    result = await db["movies"].update_one(
+        {"_id": oid},
+        {"$set": update_data}
+    )
+
+    if result.modified_count == 0:
+        return RedirectResponse(
+            "/admin/movies?message=Movie+not+found+or+no+changes+made",
+            status_code=303,
+        )
 
     return RedirectResponse(
-        "/admin/movies?message=Movie+updated+successfully",
+        "/admin/movies?message=Movie+updated+successfully+%E2%9C%85",
         status_code=303,
     )
 
-
-@router.post("/admin/movies/{movie_id}/delete")
+# ---------- DELETE MOVIE ----------
+@router.get("/admin/movies/delete/{movie_id}")
 async def admin_delete_movie(request: Request, movie_id: str):
+    """Delete a movie (with confirmation already handled by JS)"""
     if not is_admin(request):
         return RedirectResponse("/admin/login", status_code=303)
 
@@ -341,10 +390,23 @@ async def admin_delete_movie(request: Request, movie_id: str):
 
     try:
         oid = ObjectId(movie_id)
-        await db["movies"].delete_one({"_id": oid})
-        msg = "Movie+deleted+successfully"
-    except Exception:
-        msg = "Failed+to+delete+movie"
+    except:
+        return RedirectResponse(
+            "/admin/movies?message=Invalid+movie+ID",
+            status_code=303,
+        )
 
-    return RedirectResponse(f"/admin/movies?message={msg}", status_code=303)
-        
+    # Delete the movie
+    result = await db["movies"].delete_one({"_id": oid})
+    
+    if result.deleted_count == 0:
+        return RedirectResponse(
+            "/admin/movies?message=Movie+not+found",
+            status_code=303,
+        )
+
+    return RedirectResponse(
+        "/admin/movies?message=Movie+deleted+successfully+%F0%9F%97%91",
+        status_code=303,
+    )
+    
