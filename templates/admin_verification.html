@@ -37,6 +37,15 @@
     border: 1px solid rgba(148, 163, 184, 0.2);
     border-radius: 16px;
     padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
   }
   .form-group {
     margin-bottom: 24px;
@@ -65,13 +74,17 @@
     cursor: pointer;
   }
   .form-input {
-    width: 120px;
+    width: 100%;
+    max-width: 500px;
     padding: 10px 14px;
     font-size: 14px;
     background: rgba(30, 41, 59, 0.8);
     border: 1px solid rgba(148, 163, 184, 0.3);
     border-radius: 8px;
     color: #e2e8f0;
+  }
+  .form-input-small {
+    width: 120px;
   }
   .form-input:focus {
     outline: none;
@@ -115,7 +128,7 @@
 <div class="admin-container">
   <div class="page-header">
     <h1 class="page-title">🔒 Verification Settings</h1>
-    <p class="page-subtitle">Configure the 3-free-movies verification system for your website</p>
+    <p class="page-subtitle">Configure the verification system and shortlink service</p>
   </div>
 
   {% if message %}
@@ -124,8 +137,11 @@
   </div>
   {% endif %}
 
-  <div class="settings-card">
-    <form method="post">
+  <form method="post">
+    <!-- Verification Settings Card -->
+    <div class="settings-card">
+      <div class="card-title">Verification Settings</div>
+
       <!-- Enable/Disable Verification -->
       <div class="form-group">
         <label class="form-label">Verification System</label>
@@ -152,13 +168,13 @@
           type="number" 
           id="free_limit" 
           name="free_limit" 
-          class="form-input"
+          class="form-input form-input-small"
           min="1" 
           max="10" 
           value="{{ free_limit|default(3) }}"
         />
         <span class="form-help">
-          Number of movies/series users can watch for free per day before verification (Recommended: 3)
+          Number of movies/series users can watch for free per day before verification
         </span>
       </div>
 
@@ -169,7 +185,7 @@
           type="number" 
           id="valid_minutes" 
           name="valid_minutes" 
-          class="form-input"
+          class="form-input form-input-small"
           min="15" 
           max="2880" 
           value="{{ valid_minutes|default(1440) }}"
@@ -178,22 +194,60 @@
           How long verification remains valid after completion (1440 minutes = 24 hours)
         </span>
       </div>
+    </div>
 
-      <button type="submit" class="btn-save">
-        💾 Save Settings
-      </button>
-    </form>
+    <!-- Shortlink Settings Card -->
+    <div class="settings-card">
+      <div class="card-title">🔗 Shortlink Settings</div>
 
-    <div class="settings-info">
-      <div class="settings-info-title">ℹ️ How It Works</div>
-      <div class="settings-info-text">
-        • Users can watch <strong>{{ free_limit|default(3) }} movies/series</strong> for free each day<br>
-        • On the {{ free_limit|default(3) + 1 }}th attempt, they'll be asked to verify<br>
-        • After verification, they can continue watching for <strong>{{ valid_minutes|default(1440) }} minutes</strong><br>
-        • The free limit resets daily at midnight (IST)
+      <!-- Shortlink API Key -->
+      <div class="form-group">
+        <label class="form-label" for="shortlink_api">Shortlink API Key</label>
+        <input 
+          type="text" 
+          id="shortlink_api" 
+          name="shortlink_api" 
+          class="form-input"
+          placeholder="Enter your shortlink API key"
+          value="{{ shortlink_api|default('') }}"
+        />
+        <span class="form-help">
+          Your API key from the shortlink service (e.g., GPLinks, Shrinkme, etc.)
+        </span>
       </div>
+
+      <!-- Shortlink URL -->
+      <div class="form-group">
+        <label class="form-label" for="shortlink_url">Shortlink Service URL</label>
+        <input 
+          type="text" 
+          id="shortlink_url" 
+          name="shortlink_url" 
+          class="form-input"
+          placeholder="https://gplinks.co or https://shrinkme.io"
+          value="{{ shortlink_url|default('') }}"
+        />
+        <span class="form-help">
+          The base URL of your shortlink service
+        </span>
+      </div>
+    </div>
+
+    <button type="submit" class="btn-save">
+      💾 Save All Settings
+    </button>
+  </form>
+
+  <div class="settings-info">
+    <div class="settings-info-title">ℹ️ How It Works</div>
+    <div class="settings-info-text">
+      • Users can watch <strong>{{ free_limit|default(3) }} movies/series</strong> for free each day<br>
+      • On the {{ free_limit|default(3) + 1 }}th attempt, they'll be asked to verify via shortlink<br>
+      • After verification, they can continue watching for <strong>{{ valid_minutes|default(1440) }} minutes</strong><br>
+      • The free limit resets daily at midnight (IST)
     </div>
   </div>
 </div>
 
 {% endblock %}
+  
