@@ -2,456 +2,454 @@
 
 {% block content %}
 <style>
-    .admin-shell {
-        max-width: 1040px;
-        margin: 14px auto 0;
-        padding: 0 10px 18px;
-        font-size: 13px;
+    .admin-container {
+        margin-top: 12px;
+        padding: 16px;
     }
-
-    .admin-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-        gap: 14px;
-    }
-
-    .admin-card {
-        background: rgba(15, 23, 42, 0.98);
-        border-radius: 24px;
-        border: 1px solid rgba(148, 163, 184, 0.6);
-        padding: 16px 16px 18px;
-    }
-
+    
     .admin-header {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-bottom: 12px;
-    }
-
-    .admin-title {
-        font-size: 18px;
-        font-weight: 650;
-    }
-
-    .admin-sub {
-        font-size: 12px;
-        color: var(--text-muted);
-    }
-
-    .admin-tabs {
-        display: inline-flex;
-        border-radius: 999px;
-        padding: 3px;
         background: rgba(15, 23, 42, 0.96);
-        border: 1px solid rgba(51, 65, 85, 0.9);
-        gap: 4px;
-        align-items: center;
+        border-radius: 24px;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        padding: 24px;
+        margin-bottom: 24px;
     }
-
-    .admin-tab {
-        padding: 6px 14px;
-        border-radius: 999px;
-        font-size: 12px;
-        text-decoration: none;
-        cursor: pointer;
-        border: none;
+    
+    .admin-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, #06b6d4, #3b82f6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .admin-subtitle {
+        font-size: 13px;
+        color: rgba(229, 231, 235, 0.7);
+    }
+    
+    .admin-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+    
+    @media (max-width: 1024px) {
+        .admin-content {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .admin-section {
+        background: rgba(15, 23, 42, 0.96);
+        border-radius: 24px;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        padding: 24px;
+    }
+    
+    .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 16px;
         color: #e5e7eb;
-        background: transparent;
-        white-space: nowrap;
     }
-
-    .admin-tab--active {
-        background: linear-gradient(135deg, #f97316, #ec4899);
-        color: #020617;
-        box-shadow: 0 8px 20px rgba(248, 113, 113, 0.6);
-    }
-
-    .admin-message {
-        font-size: 12px;
-        margin-top: 6px;
-        padding: 6px 10px;
-        border-radius: 10px;
-        background: rgba(22, 163, 74, 0.1);
-        border: 1px solid rgba(22, 163, 74, 0.5);
-        color: #bbf7d0;
-    }
-
-    .stats-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 6px;
-    }
-
-    .stat-pill {
-        padding: 4px 10px;
-        border-radius: 999px;
-        border: 1px solid rgba(55, 65, 81, 0.9);
-        font-size: 11px;
-        color: var(--text-muted);
-    }
-
-    .stat-label {
-        color: #e5e7eb;
-        font-weight: 500;
-    }
-
-    .search-row {
-        display: flex;
-        margin-top: 10px;
-        gap: 8px;
-    }
-
-    .search-input-admin {
-        flex: 1;
-        border-radius: 999px;
-        border: 1px solid rgba(51, 65, 85, 0.9);
-        background: rgba(15, 23, 42, 0.95);
-        color: var(--text-main);
-        padding: 7px 12px;
-        font-size: 12px;
-        outline: none;
-    }
-
-    .btn-search-admin {
-        padding: 7px 12px;
-        border-radius: 999px;
-        border: none;
-        background: linear-gradient(135deg, #22c55e, #14b8a6);
-        color: #020617;
-        font-size: 12px;
-        cursor: pointer;
-        white-space: nowrap;
-    }
-
+    
+    /* Movies Table */
     .movies-table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 10px;
-        font-size: 12px;
+        font-size: 13px;
     }
-
-    .movies-table th,
-    .movies-table td {
-        padding: 6px 8px;
-        border-bottom: 1px solid rgba(31, 41, 55, 0.9);
-        text-align: left;
-    }
-
+    
     .movies-table th {
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--text-muted);
-    }
-
-    .tag-pill {
-        display: inline-block;
-        padding: 2px 8px;
-        border-radius: 999px;
-        border: 1px solid rgba(55, 65, 81, 0.9);
-        font-size: 11px;
-    }
-
-    .btn-table {
-        padding: 4px 10px;
-        border-radius: 999px;
-        border: 1px solid rgba(148, 163, 184, 0.9);
-        background: #020617;
-        color: #e5e7eb;
-        font-size: 11px;
-        text-decoration: none;
-        cursor: pointer;
-        white-space: nowrap;
-    }
-
-    .btn-table--danger {
-        border-color: rgba(248, 113, 113, 0.9);
-        color: #fecaca;
-    }
-
-    /* Add movie form */
-
-    .form-title {
-        font-size: 15px;
+        padding: 12px 8px;
+        text-align: left;
         font-weight: 600;
-        margin-bottom: 4px;
+        color: #06b6d4;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.3);
     }
-
-    .form-sub {
-        font-size: 12px;
-        color: var(--text-muted);
-        margin-bottom: 10px;
+    
+    .movies-table td {
+        padding: 12px 8px;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        vertical-align: middle;
     }
-
-    .form-group {
-        margin-bottom: 8px;
+    
+    .movies-table tr:hover {
+        background: rgba(15, 23, 42, 0.5);
     }
-
-    .form-label {
-        display: block;
-        font-size: 12px;
-        margin-bottom: 3px;
-        color: var(--text-muted);
+    
+    .movie-title {
+        font-weight: 600;
+        color: #e5e7eb;
     }
-
-    .form-input,
-    .form-select,
-    .form-textarea {
-        width: 100%;
-        border-radius: 10px;
-        border: 1px solid rgba(51, 65, 85, 0.9);
-        background: rgba(15, 23, 42, 0.95);
-        color: var(--text-main);
-        padding: 7px 9px;
-        font-size: 12px;
-        outline: none;
-    }
-
-    .form-textarea {
-        min-height: 70px;
-        resize: vertical;
-    }
-
-    .lang-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px 12px;
-        margin-top: 3px;
-    }
-
-    .lang-item {
+    
+    .movie-meta {
         font-size: 11px;
+        color: rgba(229, 231, 235, 0.6);
     }
-
-    .btn-save {
-        margin-top: 6px;
-        padding: 8px 16px;
-        border-radius: 999px;
+    
+    .movie-actions {
+        display: flex;
+        gap: 6px;
+    }
+    
+    .action-btn {
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        background: rgba(15, 23, 42, 0.8);
+        color: #e5e7eb;
+        text-decoration: none;
+        font-size: 11px;
+        cursor: pointer;
+    }
+    
+    .action-btn:hover {
+        border-color: #06b6d4;
+        background: rgba(6, 182, 212, 0.1);
+    }
+    
+    /* Add Movie Form */
+    .add-form {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .form-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: #e5e7eb;
+    }
+    
+    .form-input {
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        background: rgba(15, 23, 42, 0.8);
+        color: #e5e7eb;
+        font-size: 14px;
+        font-family: inherit;
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: #06b6d4;
+        box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2);
+    }
+    
+    .quality-section {
+        margin-top: 20px;
+        padding: 20px;
+        background: rgba(15, 23, 42, 0.6);
+        border-radius: 16px;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+    
+    .quality-section h3 {
+        margin: 0 0 20px 0;
+        font-size: 16px;
+        color: #06b6d4;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .quality-item {
+        margin-bottom: 20px;
+        padding: 16px;
+        border-left: 4px solid;
+        border-radius: 12px;
+    }
+    
+    .quality-item.q-480p {
+        background: rgba(6, 182, 212, 0.1);
+        border-color: #06b6d4;
+    }
+    
+    .quality-item.q-720p {
+        background: rgba(34, 197, 94, 0.1);
+        border-color: #22c55e;
+    }
+    
+    .quality-item.q-1080p {
+        background: rgba(249, 115, 22, 0.1);
+        border-color: #f97316;
+    }
+    
+    .quality-item.q-2k {
+        background: rgba(168, 85, 247, 0.1);
+        border-color: #a855f7;
+    }
+    
+    .quality-item.q-4k {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: #ef4444;
+    }
+    
+    .quality-item h4 {
+        margin: 0 0 12px 0;
+        font-size: 15px;
+    }
+    
+    .quality-item.q-480p h4 { color: #06b6d4; }
+    .quality-item.q-720p h4 { color: #22c55e; }
+    .quality-item.q-1080p h4 { color: #f97316; }
+    .quality-item.q-2k h4 { color: #a855f7; }
+    .quality-item.q-4k h4 { color: #ef4444; }
+    
+    .quality-url-input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 8px;
+        border-radius: 8px;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        background: rgba(15, 23, 42, 0.8);
+        color: #e5e7eb;
+        font-size: 13px;
+    }
+    
+    .quality-url-input:focus {
+        border-color: #06b6d4;
+    }
+    
+    .submit-btn {
+        margin-top: 24px;
+        padding: 14px;
+        border-radius: 12px;
         border: none;
         background: linear-gradient(135deg, #f97316, #ec4899);
         color: #020617;
-        font-size: 13px;
+        font-weight: 700;
         cursor: pointer;
-        width: 100%;
+        font-size: 15px;
+        transition: transform 0.2s;
     }
-
-    @media (max-width: 900px) {
-        .admin-grid {
-            grid-template-columns: minmax(0, 1fr);
-        }
+    
+    .submit-btn:hover {
+        transform: scale(1.02);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: rgba(229, 231, 235, 0.6);
+    }
+    
+    .search-box {
+        margin-bottom: 16px;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        background: rgba(15, 23, 42, 0.8);
+        color: #e5e7eb;
+        font-size: 14px;
+    }
+    
+    .message {
+        padding: 12px 16px;
+        border-radius: 12px;
+        margin-bottom: 16px;
+        font-size: 14px;
+    }
+    
+    .message.success {
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid rgba(34, 197, 94, 0.5);
+        color: #22c55e;
+    }
+    
+    .message.error {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.5);
+        color: #ef4444;
     }
 </style>
 
-<section class="admin-shell">
-    <div class="admin-grid">
-
-        <!-- LEFT: Movies list + stats -->
-        <article class="admin-card">
-            <div class="admin-header">
-                <div class="admin-title">Admin dashboard</div>
-                <div class="admin-sub">
-                    Overview of Movies Magic Club library and quick actions.
-                </div>
-
-                <!-- Movies / Series dashboard tabs -->
-                <div class="admin-tabs">
-                    <a href="/admin/movies" class="admin-tab admin-tab--active">
-                        Movies dashboard
-                    </a>
-                    <a href="/admin/series" class="admin-tab">
-                        Series dashboard
-                    </a>
-                    <a href="/admin/verification"
-                       class="admin-tab-btn {% if active_tab == 'verification' %}active{% endif %}">
-                        Verification
-                    </a>
-                </div>
-
-                {% if message %}
-                <div class="admin-message">
-                    {{ message }}
-                </div>
-                {% endif %}
-
-                <div class="stats-row">
-                    <span class="stat-pill">
-                        <span class="stat-label">{{ total_movies }}</span> total
-                    </span>
-                    <span class="stat-pill">
-                        <span class="stat-label">{{ tamil_count }}</span> Tamil
-                    </span>
-                    <span class="stat-pill">
-                        <span class="stat-label">{{ telugu_count }}</span> Telugu
-                    </span>
-                    <span class="stat-pill">
-                        <span class="stat-label">{{ hindi_count }}</span> Hindi
-                    </span>
-                    <span class="stat-pill">
-                        <span class="stat-label">{{ malayalam_count }}</span> Malayalam
-                    </span>
-                    <span class="stat-pill">
-                        <span class="stat-label">{{ kannada_count }}</span> Kannada
-                    </span>
-                </div>
-
-                <form action="/admin/movies" method="get" class="search-row">
-                    <input
-                        type="text"
-                        name="q"
-                        value="{{ q or '' }}"
-                        placeholder="Search movies by title…"
-                        class="search-input-admin"
-                    />
-                    <button type="submit" class="btn-search-admin">Search</button>
+<div class="admin-container">
+    <div class="admin-header">
+        <h1 class="admin-title">🎬 Admin - Movies Management</h1>
+        <p class="admin-subtitle">Add, edit, and manage movies in your database</p>
+    </div>
+    
+    {% if message %}
+    <div class="message success">
+        {{ message }}
+    </div>
+    {% endif %}
+    
+    <div class="admin-content">
+        <!-- Left Column: Movies List -->
+        <div class="admin-section">
+            <h2 class="section-title">📋 Movies List</h2>
+            
+            <div class="search-box">
+                <form method="get" action="/admin/movies" class="search-form">
+                    <input type="text" name="q" placeholder="Search movies..." value="{{ q }}"
+                           class="search-input">
                 </form>
             </div>
-
+            
+            {% if movies %}
             <table class="movies-table">
                 <thead>
                     <tr>
-                        <th style="width:40%;">Title</th>
-                        <th style="width:12%;">Year</th>
-                        <th style="width:18%;">Language</th>
-                        <th style="width:15%;">Quality</th>
-                        <th style="width:15%;">Actions</th>
+                        <th>Movie</th>
+                        <th>Year</th>
+                        <th>Language</th>
+                        <th>Quality</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% if movies and movies|length > 0 %}
-                        {% for m in movies %}
-                            <tr>
-                                <td>{{ m.title }}</td>
-                                <td>{{ m.year or "" }}</td>
-                                <td>
-                                    {% if m.language %}
-                                        <span class="tag-pill">{{ m.language }}</span>
-                                    {% else %}
-                                        -
-                                    {% endif %}
-                                </td>
-                                <td>{{ m.quality or "" }}</td>
-                                <td>
-                                    <a href="/admin/movies/{{ m.id }}/edit" class="btn-table">
-                                        Edit
-                                    </a>
-                                    <form action="/admin/movies/{{ m.id }}/delete"
-                                          method="post"
-                                          style="display:inline;">
-                                        <button type="submit"
-                                                class="btn-table btn-table--danger">
-                                            Delete
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="5">
-                                No movies found yet. Use the form on the right to add a new movie.
-                            </td>
-                        </tr>
-                    {% endif %}
+                    {% for movie in movies %}
+                    <tr>
+                        <td>
+                            <div class="movie-title">{{ movie.title }}</div>
+                            <div class="movie-meta">{{ movie.category or "—" }}</div>
+                        </td>
+                        <td>{{ movie.year or "—" }}</td>
+                        <td>{{ movie.language or "—" }}</td>
+                        <td>{{ movie.quality or "—" }}</td>
+                        <td>
+                            <div class="movie-actions">
+                                <a href="/movie/{{ movie.id }}" class="action-btn" title="View">
+                                    👁 View
+                                </a>
+                                <a href="/admin/movies/edit/{{ movie.id }}" class="action-btn" title="Edit">
+                                    ✏ Edit
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
-        </article>
-
-        <!-- RIGHT: Add new movie form -->
-        <article class="admin-card">
-            <div class="form-title">Add new movie</div>
-            <div class="form-sub">
-                Create a new movie entry with poster, quality and links.
+            {% else %}
+            <div class="empty-state">
+                <p style="font-size: 48px; margin-bottom: 16px;">🎥</p>
+                <p>No movies found{% if q %} for "{{ q }}"{% endif %}.</p>
+                <p style="font-size: 13px; margin-top: 8px;">Use the form on the right to add a new movie.</p>
             </div>
-
-            <form action="/admin/movies" method="post" enctype="multipart/form-data">
+            {% endif %}
+        </div>
+        
+        <!-- Right Column: Add Movie Form -->
+        <div class="admin-section">
+            <h2 class="section-title">➕ Add New Movie</h2>
+            
+            <form method="post" enctype="multipart/form-data" class="add-form">
+                
                 <div class="form-group">
-                    <label class="form-label">Title</label>
-                    <input type="text" name="title" class="form-input" required />
+                    <label class="form-label">Movie Title *</label>
+                    <input type="text" name="title" placeholder="Enter movie title" required class="form-input">
                 </div>
-
+                
                 <div class="form-group">
                     <label class="form-label">Year</label>
-                    <input type="text" name="year" class="form-input" placeholder="2024" />
+                    <input type="number" name="year" placeholder="e.g., 2024" class="form-input">
                 </div>
-
+                
                 <div class="form-group">
-                    <label class="form-label">Primary language</label>
-                    <select name="language" class="form-select" required>
-                        <option value="Tamil">Tamil</option>
-                        <option value="Telugu">Telugu</option>
-                        <option value="Hindi">Hindi</option>
-                        <option value="Malayalam">Malayalam</option>
-                        <option value="Kannada">Kannada</option>
-                        <option value="English">English</option>
+                    <label class="form-label">Category</label>
+                    <input type="text" name="category" placeholder="e.g., Action, Drama, Comedy" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Quality Label</label>
+                    <select name="quality" class="form-input">
+                        <option value="HD">HD</option>
+                        <option value="480p">480p</option>
+                        <option value="720p">720p</option>
+                        <option value="1080p">1080p</option>
+                        <option value="2K">2K</option>
+                        <option value="4K">4K</option>
                     </select>
                 </div>
-
+                
                 <div class="form-group">
-                    <label class="form-label">Quality</label>
-                    <input type="text" name="quality" class="form-input" placeholder="HD / 1080p" />
+                    <label class="form-label">Poster Image</label>
+                    <input type="file" name="poster" accept="image/*" class="form-input">
                 </div>
-
+                
                 <div class="form-group">
-                    <label class="form-label">Category / Genre</label>
-                    <input type="text" name="category" class="form-input" placeholder="Action, Drama" />
+                    <label class="form-label">Description (Optional)</label>
+                    <textarea name="description" placeholder="Brief description..." rows="3" class="form-input"></textarea>
                 </div>
-
-                <div class="form-group">
-                    <label class="form-label">Poster image</label>
-                    <input type="file" name="poster" class="form-input" accept="image/*" />
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Languages (select one or more)</label>
-                    <div class="lang-row">
-                        <label class="lang-item">
-                            <input type="checkbox" name="languages" value="Tamil" /> Tamil
-                        </label>
-                        <label class="lang-item">
-                            <input type="checkbox" name="languages" value="Telugu" /> Telugu
-                        </label>
-                        <label class="lang-item">
-                            <input type="checkbox" name="languages" value="Hindi" /> Hindi
-                        </label>
-                        <label class="lang-item">
-                            <input type="checkbox" name="languages" value="Malayalam" /> Malayalam
-                        </label>
-                        <label class="lang-item">
-                            <input type="checkbox" name="languages" value="Kannada" /> Kannada
-                        </label>
-                        <label class="lang-item">
-                            <input type="checkbox" name="languages" value="English" /> English
-                        </label>
+                
+                <!-- ⭐ NEW: Quality-Specific Links Section -->
+                <div class="quality-section">
+                    <h3>📺 Quality-Specific Links</h3>
+                    <p style="font-size: 12px; color: rgba(229, 231, 235, 0.6); margin-bottom: 16px;">
+                        Fill only the qualities you want to provide. Leave empty for unavailable qualities.
+                    </p>
+                    
+                    <!-- 480p -->
+                    <div class="quality-item q-480p">
+                        <h4>💧 480p - Standard Definition</h4>
+                        <input type="url" name="quality_480p_watch" placeholder="480p Watch URL" class="quality-url-input">
+                        <input type="url" name="quality_480p_download" placeholder="480p Download URL" class="quality-url-input">
+                    </div>
+                    
+                    <!-- 720p -->
+                    <div class="quality-item q-720p">
+                        <h4>✨ 720p - High Definition</h4>
+                        <input type="url" name="quality_720p_watch" placeholder="720p Watch URL" class="quality-url-input">
+                        <input type="url" name="quality_720p_download" placeholder="720p Download URL" class="quality-url-input">
+                    </div>
+                    
+                    <!-- 1080p -->
+                    <div class="quality-item q-1080p">
+                        <h4>🔥 1080p - Full HD</h4>
+                        <input type="url" name="quality_1080p_watch" placeholder="1080p Watch URL" class="quality-url-input">
+                        <input type="url" name="quality_1080p_download" placeholder="1080p Download URL" class="quality-url-input">
+                    </div>
+                    
+                    <!-- 2K -->
+                    <div class="quality-item q-2k">
+                        <h4>💎 2K - Quad HD (1440p)</h4>
+                        <input type="url" name="quality_2k_watch" placeholder="2K Watch URL" class="quality-url-input">
+                        <input type="url" name="quality_2k_download" placeholder="2K Download URL" class="quality-url-input">
+                    </div>
+                    
+                    <!-- 4K -->
+                    <div class="quality-item q-4k">
+                        <h4>👑 4K - Ultra HD (2160p)</h4>
+                        <input type="url" name="quality_4k_watch" placeholder="4K Watch URL" class="quality-url-input">
+                        <input type="url" name="quality_4k_download" placeholder="4K Download URL" class="quality-url-input">
                     </div>
                 </div>
-
-                <div class="form-group">
-                    <label class="form-label">Watch link</label>
-                    <input type="text" name="watch_url" class="form-input"
-                           placeholder="https://…" />
+                
+                <!-- Fallback single URLs (optional) -->
+                <div class="form-group" style="margin-top: 16px;">
+                    <label class="form-label">Fallback Watch URL (Optional)</label>
+                    <input type="url" name="watch_url" placeholder="https://example.com/watch" class="form-input">
                 </div>
-
+                
                 <div class="form-group">
-                    <label class="form-label">Download link</label>
-                    <input type="text" name="download_url" class="form-input"
-                           placeholder="https://…" />
+                    <label class="form-label">Fallback Download URL (Optional)</label>
+                    <input type="url" name="download_url" placeholder="https://example.com/download" class="form-input">
                 </div>
-
-                <div class="form-group">
-                    <label class="form-label">Short description</label>
-                    <textarea name="description"
-                              class="form-textarea"
-                              placeholder="Short synopsis for users…"></textarea>
-                </div>
-
-                <button type="submit" class="btn-save">
-                    Save movie
+                
+                <button type="submit" class="submit-btn">
+                    💾 Save Movie
                 </button>
             </form>
-        </article>
+        </div>
     </div>
-</section>
+</div>
 {% endblock %}
-                                        
+    
