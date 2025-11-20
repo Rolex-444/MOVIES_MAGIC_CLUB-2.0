@@ -34,7 +34,6 @@ def _prepare_movie_for_template(doc: dict) -> dict:
         "created_at": doc.get("created_at"),
     }
 
-
 # ---------- ADMIN DASHBOARD ----------
 @router.get("/admin/movies", response_class=HTMLResponse)
 async def admin_movies_dashboard(request: Request, message: str = "", q: str = ""):
@@ -103,7 +102,7 @@ async def admin_create_movie(
     category: str = Form(""),
     watch_url: str = Form(""),
     download_url: str = Form(""),
-    # Quality URLs
+    # ⭐ QUALITY PARAMETERS - CRITICAL!
     quality_480p_watch: str = Form(""),
     quality_480p_download: str = Form(""),
     quality_720p_watch: str = Form(""),
@@ -114,7 +113,7 @@ async def admin_create_movie(
     quality_2k_download: str = Form(""),
     quality_4k_watch: str = Form(""),
     quality_4k_download: str = Form(""),
-    # Multi-language
+    # Multi-language support
     languages: List[str] = Form(default=[]),
     description: str = Form(""),
     poster: UploadFile = File(None),
@@ -150,7 +149,7 @@ async def admin_create_movie(
         except ValueError:
             year_int = None
 
-    # Build qualities
+    # ⭐ BUILD QUALITIES DICT
     qualities = {}
     
     if quality_480p_watch.strip() or quality_480p_download.strip():
@@ -241,7 +240,7 @@ async def admin_edit_movie_form(request: Request, movie_id: str):
     movie = _prepare_movie_for_template(movie_doc)
 
     return templates.TemplateResponse(
-        "admin_edit_movie.html",
+        "admin_movies.html",
         {
             "request": request,
             "movie": movie,
@@ -259,7 +258,7 @@ async def admin_update_movie(
     category: str = Form(""),
     watch_url: str = Form(""),
     download_url: str = Form(""),
-    # Quality URLs
+    # ⭐ QUALITY PARAMETERS - CRITICAL!
     quality_480p_watch: str = Form(""),
     quality_480p_download: str = Form(""),
     quality_720p_watch: str = Form(""),
@@ -270,7 +269,7 @@ async def admin_update_movie(
     quality_2k_download: str = Form(""),
     quality_4k_watch: str = Form(""),
     quality_4k_download: str = Form(""),
-    # Multi-language
+    # Multi-language support
     languages: List[str] = Form(default=[]),
     description: str = Form(""),
     poster: UploadFile = File(None),
@@ -314,7 +313,7 @@ async def admin_update_movie(
         except ValueError:
             year_int = None
 
-    # Build qualities
+    # ⭐ BUILD QUALITIES DICT
     qualities = {}
     
     if quality_480p_watch.strip() or quality_480p_download.strip():
@@ -418,5 +417,5 @@ async def admin_delete_movie(request: Request, movie_id: str):
     return RedirectResponse(
         "/admin/movies?message=Movie+deleted+successfully+%F0%9F%97%91",
         status_code=303,
-    )
-    
+            )
+        
