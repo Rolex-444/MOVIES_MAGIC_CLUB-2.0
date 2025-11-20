@@ -119,6 +119,13 @@ async def admin_create_movie(
     poster: UploadFile = File(None),
 ):
     """Create new movie"""
+    
+    # ⭐ DEBUG LOGGING - ADD THIS AT THE TOP
+    print("=== DEBUG CREATE: Quality fields received ===")
+    print(f"480p watch: '{quality_480p_watch}'")
+    print(f"480p download: '{quality_480p_download}'")
+    print(f"qualities dict before building: {[quality_480p_watch, quality_480p_download]}")
+    
     if not is_admin(request):
         return RedirectResponse("/admin/login", status_code=303)
 
@@ -181,6 +188,9 @@ async def admin_create_movie(
             "watch_url": quality_4k_watch.strip() or None,
             "download_url": quality_4k_download.strip() or None,
         }
+
+    # ⭐ DEBUG LOGGING - SHOW FINAL DICT
+    print(f"Final qualities dict: {qualities}")
 
     quality_label = ", ".join(qualities.keys()) if qualities else quality
     primary_language = languages[0] if languages else "Tamil"
@@ -275,6 +285,13 @@ async def admin_update_movie(
     poster: UploadFile = File(None),
 ):
     """Update an existing movie"""
+    
+    # ⭐ DEBUG LOGGING - ADD THIS AT THE TOP
+    print("=== DEBUG UPDATE: Quality fields received ===")
+    print(f"480p watch: '{quality_480p_watch}'")
+    print(f"480p download: '{quality_480p_download}'")
+    print(f"qualities dict before building: {[quality_480p_watch, quality_480p_download]}")
+    
     if not is_admin(request):
         return RedirectResponse("/admin/login", status_code=303)
 
@@ -345,6 +362,9 @@ async def admin_update_movie(
             "watch_url": quality_4k_watch.strip() or None,
             "download_url": quality_4k_download.strip() or None,
         }
+
+    # ⭐ DEBUG LOGGING - SHOW FINAL DICT
+    print(f"Final qualities dict: {qualities}")
 
     quality_label = ", ".join(qualities.keys()) if qualities else quality
     primary_language = languages[0] if languages else "Tamil"
@@ -417,5 +437,5 @@ async def admin_delete_movie(request: Request, movie_id: str):
     return RedirectResponse(
         "/admin/movies?message=Movie+deleted+successfully+%F0%9F%97%91",
         status_code=303,
-            )
-        
+)
+            
