@@ -2,411 +2,139 @@
 
 {% block content %}
 <style>
-    .movie-detail-container {
-        margin-top: 16px;
-        padding: 16px;
-    }
-    
-    .movie-card {
-        background: rgba(15, 23, 42, 0.98);
-        border-radius: 28px;
-        border: 1px solid rgba(148, 163, 184, 0.5);
-        overflow: hidden;
-        max-width: 1100px;
-        margin: 0 auto;
-    }
-    
-    .movie-header {
-        position: relative;
-        height: 450px;
-        overflow: hidden;
-    }
-    
-    .movie-poster {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        filter: brightness(0.7);
-    }
-    
-    .movie-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: linear-gradient(to top, rgba(15, 23, 42, 0.95), transparent);
-        padding: 40px;
-    }
-    
-    .movie-title-section {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        gap: 24px;
-    }
-    
-    .movie-title-block {
-        flex: 1;
-    }
-    
-    .movie-title {
-        font-size: 32px;
-        font-weight: 800;
-        margin-bottom: 8px;
-        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-    }
-    
-    .movie-meta {
-        display: flex;
-        gap: 16px;
-        font-size: 14px;
-        color: rgba(229, 231, 235, 0.8);
-    }
-    
-    .movie-actions {
-        display: flex;
-        gap: 12px;
-    }
-    
-    .movie-btn-primary {
-        padding: 14px 32px;
-        border-radius: 16px;
-        background: linear-gradient(135deg, #f97316, #ec4899);
-        color: #020617;
-        text-decoration: none;
-        font-weight: 700;
-        font-size: 15px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        box-shadow: 0 4px 16px rgba(249, 115, 22, 0.4);
-        transition: all 0.2s;
-    }
-    
-    .movie-btn-primary:hover {
-        transform: scale(1.05);
-        box-shadow: 0 6px 20px rgba(249, 115, 22, 0.6);
-    }
-    
-    .movie-btn-secondary {
-        padding: 14px 32px;
-        border-radius: 16px;
-        border: 2px solid rgba(148, 163, 184, 0.5);
-        background: rgba(15, 23, 42, 0.5);
-        color: #e5e7eb;
-        text-decoration: none;
-        font-weight: 700;
-        font-size: 15px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.2s;
-    }
-    
-    .movie-btn-secondary:hover {
-        border-color: #06b6d4;
-        background: rgba(6, 182, 212, 0.1);
-    }
-    
-    .movie-content {
-        display: grid;
-        grid-template-columns: 1fr 320px;
-        gap: 32px;
-        padding: 40px;
-    }
-    
-    @media (max-width: 768px) {
-        .movie-content {
-            grid-template-columns: 1fr;
-            padding: 24px;
-        }
-        
-        .movie-header {
-            height: 300px;
-        }
-        
-        .movie-title {
-            font-size: 24px;
-        }
-        
-        .movie-title-section {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-        
-        .movie-actions {
-            width: 100%;
-            flex-direction: column;
-        }
-        
-        .movie-btn-primary, .movie-btn-secondary {
-            width: 100%;
-            justify-content: center;
-        }
-    }
-    
-    .movie-info {
-        line-height: 1.8;
-    }
-    
-    .movie-info h2 {
-        font-size: 20px;
-        font-weight: 600;
-        margin-bottom: 16px;
-        color: #06b6d4;
-    }
-    
-    .movie-info p {
-        color: rgba(229, 231, 235, 0.9);
-        margin-bottom: 16px;
-    }
-    
-    .movie-sidebar {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-    
-    .info-card {
-        background: rgba(15, 23, 42, 0.6);
-        border-radius: 16px;
-        border: 1px solid rgba(148, 163, 184, 0.3);
-        padding: 20px;
-    }
-    
-    .info-card h3 {
-        font-size: 16px;
-        font-weight: 600;
-        margin-bottom: 12px;
-        color: #e5e7eb;
-    }
-    
-    .info-item {
-        display: flex;
-        justify-content: space-between;
-        padding: 8px 0;
-        border-bottom: 1px solid rgba(148, 163, 184, 0.2);
-        font-size: 13px;
-    }
-    
-    .info-item:last-child {
-        border-bottom: none;
-    }
-    
-    .info-label {
-        color: rgba(229, 231, 235, 0.6);
-    }
-    
-    .info-value {
-        color: #e5e7eb;
-        font-weight: 500;
-    }
-    
-    .quality-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 999px;
-        font-size: 12px;
-        font-weight: 600;
-        background: rgba(6, 182, 212, 0.2);
-        color: #06b6d4;
-        border: 1px solid rgba(6, 182, 212, 0.5);
-    }
-    
-    .not-found {
-        text-align: center;
-        padding: 80px 20px;
-    }
-    
-    .not-found h1 {
-        font-size: 48px;
-        margin-bottom: 16px;
-        opacity: 0.5;
-    }
-    
-    .not-found p {
-        font-size: 18px;
-        color: rgba(229, 231, 235, 0.7);
-    }
-    
-    .back-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 10px 20px;
-        border-radius: 999px;
-        background: rgba(148, 163, 184, 0.1);
-        color: rgba(229, 231, 235, 0.7);
-        text-decoration: none;
-        font-size: 14px;
-        margin-top: 20px;
-        transition: all 0.2s;
-    }
-    
-    .back-link:hover {
-        background: rgba(148, 163, 184, 0.2);
-        color: #e5e7eb;
-    }
-    
-    .qualities-available {
-        margin-top: 4px;
-        font-size: 12px;
-        color: rgba(229, 231, 235, 0.6);
-    }
+.detail-movie-card {
+    max-width: 480px;
+    margin: 32px auto 0 auto;
+    background: rgba(23, 29, 51, 0.98);
+    border-radius: 20px;
+    border: 1px solid rgba(150,160,185,0.18);
+    box-shadow: 0 2px 32px rgba(0,0,0,0.15);
+    padding: 0 0 32px 0;
+}
+.detail-movie-poster {
+    width: 100%;
+    border-radius: 20px 20px 0 0;
+    object-fit: cover;
+    max-height: 270px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+}
+.detail-main-content {
+    padding: 24px;
+}
+.detail-title {
+    font-size: 26px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+.detail-meta {
+    color: #06b6d4;
+    font-size: 15px;
+    margin-bottom: 14px;
+}
+.detail-subblock {
+    margin: 8px 0;
+    font-size: 14px;
+    color: #e5e7eb;
+    letter-spacing: 0.02em;
+    word-break: break-word;
+}
+.detail-quality-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 24px 0 0 0;
+}
+.detail-quality-link {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.quality-label-chip {
+    background: #06b6d4;
+    color: #02111a;
+    border-radius: 14px;
+    padding: 3px 12px;
+    font-size: 13px;
+    font-weight: bold;
+    margin-right: 10px;
+    letter-spacing: 0.01em;
+}
+.watch-btn, .download-btn {
+    border: none;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 10px 20px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .18s, color .18s;
+    margin-left: 0;
+}
+.watch-btn {
+    background: linear-gradient(90deg,#06b6d4,#3b82f6);
+    color: #222;
+    margin-right: 10px;
+}
+.watch-btn:hover {
+    background: linear-gradient(90deg,#3b82f6,#06b6d4);
+    color: #fff;
+}
+.download-btn {
+    background: rgba(148,163,184,0.18);
+    color: #e5e7eb;
+    border: 1.2px solid rgba(148,163,184,0.36);
+}
+.download-btn:hover {
+    background: rgba(15,23,42,0.52);
+    color: #06b6d4;
+}
 </style>
 
-<div class="movie-detail-container">
-    {% if not movie %}
-    <div class="not-found">
-        <h1>🎥</h1>
-        <p>Movie not found</p>
-        <p style="font-size: 14px; margin-top: 8px;">The movie you're looking for is not available right now.</p>
-        <a href="/" class="back-link">← Back to Home</a>
-    </div>
-    {% else %}
-    <div class="movie-card">
-        <!-- Movie Header with Poster -->
-        <div class="movie-header">
-            {% if movie.poster_path %}
-            <img src="/static/{{ movie.poster_path }}" alt="{{ movie.title }}" class="movie-poster">
-            {% else %}
-            <div style="background: linear-gradient(135deg, #1e293b, #334155); width: 100%; height: 100%;"></div>
-            {% endif %}
-            
-            <div class="movie-overlay">
-                <div class="movie-title-section">
-                    <div class="movie-title-block">
-                        <h1 class="movie-title">{{ movie.title }}</h1>
-                        <div class="movie-meta">
-                            <span>{{ movie.year or "—" }}</span>
-                            <span>·</span>
-                            <span>{{ movie.quality or "HD" }}</span>
-                            <span>·</span>
-                            <span>{{ movie.language or "Tamil" }}</span>
-                        </div>
-                        <div class="qualities-available">
-                            {% if movie.qualities %}
-                            Available qualities: {{ movie.qualities.keys()|join(", ") }}
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <div class="movie-actions">
-                        <!-- ⭐ SMART QUALITY BUTTONS -->
-                        {% if movie.qualities and movie.qualities|length > 0 %}
-                        <!-- Multiple qualities - goes to quality selector -->
-                        <a href="/movie/{{ movie.id }}/watch" class="movie-btn-primary">
-                            🎬 Select Quality & Watch
-                        </a>
-                        {% else %}
-                        <!-- Fallback single URL buttons -->
-                        {% if movie.watch_url %}
-                        <a href="{{ movie.watch_url }}" target="_blank" class="movie-btn-primary">
-                            ▶ Watch Now
-                        </a>
-                        {% endif %}
-                        
-                        {% if movie.download_url %}
-                        <a href="{{ movie.download_url }}" target="_blank" class="movie-btn-secondary">
-                            ⬇ Download
-                        </a>
-                        {% endif %}
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Movie Content -->
-        <div class="movie-content">
-            <!-- Main Info -->
-            <div class="movie-info">
-                <h2>📖 Synopsis</h2>
-                <p>{{ movie.description or "Synopsis coming soon. This is a great movie with stunning visuals and engaging story." }}</p>
-                
-                <h2>🎬 About This Movie</h2>
-                <p>{{ movie.title }}{% if movie.year %} ({{ movie.year }}){% endif %} is a {% if movie.category %}{{ movie.category.lower() }}{% else %}high-quality{% endif %} movie available in {{ movie.language or "multiple languages" }}.</p>
-                
-                {% if movie.is_multi_dubbed %}
-                <p>This movie is available with multiple audio tracks for your convenience.</p>
-                {% endif %}
-                
-                <h2>ℹ️ Movie Details</h2>
-                <p><strong>Title:</strong> {{ movie.title }}</p>
-                <p><strong>Year:</strong> {{ movie.year or "—" }}</p>
-                <p><strong>Language:</strong> {{ movie.language or "—" }}</p>
-                <p><strong>Quality:</strong> {{ movie.quality or "—" }}</p>
-                <p><strong>Category:</strong> {{ movie.category or "—" }}</p>
-                {% if movie.qualities %}
-                <p><strong>Available Qualities:</strong> {{ movie.qualities.keys()|join(", ")|upper }}</p>
-                {% endif %}
-            </div>
-            
-            <!-- Sidebar Info -->
-            <div class="movie-sidebar">
-                <div class="info-card">
-                    <h3>📊 Movie Info</h3>
-                    <div class="info-item">
-                        <span class="info-label">Year</span>
-                        <span class="info-value">{{ movie.year or "—" }}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Language</span>
-                        <span class="info-value">{{ movie.language or "—" }}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Quality</span>
-                        <span class="info-value">
-                            <span class="quality-badge">{{ movie.quality or "HD" }}</span>
-                        </span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Category</span>
-                        <span class="info-value">{{ movie.category or "—" }}</span>
-                    </div>
-                </div>
-                
-                <div class="info-card">
-                    <h3>🎬 Features</h3>
-                    <div class="info-item">
-                        <span class="info-label">HD Ready</span>
-                        <span class="info-value">✅ Yes</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Secure Download</span>
-                        <span class="info-value">✅ Available</span>
-                    </div>
-                    {% if movie.is_multi_dubbed %}
-                    <div class="info-item">
-                        <span class="info-label">Multi Audio</span>
-                        <span class="info-value">✅ Yes</span>
-                    </div>
-                    {% endif %}
-                </div>
-                
-                <div class="info-card">
-                    <h3>💬 Share & Support</h3>
-                    <p style="font-size: 13px; color: rgba(229, 231, 235, 0.7);">
-                        Love this movie? Share it with friends!
-                    </p>
-                    <div style="margin-top: 12px;">
-                        <a href="#" onclick="alert('Share feature coming soon!')" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; background: rgba(6, 182, 212, 0.1); color: #06b6d4; text-decoration: none; font-size: 13px;">
-                            📤 Share
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="detail-movie-card">
+    {% if movie.poster_path %}
+        <img src="/static/{{ movie.poster_path }}" alt="{{ movie.title }} poster" class="detail-movie-poster">
     {% endif %}
+    <div class="detail-main-content">
+        <div class="detail-title">
+            {{ movie.title }}
+        </div>
+        <div class="detail-meta">
+            {{ movie.year or "" }} 
+            {% if movie.language %}· {{ movie.language }}{% endif %}
+            {% if movie.quality %}· {{ movie.quality }}{% endif %}
+        </div>
+        <div class="detail-subblock">
+            <strong>Category:</strong> {{ movie.category or "—" }}
+        </div>
+        <div class="detail-quality-btns">
+            {% if movie.qualities and movie.qualities|length > 0 %}
+                {% for q, links in movie.qualities.items() %}
+                    <div class="detail-quality-link">
+                        <span class="quality-label-chip">{{ q|upper }}</span>
+                        {% if links.watch_url %}
+                            <a class="watch-btn" href="{{ links.watch_url }}" target="_blank">▶ Watch</a>
+                        {% endif %}
+                        {% if links.download_url %}
+                            <a class="download-btn" href="{{ links.download_url }}" target="_blank">⬇ Download</a>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% elif movie.watch_url or movie.download_url %}
+                <div class="detail-quality-link">
+                {% if movie.watch_url %}
+                    <a class="watch-btn" href="{{ movie.watch_url }}" target="_blank">▶ Watch</a>
+                {% endif %}
+                {% if movie.download_url %}
+                    <a class="download-btn" href="{{ movie.download_url }}" target="_blank">⬇ Download</a>
+                {% endif %}
+                </div>
+            {% else %}
+                <div style="color: #ef4444; font-size:15px;">
+                    No streaming or download links yet.
+                </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
 
-<script>
-// Auto-redirect if single quality (optional enhancement)
-document.addEventListener('DOMContentLoaded', function() {
-    // This can be enhanced later for single quality auto-redirect
-    console.log('Movie detail page loaded');
-});
-</script>
 {% endblock %}
-    
