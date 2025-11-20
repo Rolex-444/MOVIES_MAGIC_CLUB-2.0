@@ -3,6 +3,7 @@
 from typing import List, Optional
 
 from bson import ObjectId
+
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -36,11 +37,9 @@ def _movie_to_ctx(doc: dict) -> dict:
 
 # ---------- MOVIES HOME (MOVIES TAB) ----------
 
-
 @router.get("/", response_class=HTMLResponse)
 async def movies_home(request: Request):
     db = get_db()
-
     latest_movies: List[dict] = []
     tamil_movies: List[dict] = []
     telugu_movies: List[dict] = []
@@ -50,7 +49,6 @@ async def movies_home(request: Request):
 
     if db is not None:
         col = db["movies"]
-
         cursor = col.find().sort("_id", -1).limit(20)
         latest_movies = [_movie_to_ctx(doc) async for doc in cursor]
 
@@ -81,7 +79,6 @@ async def movies_home(request: Request):
 
 # ---------- MOVIES BROWSE (BY GENRE OR ALL) ----------
 
-
 @router.get("/movies/browse", response_class=HTMLResponse)
 async def movies_browse(request: Request, genre: str = ""):
     db = get_db()
@@ -92,7 +89,6 @@ async def movies_browse(request: Request, genre: str = ""):
         query = {}
         if genre:
             query["category"] = {"$regex": genre, "$options": "i"}
-
         cursor = col.find(query).sort("_id", -1)
         movies_list = [_movie_to_ctx(doc) async for doc in cursor]
 
@@ -108,7 +104,6 @@ async def movies_browse(request: Request, genre: str = ""):
 
 
 # ---------- MOVIE DETAIL PAGE ----------
-
 
 @router.get("/movie/{movie_id}", response_class=HTMLResponse)
 async def movie_detail(request: Request, movie_id: str):
@@ -168,21 +163,21 @@ async def movie_detail(request: Request, movie_id: str):
 
 # ---------- WATCH / DOWNLOAD GATES (with verification) ----------
 
-
 @router.get("/movie/{movie_id}/watch")
 async def movie_watch(request: Request, movie_id: str):
     """
     Gate for Watch Now button.
+    FIXED: Increment FIRST, then check verification.
     """
-    # 1) Check if verification required
+    # 1) Increment counter FIRST
+    await increment_free_used(request)
+    
+    # 2) NOW check if verification required (after increment)
     if await should_require_verification(request):
         return RedirectResponse(
             url=f"/verify/start?next=/movie/{movie_id}/watch",
             status_code=303,
         )
-
-    # 2) Passed → count this click
-    await increment_free_used(request)
 
     # 3) Redirect to actual watch_url
     db = get_db()
@@ -204,16 +199,17 @@ async def movie_watch(request: Request, movie_id: str):
 async def movie_download(request: Request, movie_id: str):
     """
     Gate for Download button.
+    FIXED: Increment FIRST, then check verification.
     """
-    # 1) Check if verification required
+    # 1) Increment counter FIRST
+    await increment_free_used(request)
+    
+    # 2) NOW check if verification required (after increment)
     if await should_require_verification(request):
         return RedirectResponse(
             url=f"/verify/start?next=/movie/{movie_id}/download",
             status_code=303,
         )
-
-    # 2) Passed → count this click
-    await increment_free_used(request)
 
     # 3) Redirect to actual download_url
     db = get_db()
