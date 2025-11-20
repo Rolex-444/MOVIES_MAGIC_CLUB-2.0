@@ -57,7 +57,7 @@ app.include_router(admin_verification_router)
 app.include_router(support_router)
 app.include_router(legal_router)
 app.include_router(quality_router)
-
+app.include_router(admin_verification_router, prefix="/admin")
 # ---------- Pyrogram bot ----------
 bot = Client(
     "movie_webapp_bot",
