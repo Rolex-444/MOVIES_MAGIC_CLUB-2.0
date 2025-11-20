@@ -2,217 +2,354 @@
 
 {% block content %}
 <style>
-    .edit-shell {
-        margin-top: 10px;
+    .admin-container {
+        margin-top: 12px;
+        padding: 16px;
     }
-
-    .card {
+    
+    .admin-header {
         background: rgba(15, 23, 42, 0.96);
-        border-radius: 20px;
+        border-radius: 24px;
         border: 1px solid rgba(148, 163, 184, 0.5);
-        padding: 14px 14px 16px;
-        font-size: 13px;
+        padding: 24px;
+        margin-bottom: 24px;
     }
-
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
+    
+    .admin-title {
+        font-size: 24px;
+        font-weight: 700;
         margin-bottom: 8px;
+        background: linear-gradient(135deg, #06b6d4, #3b82f6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
-
-    .card-title {
-        font-size: 14px;
-        font-weight: 600;
+    
+    .admin-subtitle {
+        font-size: 13px;
+        color: rgba(229, 231, 235, 0.7);
     }
-
-    .card-sub {
-        font-size: 11px;
-        color: var(--text-muted);
+    
+    .edit-form {
+        max-width: 800px;
+        margin: 0 auto;
+        background: rgba(15, 23, 42, 0.96);
+        border-radius: 24px;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        padding: 32px;
     }
-
-    .back-link {
-        font-size: 11px;
-        color: #a5b4fc;
-        text-decoration: none;
-    }
-
-    .form-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px 12px;
-        margin-top: 6px;
-    }
-
+    
     .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
+        margin-bottom: 20px;
     }
-
+    
     .form-label {
-        font-size: 11px;
-        color: var(--text-muted);
-    }
-
-    .form-input,
-    .form-select,
-    .form-textarea {
-        border-radius: 999px;
-        border: 1px solid rgba(55, 65, 81, 0.9);
-        background: #020617;
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        font-weight: 500;
         color: #e5e7eb;
-        font-size: 12px;
-        padding: 7px 10px;
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        background: rgba(15, 23, 42, 0.8);
+        color: #e5e7eb;
+        font-size: 14px;
+    }
+    
+    .form-input:focus {
         outline: none;
+        border-color: #06b6d4;
+        box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2);
     }
-
-    .form-textarea {
-        border-radius: 14px;
-        min-height: 70px;
-        resize: vertical;
+    
+    .language-checkboxes {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 12px;
+        padding: 16px;
+        background: rgba(15, 23, 42, 0.6);
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.3);
     }
-
-    .form-input[type="file"] {
-        padding: 6px 8px;
-    }
-
-    .checkbox-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px 10px;
-        font-size: 11px;
-    }
-
-    .checkbox-row label {
+    
+    .checkbox-item {
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: 8px;
     }
-
-    .poster-preview {
-        margin-top: 6px;
-        font-size: 11px;
-        color: var(--text-muted);
+    
+    .checkbox-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #06b6d4;
     }
-
-    .poster-preview img {
-        margin-top: 4px;
-        width: 80px;
+    
+    .quality-section {
+        margin-top: 20px;
+        padding: 20px;
+        background: rgba(15, 23, 42, 0.6);
+        border-radius: 16px;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+    
+    .quality-item {
+        margin-bottom: 20px;
+        padding: 16px;
+        border-left: 4px solid;
+        border-radius: 12px;
+    }
+    
+    .quality-item.q-480p {
+        background: rgba(6, 182, 212, 0.1);
+        border-color: #06b6d4;
+    }
+    
+    .quality-item.q-720p {
+        background: rgba(34, 197, 94, 0.1);
+        border-color: #22c55e;
+    }
+    
+    .quality-item.q-1080p {
+        background: rgba(249, 115, 22, 0.1);
+        border-color: #f97316;
+    }
+    
+    .quality-item.q-2k {
+        background: rgba(168, 85, 247, 0.1);
+        border-color: #a855f7;
+    }
+    
+    .quality-item.q-4k {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: #ef4444;
+    }
+    
+    .quality-url-input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 8px;
         border-radius: 8px;
-        border: 1px solid rgba(55, 65, 81, 0.8);
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        background: rgba(15, 23, 42, 0.8);
+        color: #e5e7eb;
     }
-
-    .btn-primary {
-        margin-top: 10px;
-        padding: 8px 16px;
-        border-radius: 999px;
+    
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+    }
+    
+    .btn {
+        padding: 14px 32px;
+        border-radius: 12px;
         border: none;
+        font-weight: 700;
+        font-size: 15px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+    
+    .btn:hover {
+        transform: scale(1.02);
+    }
+    
+    .btn-primary {
         background: linear-gradient(135deg, #f97316, #ec4899);
         color: #020617;
-        font-size: 12px;
-        font-weight: 500;
-        cursor: pointer;
-        box-shadow: 0 10px 25px rgba(248, 113, 113, 0.6);
     }
-
-    @media (max-width: 768px) {
-        .form-grid {
-            grid-template-columns: minmax(0, 1fr);
-        }
+    
+    .btn-secondary {
+        background: rgba(148, 163, 184, 0.2);
+        color: #e5e7eb;
+        border: 2px solid rgba(148, 163, 184, 0.5);
+    }
+    
+    .btn-secondary:hover {
+        border-color: #06b6d4;
     }
 </style>
 
-<section class="edit-shell">
-    <article class="card">
-        <div class="card-header">
-            <div>
-                <div class="card-title">Edit movie</div>
-                <div class="card-sub">
-                    Update movie details, links or poster.
-                </div>
+<div class="admin-container">
+    <div class="admin-header">
+        <h1 class="admin-title">✏️ Edit Movie</h1>
+        <p class="admin-subtitle">Update movie details: {{ movie.title }}</p>
+    </div>
+    
+    <div class="edit-form">
+        <form method="post" enctype="multipart/form-data">
+            
+            <div class="form-group">
+                <label class="form-label">Movie Title *</label>
+                <input type="text" name="title" value="{{ movie.title }}" required class="form-input">
             </div>
-            <a href="/admin/movies" class="back-link">← Back to movies</a>
-        </div>
-
-        <form action="/admin/movies/{{ movie.id }}/edit"
-              method="post"
-              enctype="multipart/form-data">
-            <div class="form-grid">
-                <div class="form-group">
-                    <label class="form-label">Title</label>
-                    <input class="form-input" type="text" name="title" value="{{ movie.title }}" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Year</label>
-                    <input class="form-input" type="text" name="year" value="{{ movie.year }}">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Primary language</label>
-                    <select class="form-select" name="language" required>
-                        {% set langs = ['Tamil','Telugu','Hindi','Malayalam','Kannada','English'] %}
-                        {% for lang in langs %}
-                        <option value="{{ lang }}" {% if movie.language == lang %}selected{% endif %}>{{ lang }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Quality</label>
-                    <input class="form-input" type="text" name="quality" value="{{ movie.quality }}">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Category / Genre</label>
-                    <input class="form-input" type="text" name="category" value="{{ movie.category }}">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Poster image (optional)</label>
-                    <input class="form-input" type="file" name="poster" accept="image/*">
-                    <div class="poster-preview">
-                        Current:
-                        {% if movie.poster_path %}
-                            <img src="{{ url_for('static', path=movie.poster_path) }}"
-                                 alt="Poster preview">
-                        {% else %}
-                            No poster uploaded yet.
-                        {% endif %}
+            
+            <div class="form-group">
+                <label class="form-label">Year</label>
+                <input type="number" name="year" value="{{ movie.year or '' }}" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Category</label>
+                <input type="text" name="category" value="{{ movie.category or '' }}" class="form-input">
+            </div>
+            
+            <!-- Multi-language Checkboxes -->
+            <div class="form-group">
+                <label class="form-label">Languages (check all that apply)</label>
+                <div class="language-checkboxes">
+                    {% set selected_langs = movie.languages or [movie.language] or ['Tamil'] %}
+                    <div class="checkbox-item">
+                        <input type="checkbox" name="languages" value="Tamil" id="lang_tamil" {% if 'Tamil' in selected_langs %}checked{% endif %}>
+                        <label for="lang_tamil">Tamil</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" name="languages" value="Telugu" id="lang_telugu" {% if 'Telugu' in selected_langs %}checked{% endif %}>
+                        <label for="lang_telugu">Telugu</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" name="languages" value="Hindi" id="lang_hindi" {% if 'Hindi' in selected_langs %}checked{% endif %}>
+                        <label for="lang_hindi">Hindi</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" name="languages" value="Malayalam" id="lang_malayalam" {% if 'Malayalam' in selected_langs %}checked{% endif %}>
+                        <label for="lang_malayalam">Malayalam</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" name="languages" value="Kannada" id="lang_kannada" {% if 'Kannada' in selected_langs %}checked{% endif %}>
+                        <label for="lang_kannada">Kannada</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" name="languages" value="English" id="lang_english" {% if 'English' in selected_langs %}checked{% endif %}>
+                        <label for="lang_english">English</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" name="languages" value="Other" id="lang_other" {% if 'Other' in selected_langs %}checked{% endif %}>
+                        <label for="lang_other">Other</label>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Watch link (stream)</label>
-                    <input class="form-input" type="url" name="watch_url" value="{{ movie.watch_url }}">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Quality Label</label>
+                <select name="quality" class="form-input">
+                    <option value="HD" {% if movie.quality == 'HD' %}selected{% endif %}>HD</option>
+                    <option value="480p" {% if movie.quality == '480p' %}selected{% endif %}>480p</option>
+                    <option value="720p" {% if movie.quality == '720p' %}selected{% endif %}>720p</option>
+                    <option value="1080p" {% if movie.quality == '1080p' %}selected{% endif %}>1080p</option>
+                    <option value="2K" {% if movie.quality == '2K' %}selected{% endif %}>2K</option>
+                    <option value="4K" {% if movie.quality == '4K' %}selected{% endif %}>4K</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Poster Image (leave empty to keep current)</label>
+                <input type="file" name="poster" accept="image/*" class="form-input">
+                {% if movie.poster_path %}
+                <p style="font-size: 12px; color: rgba(229,231,235,0.6); margin-top: 8px;">
+                    Current: {{ movie.poster_path }}
+                </p>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Description (Optional)</label>
+                <textarea name="description" rows="3" class="form-input">{{ movie.description or '' }}</textarea>
+            </div>
+            
+            <!-- Quality-Specific Links -->
+            <div class="quality-section">
+                <h3>📺 Quality-Specific Links</h3>
+                <p style="font-size: 12px; color: rgba(229,231,235,0.6); margin-bottom: 16px;">
+                    Update quality-specific URLs. Leave empty to remove that quality.
+                </p>
+                
+                <!-- 480p -->
+                <div class="quality-item q-480p">
+                    <h4>💧 480p - Standard Definition</h4>
+                    <input type="url" name="quality_480p_watch" 
+                           value="{{ movie.qualities.get('480p', {}).get('watch_url', '') }}" 
+                           placeholder="480p Watch URL" class="quality-url-input">
+                    <input type="url" name="quality_480p_download" 
+                           value="{{ movie.qualities.get('480p', {}).get('download_url', '') }}" 
+                           placeholder="480p Download URL" class="quality-url-input">
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Download link</label>
-                    <input class="form-input" type="url" name="download_url" value="{{ movie.download_url }}">
+                
+                <!-- 720p -->
+                <div class="quality-item q-720p">
+                    <h4>✨ 720p - High Definition</h4>
+                    <input type="url" name="quality_720p_watch" 
+                           value="{{ movie.qualities.get('720p', {}).get('watch_url', '') }}" 
+                           placeholder="720p Watch URL" class="quality-url-input">
+                    <input type="url" name="quality_720p_download" 
+                           value="{{ movie.qualities.get('720p', {}).get('download_url', '') }}" 
+                           placeholder="720p Download URL" class="quality-url-input">
+                </div>
+                
+                <!-- 1080p -->
+                <div class="quality-item q-1080p">
+                    <h4>🔥 1080p - Full HD</h4>
+                    <input type="url" name="quality_1080p_watch" 
+                           value="{{ movie.qualities.get('1080p', {}).get('watch_url', '') }}" 
+                           placeholder="1080p Watch URL" class="quality-url-input">
+                    <input type="url" name="quality_1080p_download" 
+                           value="{{ movie.qualities.get('1080p', {}).get('download_url', '') }}" 
+                           placeholder="1080p Download URL" class="quality-url-input">
+                </div>
+                
+                <!-- 2K -->
+                <div class="quality-item q-2k">
+                    <h4>💎 2K - Quad HD (1440p)</h4>
+                    <input type="url" name="quality_2k_watch" 
+                           value="{{ movie.qualities.get('2k', {}).get('watch_url', '') }}" 
+                           placeholder="2K Watch URL" class="quality-url-input">
+                    <input type="url" name="quality_2k_download" 
+                           value="{{ movie.qualities.get('2k', {}).get('download_url', '') }}" 
+                           placeholder="2K Download URL" class="quality-url-input">
+                </div>
+                
+                <!-- 4K -->
+                <div class="quality-item q-4k">
+                    <h4>👑 4K - Ultra HD (2160p)</h4>
+                    <input type="url" name="quality_4k_watch" 
+                           value="{{ movie.qualities.get('4k', {}).get('watch_url', '') }}" 
+                           placeholder="4K Watch URL" class="quality-url-input">
+                    <input type="url" name="quality_4k_download" 
+                           value="{{ movie.qualities.get('4k', {}).get('download_url', '') }}" 
+                           placeholder="4K Download URL" class="quality-url-input">
                 </div>
             </div>
-
-            <div class="form-group" style="margin-top: 8px;">
-                <label class="form-label">Audio languages (multi-dub)</label>
-                {% set selected = movie.languages or [] %}
-                <div class="checkbox-row">
-                    <label><input type="checkbox" name="languages" value="Tamil"
-                        {% if 'Tamil' in selected %}checked{% endif %}> Tamil</label>
-                    <label><input type="checkbox" name="languages" value="Telugu"
-                        {% if 'Telugu' in selected %}checked{% endif %}> Telugu</label>
-                    <label><input type="checkbox" name="languages" value="Hindi"
-                        {% if 'Hindi' in selected %}checked{% endif %}> Hindi</label>
-                    <label><input type="checkbox" name="languages" value="Malayalam"
-                        {% if 'Malayalam' in selected %}checked{% endif %}> Malayalam</label>
-                    <label><input type="checkbox" name="languages" value="Kannada"
-                        {% if 'Kannada' in selected %}checked{% endif %}> Kannada</label>
-                    <label><input type="checkbox" name="languages" value="English"
-                        {% if 'English' in selected %}checked{% endif %}> English</label>
-                </div>
+            
+            <!-- Fallback URLs -->
+            <div class="form-group">
+                <label class="form-label">Fallback Watch URL</label>
+                <input type="url" name="watch_url" value="{{ movie.watch_url or '' }}" class="form-input">
             </div>
-
-            <div class="form-group" style="margin-top: 6px;">
-                <label class="form-label">Short description</label>
-                <textarea class="form-textarea" name="description">{{ movie.description }}</textarea>
+            
+            <div class="form-group">
+                <label class="form-label">Fallback Download URL</label>
+                <input type="url" name="download_url" value="{{ movie.download_url or '' }}" class="form-input">
             </div>
-
-            <button type="submit" class="btn-primary">Update movie</button>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    💾 Update Movie
+                </button>
+                <a href="/admin/movies" class="btn btn-secondary">
+                    ← Cancel
+                </a>
+            </div>
         </form>
-    </article>
-</section>
+    </div>
+</div>
 {% endblock %}
+                            
