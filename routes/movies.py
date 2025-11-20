@@ -12,6 +12,7 @@ from db import get_db
 from verification_utils import (
     should_require_verification,
     increment_free_used,
+    get_user_verification_state,  # Added for debug
 )
 
 router = APIRouter()
@@ -161,25 +162,53 @@ async def movie_detail(request: Request, movie_id: str):
     )
 
 
-# ---------- WATCH / DOWNLOAD GATES (with verification) ----------
+# ---------- WATCH / DOWNLOAD GATES (with verification + DEBUG) ----------
 
 @router.get("/movie/{movie_id}/watch")
 async def movie_watch(request: Request, movie_id: str):
     """
-    Gate for Watch Now button.
-    FIXED: Increment FIRST, then check verification.
+    Gate for Watch Now button with DEBUG logging.
     """
-    # 1) Increment counter FIRST
-    await increment_free_used(request)
+    print("\n" + "="*60)
+    print(f"🎬 WATCH BUTTON CLICKED - Movie ID: {movie_id}")
+    print("="*60)
     
-    # 2) NOW check if verification required (after increment)
-    if await should_require_verification(request):
+    # Get state BEFORE increment
+    settings_before, state_before, _ = await get_user_verification_state(request)
+    print(f"🔍 BEFORE INCREMENT:")
+    print(f"   - free_used: {state_before['free_used']}")
+    print(f"   - free_limit: {settings_before['free_limit']}")
+    print(f"   - enabled: {settings_before['enabled']}")
+    print(f"   - verified_until: {state_before['verified_until']}")
+    
+    # Increment counter FIRST
+    await increment_free_used(request)
+    print(f"✅ INCREMENT DONE")
+    
+    # Get state AFTER increment
+    settings_after, state_after, _ = await get_user_verification_state(request)
+    print(f"🔍 AFTER INCREMENT:")
+    print(f"   - free_used: {state_after['free_used']}")
+    print(f"   - free_limit: {settings_after['free_limit']}")
+    
+    # Check if verification required
+    needs_verify = await should_require_verification(request)
+    print(f"🔍 VERIFICATION CHECK:")
+    print(f"   - needs_verify: {needs_verify}")
+    print(f"   - comparison: {state_after['free_used']} <= {settings_after['free_limit']} = {state_after['free_used'] <= settings_after['free_limit']}")
+    
+    if needs_verify:
+        print(f"🚨 REDIRECTING TO VERIFICATION PAGE")
+        print("="*60 + "\n")
         return RedirectResponse(
             url=f"/verify/start?next=/movie/{movie_id}/watch",
             status_code=303,
         )
-
-    # 3) Redirect to actual watch_url
+    
+    print(f"✅ ALLOWING ACCESS TO VIDEO")
+    print("="*60 + "\n")
+    
+    # Redirect to actual watch_url
     db = get_db()
     movie_doc: Optional[dict] = None
     if db is not None:
@@ -198,20 +227,48 @@ async def movie_watch(request: Request, movie_id: str):
 @router.get("/movie/{movie_id}/download")
 async def movie_download(request: Request, movie_id: str):
     """
-    Gate for Download button.
-    FIXED: Increment FIRST, then check verification.
+    Gate for Download button with DEBUG logging.
     """
-    # 1) Increment counter FIRST
-    await increment_free_used(request)
+    print("\n" + "="*60)
+    print(f"⬇️  DOWNLOAD BUTTON CLICKED - Movie ID: {movie_id}")
+    print("="*60)
     
-    # 2) NOW check if verification required (after increment)
-    if await should_require_verification(request):
+    # Get state BEFORE increment
+    settings_before, state_before, _ = await get_user_verification_state(request)
+    print(f"🔍 BEFORE INCREMENT:")
+    print(f"   - free_used: {state_before['free_used']}")
+    print(f"   - free_limit: {settings_before['free_limit']}")
+    print(f"   - enabled: {settings_before['enabled']}")
+    print(f"   - verified_until: {state_before['verified_until']}")
+    
+    # Increment counter FIRST
+    await increment_free_used(request)
+    print(f"✅ INCREMENT DONE")
+    
+    # Get state AFTER increment
+    settings_after, state_after, _ = await get_user_verification_state(request)
+    print(f"🔍 AFTER INCREMENT:")
+    print(f"   - free_used: {state_after['free_used']}")
+    print(f"   - free_limit: {settings_after['free_limit']}")
+    
+    # Check if verification required
+    needs_verify = await should_require_verification(request)
+    print(f"🔍 VERIFICATION CHECK:")
+    print(f"   - needs_verify: {needs_verify}")
+    print(f"   - comparison: {state_after['free_used']} <= {settings_after['free_limit']} = {state_after['free_used'] <= settings_after['free_limit']}")
+    
+    if needs_verify:
+        print(f"🚨 REDIRECTING TO VERIFICATION PAGE")
+        print("="*60 + "\n")
         return RedirectResponse(
             url=f"/verify/start?next=/movie/{movie_id}/download",
             status_code=303,
         )
-
-    # 3) Redirect to actual download_url
+    
+    print(f"✅ ALLOWING ACCESS TO DOWNLOAD")
+    print("="*60 + "\n")
+    
+    # Redirect to actual download_url
     db = get_db()
     movie_doc: Optional[dict] = None
     if db is not None:
@@ -225,4 +282,4 @@ async def movie_download(request: Request, movie_id: str):
         return RedirectResponse(url=f"/movie/{movie_id}", status_code=303)
 
     return RedirectResponse(url=movie_doc["download_url"], status_code=302)
-    
+        
