@@ -2,729 +2,197 @@
 
 {% block content %}
 <style>
-    .page-shell {
+    .home-container {
         margin-top: 12px;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        font-size: 13px;
+        padding: 16px;
     }
-
-    .card {
-        background: rgba(15, 23, 42, 0.96);
+    
+    .header {
+        text-align: center;
+        padding: 40px 20px;
+        background: rgba(15, 23, 42, 0.8);
         border-radius: 24px;
-        border: 1px solid rgba(148, 163, 184, 0.5);
-        padding: 14px 14px 16px;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        margin-bottom: 40px;
     }
-
-    .card-header {
+    
+    .header h1 {
+        font-size: 42px;
+        margin-bottom: 12px;
+        background: linear-gradient(135deg, #06b6d4, #3b82f6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .header p {
+        font-size: 16px;
+        color: rgba(229, 231, 235, 0.7);
+    }
+    
+    .section {
+        margin-bottom: 60px;
+    }
+    
+    .section-header {
         display: flex;
         justify-content: space-between;
-        align-items: baseline;
-        margin-bottom: 8px;
+        align-items: center;
+        margin-bottom: 24px;
     }
-
-    .card-title {
-        font-size: 15px;
+    
+    .section-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #e5e7eb;
+    }
+    
+    .view-all-btn {
+        padding: 8px 16px;
+        background: rgba(6, 182, 212, 0.1);
+        border: 1px solid rgba(6, 182, 212, 0.5);
+        border-radius: 8px;
+        color: #06b6d4;
+        text-decoration: none;
+        font-size: 13px;
         font-weight: 600;
     }
-
-    .card-sub {
-        font-size: 11px;
-        color: var(--text-muted);
-    }
-
-    /* Movies hero (similar to series hero) */
-    .movie-hero-shell {
-        position: relative;
-        overflow: hidden;
-        border-radius: 24px;
-        background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.25), rgba(15, 23, 42, 0.98));
-        border: 1px solid rgba(55, 65, 81, 0.9);
-        padding: 14px 14px 16px;
-    }
-
-    .movie-hero-grid {
-        position: relative;
-        width: 100%;
-    }
-
-    .movie-hero-item {
+    
+    .movies-grid {
         display: grid;
-        grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.15fr);
-        gap: 12px;
-        align-items: center;
-        opacity: 0;
-        transition: opacity 0.5s ease-in-out;
-        position: absolute;
-        width: 100%;
-        top: 0;
-        left: 0;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 20px;
     }
-
-    .movie-hero-item.active {
-        opacity: 1;
-        position: relative;
-    }
-
-    .movie-hero-poster {
-        border-radius: 22px;
+    
+    .movie-card {
+        background: rgba(15, 23, 42, 0.8);
+        border-radius: 16px;
+        border: 1px solid rgba(148, 163, 184, 0.2);
         overflow: hidden;
-        background: radial-gradient(circle at top, #1d4ed8, #020617);
-        min-height: 180px;
+        transition: all 0.3s;
     }
-
-    .movie-hero-poster img {
+    
+    .movie-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+        border-color: rgba(6, 182, 212, 0.5);
+    }
+    
+    .movie-poster {
         width: 100%;
-        height: 100%;
+        height: 270px;
         object-fit: cover;
-        display: block;
+        background: rgba(15, 23, 42, 0.9);
     }
-
-    .movie-hero-main {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
+    
+    .movie-info {
+        padding: 16px;
     }
-
-    .movie-hero-title {
-        font-size: 20px;
-        font-weight: 650;
-    }
-
-    .movie-hero-meta {
-        font-size: 12px;
-        color: var(--text-muted);
-    }
-
-    .movie-hero-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 6px;
-    }
-
-    .movie-btn-hero-primary,
-    .movie-btn-hero-secondary {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        padding: 8px 16px;
-        border-radius: 999px;
-        font-size: 12px;
-        text-decoration: none;
-        border: none;
-        cursor: pointer;
+    
+    .movie-title {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #e5e7eb;
+        overflow: hidden;
+        text-overflow: ellipsis;
         white-space: nowrap;
     }
-
-    .movie-btn-hero-primary {
-        background: linear-gradient(135deg, #f97316, #ec4899);
-        color: #020617;
-        box-shadow: 0 12px 30px rgba(248, 113, 113, 0.6);
-    }
-
-    .movie-btn-hero-secondary {
-        background: #020617;
-        color: #e5e7eb;
-        border: 1px solid rgba(148, 163, 184, 0.8);
-    }
-
-    .movie-hero-dots {
+    
+    .movie-meta {
         display: flex;
-        justify-content: center;
-        gap: 4px;
-        margin-top: 10px;
-    }
-
-    .movie-hero-dot {
-        width: 16px;
-        height: 3px;
-        border-radius: 999px;
-        background: rgba(148, 163, 184, 0.6);
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .movie-hero-dot:hover {
-        background: rgba(249, 115, 22, 0.7);
-    }
-
-    .movie-hero-dot.active {
-        background: #f97316;
-    }
-
-    /* Genre chips */
-    .genre-card {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .genre-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-
-    .genre-chip {
-        padding: 6px 12px;
-        border-radius: 999px;
-        font-size: 11px;
-        border: 1px solid rgba(75, 85, 99, 0.9);
-        background: #020617;
-        color: #e5e7eb;
-        text-decoration: none;
-    }
-
-    /* Horizontal rows */
-    .horizontal-scroll {
-        display: flex;
-        gap: 10px;
-        overflow-x: auto;
-        padding-bottom: 4px;
-        scrollbar-width: thin;
-    }
-
-    .tile-link {
-        text-decoration: none;
-        color: inherit;
-        display: block;
-    }
-
-    .tile {
-        flex: 0 0 150px;
-        border-radius: 18px;
-        background: radial-gradient(circle at top, #1e293b, #020617);
-        border: 1px solid rgba(55, 65, 81, 0.9);
-        padding: 8px 8px 10px;
-    }
-
-    .tile-poster {
-        width: 100%;
-        border-radius: 14px;
-        overflow: hidden;
-        background: radial-gradient(circle at top, #1d4ed8, #020617);
-        margin-bottom: 6px;
-    }
-
-    .tile-poster img {
-        width: 100%;
-        height: 110px;
-        object-fit: cover;
-        display: block;
-    }
-
-    .tile-title {
+        justify-content: space-between;
+        align-items: center;
         font-size: 12px;
-        font-weight: 500;
-        margin-bottom: 2px;
+        color: rgba(229, 231, 235, 0.6);
     }
-
-    .tile-meta {
-        font-size: 11px;
-        color: var(--text-muted);
+    
+    .movie-quality {
+        background: linear-gradient(135deg, #06b6d4, #3b82f6);
+        color: #020617;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 10px;
     }
-
-    @media (max-width: 768px) {
-        .movie-hero-item {
-            grid-template-columns: minmax(0, 1fr);
-        }
+    
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        color: rgba(229, 231, 235, 0.5);
     }
 </style>
 
-<section class="page-shell">
+<div class="home-container">
+    <div class="header">
+        <h1>🎬 Movies Magic Club</h1>
+        <p>Discover the latest Tamil, Telugu, and Hindi movies</p>
+    </div>
 
-    <!-- Latest release hero slider -->
-    <article class="movie-hero-shell">
-        <div class="card-header" style="margin-bottom:8px;">
-            <div>
-                <div class="card-title">Latest release</div>
-                <div class="card-sub">
-                    Fresh movies added to Movies Magic Club
-                </div>
-            </div>
+    <!-- Trending Movies -->
+    <div class="section">
+        <div class="section-header">
+            <h2 class="section-title">🔥 Trending Now</h2>
+            <a href="/movies" class="view-all-btn">View All →</a>
         </div>
-
-        {% if latest_movies and latest_movies|length > 0 %}
-            <div class="movie-hero-grid" id="heroSlider">
-                {% set max_slides = latest_movies|length if latest_movies|length < 5 else 5 %}
-                {% for movie in latest_movies[:max_slides] %}
-                <div class="movie-hero-item {% if loop.index0 == 0 %}active{% endif %}" data-slide="{{ loop.index0 }}">
-                    <div class="movie-hero-poster">
-                        {% if movie.poster_path %}
-                            <a href="/movie/{{ movie.id }}" class="tile-link">
-                                <img src="{{ url_for('static', path=movie.poster_path) }}"
-                                     alt="{{ movie.title }} poster">
-                            </a>
-                        {% endif %}
-                    </div>
-                    <div class="movie-hero-main">
-                        <div class="movie-hero-title">
-                            {{ movie.title }}
-                        </div>
-                        <div class="movie-hero-meta">
-                            {{ movie.year or "" }}{% if movie.quality %} · {{ movie.quality }}{% endif %}{% if movie.category %} · {{ movie.category }}{% endif %}
-                        </div>
-                        <div class="movie-hero-actions">
-                            {% if movie.watch_url %}
-                                <a href="{{ movie.watch_url }}" class="movie-btn-hero-primary" target="_blank" rel="noopener">
-                                    ▶ Watch now
-                                </a>
-                            {% endif %}
-                            {% if movie.download_url %}
-                                <a href="{{ movie.download_url }}" class="movie-btn-hero-secondary" target="_blank" rel="noopener">
-                                    ⬇ Download
-                                </a>
-                            {% endif %}
-                        </div>
+        
+        {% if trending_movies %}
+        <div class="movies-grid">
+            {% for movie in trending_movies if movie and movie.id %}  <!-- ⭐ CRITICAL: Check movie.id exists -->
+            <a href="/movie/{{ movie.id }}" class="movie-card">
+                <img src="/static/{{ movie.poster_path }}" 
+                     alt="{{ movie.title }}" 
+                     class="movie-poster"
+                     onerror="this.src='https://via.placeholder.com/180x270/1e293b/64748b?text=No+Poster'">
+                <div class="movie-info">
+                    <div class="movie-title">{{ movie.title }}</div>
+                    <div class="movie-meta">
+                        <span>{{ movie.language or "—" }} • {{ movie.year or "—" }}</span>
+                        <span class="movie-quality">{{ movie.quality or "HD" }}</span>
                     </div>
                 </div>
-                {% endfor %}
-            </div>
-
-            <div class="movie-hero-dots" id="heroDots">
-                {% for i in range(max_slides) %}
-                    <div class="movie-hero-dot {% if i == 0 %}active{% endif %}" data-slide="{{ i }}"></div>
-                {% endfor %}
-            </div>
+            </a>
+            {% endfor %}
+        </div>
         {% else %}
-            <div class="movie-hero-grid">
-                <div class="movie-hero-item active">
-                    <div class="movie-hero-poster"></div>
-                    <div class="movie-hero-main">
-                        <div class="movie-hero-title">Sample Movie</div>
-                        <div class="movie-hero-meta">2024 · HD · Action / Adventure</div>
-                        <div class="movie-hero-actions">
-                            <a href="#" class="movie-btn-hero-primary">▶ Watch now</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="empty-state">
+            <p style="font-size: 48px;">🎬</p>
+            <p>No trending movies available</p>
+        </div>
         {% endif %}
-    </article>
+    </div>
 
-    <!-- Browse by genre -->
-    <article class="card genre-card">
-        <div class="card-header">
-            <div>
-                <div class="card-title">Browse by genre</div>
-                <div class="card-sub">Quick shortcuts to common movie moods.</div>
-            </div>
+    <!-- Recent Movies -->
+    <div class="section">
+        <div class="section-header">
+            <h2 class="section-title">🆕 Recently Added</h2>
+            <a href="/movies" class="view-all-btn">View All →</a>
         </div>
-        <div class="genre-row">
-            <a href="/movies/browse?genre=Action" class="genre-chip">Action</a>
-            <a href="/movies/browse?genre=Comedy" class="genre-chip">Comedy</a>
-            <a href="/movies/browse?genre=Drama" class="genre-chip">Drama</a>
-            <a href="/movies/browse?genre=Horror" class="genre-chip">Horror</a>
-            <a href="/movies/browse?genre=Crime" class="genre-chip">Crime</a>
-            <a href="/movies/browse?genre=Romance" class="genre-chip">Romance</a>
-            <a href="/movies/browse?genre=Sci-Fi" class="genre-chip">Sci‑Fi</a>
-            <a href="/movies/browse?genre=Fantasy" class="genre-chip">Fantasy</a>
-        </div>
-    </article>
-
-    <!-- Trending now (no See more) -->
-    <article class="card">
-        <div class="card-header">
-            <div>
-                <div class="card-title">Trending now</div>
-                <div class="card-sub">Popular across Movies Magic Club.</div>
-            </div>
-        </div>
-
-        <div class="horizontal-scroll">
-            {% if latest_movies and latest_movies|length > 0 %}
-                {% for m in latest_movies %}
-                <a href="/movie/{{ m.id }}" class="tile-link">
-                    <div class="tile">
-                        <div class="tile-poster">
-                            {% if m.poster_path %}
-                                <img src="{{ url_for('static', path=m.poster_path) }}"
-                                     alt="{{ m.title }} poster">
-                            {% endif %}
-                        </div>
-                        <div class="tile-title">{{ m.title }}</div>
-                        <div class="tile-meta">
-                            {{ m.year or "" }}{% if m.quality %} · {{ m.quality }}{% endif %}
-                        </div>
-                    </div>
-                </a>
-                {% endfor %}
-            {% else %}
-                {% for i in range(8) %}
-                <div class="tile">
-                    <div class="tile-poster"></div>
-                    <div class="tile-title">Trending {{ i + 1 }}</div>
-                    <div class="tile-meta">HD · 2024 · Tamil</div>
-                </div>
-                {% endfor %}
-            {% endif %}
-        </div>
-    </article>
-
-    <!-- All movies (See more on left) -->
-    <article class="card">
-        <div class="card-header">
-            <div>
-                <div class="card-title">
-                    All movies
-                    <a href="/movies/browse"
-                       style="margin-left:8px; font-size:11px; color:#a5b4fc; text-decoration:none;">
-                        See more →
-                    </a>
-                </div>
-                <div class="card-sub">Recently added across all languages.</div>
-            </div>
-        </div>
-
-        <div class="horizontal-scroll">
-            {% if latest_movies and latest_movies|length > 0 %}
-                {% for m in latest_movies %}
-                <a href="/movie/{{ m.id }}" class="tile-link">
-                    <div class="tile">
-                        <div class="tile-poster">
-                            {% if m.poster_path %}
-                                <img src="{{ url_for('static', path=m.poster_path) }}"
-                                     alt="{{ m.title }} poster">
-                            {% endif %}
-                        </div>
-                        <div class="tile-title">{{ m.title }}</div>
-                        <div class="tile-meta">
-                            {{ m.quality or "HD" }} · {{ m.year or "" }}
-                        </div>
-                    </div>
-                </a>
-                {% endfor %}
-            {% else %}
-                {% for i in range(6) %}
-                <div class="tile">
-                    <div class="tile-poster"></div>
-                    <div class="tile-title">Movie {{ i + 1 }}</div>
-                    <div class="tile-meta">HD · 2024</div>
-                </div>
-                {% endfor %}
-            {% endif %}
-        </div>
-    </article>
-
-    <!-- Tamil movies -->
-    <article class="card">
-        <div class="card-header">
-            <div>
-                <div class="card-title">
-                    Tamil movies
-                    <a href="/movies/browse" style="margin-left:8px; font-size:11px; color:#a5b4fc; text-decoration:none;">
-                        See more →
-                    </a>
-                </div>
-                <div class="card-sub">Hand-picked Tamil releases.</div>
-            </div>
-        </div>
-
-        <div class="horizontal-scroll">
-            {% if tamil_movies and tamil_movies|length > 0 %}
-                {% for m in tamil_movies %}
-                <a href="/movie/{{ m.id }}" class="tile-link">
-                    <div class="tile">
-                        <div class="tile-poster">
-                            {% if m.poster_path %}
-                                <img src="{{ url_for('static', path=m.poster_path) }}"
-                                     alt="{{ m.title }} poster">
-                            {% endif %}
-                        </div>
-                        <div class="tile-title">{{ m.title }}</div>
-                        <div class="tile-meta">
-                            {{ m.quality or "HD" }} · {{ m.year or "" }} · Tamil
-                        </div>
-                    </div>
-                </a>
-                {% endfor %}
-            {% else %}
-                {% for i in range(8) %}
-                <div class="tile">
-                    <div class="tile-poster"></div>
-                    <div class="tile-title">Tamil Movie {{ i + 1 }}</div>
-                    <div class="tile-meta">HD · 2023 · Tamil</div>
-                </div>
-                {% endfor %}
-            {% endif %}
-        </div>
-    </article>
-
-    <!-- Telugu movies -->
-    <article class="card">
-        <div class="card-header">
-            <div>
-                <div class="card-title">
-                    Telugu movies
-                    <a href="/movies/browse" style="margin-left:8px; font-size:11px; color:#a5b4fc; text-decoration:none;">
-                        See more →
-                    </a>
-                </div>
-                <div class="card-sub">Top picks in Telugu.</div>
-            </div>
-        </div>
-
-        <div class="horizontal-scroll">
-            {% if telugu_movies and telugu_movies|length > 0 %}
-                {% for m in telugu_movies %}
-                <a href="/movie/{{ m.id }}" class="tile-link">
-                    <div class="tile">
-                        <div class="tile-poster">
-                            {% if m.poster_path %}
-                                <img src="{{ url_for('static', path=m.poster_path) }}"
-                                     alt="{{ m.title }} poster">
-                            {% endif %}
-                        </div>
-                        <div class="tile-title">{{ m.title }}</div>
-                        <div class="tile-meta">
-                            {{ m.quality or "HD" }} · {{ m.year or "" }} · Telugu
-                        </div>
-                    </div>
-                </a>
-                {% endfor %}
-            {% else %}
-                {% for i in range(8) %}
-                <div class="tile">
-                    <div class="tile-poster"></div>
-                    <div class="tile-title">Telugu Movie {{ i + 1 }}</div>
-                    <div class="tile-meta">HD · 2023 · Telugu</div>
-                </div>
-                {% endfor %}
-            {% endif %}
-        </div>
-    </article>
-
-    <!-- Hindi movies -->
-    <article class="card">
-        <div class="card-header">
-            <div>
-                <div class="card-title">
-                    Hindi movies
-                    <a href="/movies/browse" style="margin-left:8px; font-size:11px; color:#a5b4fc; text-decoration:none;">
-                        See more →
-                    </a>
-                </div>
-                <div class="card-sub">Bollywood and beyond.</div>
-            </div>
-        </div>
-
-        <div class="horizontal-scroll">
-            {% if hindi_movies and hindi_movies|length > 0 %}
-                {% for m in hindi_movies %}
-                <a href="/movie/{{ m.id }}" class="tile-link">
-                    <div class="tile">
-                        <div class="tile-poster">
-                            {% if m.poster_path %}
-                                <img src="{{ url_for('static', path=m.poster_path) }}"
-                                     alt="{{ m.title }} poster">
-                            {% endif %}
-                        </div>
-                        <div class="tile-title">{{ m.title }}</div>
-                        <div class="tile-meta">
-                            {{ m.quality or "HD" }} · {{ m.year or "" }} · Hindi
-                        </div>
-                    </div>
-                </a>
-                {% endfor %}
-            {% else %}
-                {% for i in range(8) %}
-                <div class="tile">
-                    <div class="tile-poster"></div>
-                    <div class="tile-title">Hindi Movie {{ i + 1 }}</div>
-                    <div class="tile-meta">HD · 2023 · Hindi</div>
-                </div>
-                {% endfor %}
-            {% endif %}
-        </div>
-    </article>
-
-    <!-- Malayalam movies -->
-    <article class="card">
-        <div class="card-header">
-            <div>
-                <div class="card-title">
-                    Malayalam movies
-                    <a href="/movies/browse" style="margin-left:8px; font-size:11px; color:#a5b4fc; text-decoration:none;">
-                        See more →
-                    </a>
-                </div>
-                <div class="card-sub">Critically acclaimed picks.</div>
-            </div>
-        </div>
-
-        <div class="horizontal-scroll">
-            {% if malayalam_movies and malayalam_movies|length > 0 %}
-                {% for m in malayalam_movies %}
-                <a href="/movie/{{ m.id }}" class="tile-link">
-                    <div class="tile">
-                        <div class="tile-poster">
-                            {% if m.poster_path %}
-                                <img src="{{ url_for('static', path=m.poster_path) }}"
-                                     alt="{{ m.title }} poster">
-                            {% endif %}
-                        </div>
-                        <div class="tile-title">{{ m.title }}</div>
-                        <div class="tile-meta">
-                            {{ m.quality or "HD" }} · {{ m.year or "" }} · Malayalam
-                        </div>
-                    </div>
-                </a>
-                {% endfor %}
-            {% else %}
-                {% for i in range(8) %}
-                <div class="tile">
-                    <div class="tile-poster"></div>
-                    <div class="tile-title">Malayalam {{ i + 1 }}</div>
-                    <div class="tile-meta">HD · 2023 · Malayalam</div>
-                </div>
-                {% endfor %}
-            {% endif %}
-        </div>
-    </article>
-
-    <!-- Kannada movies -->
-    <article class="card">
-        <div class="card-header">
-            <div>
-                <div class="card-title">
-                    Kannada movies
-                    <a href="/movies/browse" style="margin-left:8px; font-size:11px; color:#a5b4fc; text-decoration:none;">
-                        See more →
-                    </a>
-                </div>
-                <div class="card-sub">Latest from Sandalwood.</div>
-            </div>
-        </div>
-
-        <div class="horizontal-scroll">
-            {% if kannada_movies and kannada_movies|length > 0 %}
-                {% for m in kannada_movies %}
-                <a href="/movie/{{ m.id }}" class="tile-link">
-                    <div class="tile">
-                        <div class="tile-poster">
-                            {% if m.poster_path %}
-                                <img src="{{ url_for('static', path=m.poster_path) }}"
-                                     alt="{{ m.title }} poster">
-                            {% endif %}
-                        </div>
-                        <div class="tile-title">{{ m.title }}</div>
-                        <div class="tile-meta">
-                            {{ m.quality or "HD" }} · {{ m.year or "" }} · Kannada
-                        </div>
-                    </div>
-                </a>
-                {% endfor %}
-            {% else %}
-                {% for i in range(8) %}
-                <div class="tile">
-                    <div class="tile-poster"></div>
-                    <div class="tile-title">Kannada {{ i + 1 }}</div>
-                    <div class="tile-meta">HD · 2023 · Kannada</div>
-                </div>
-                {% endfor %}
-            {% endif %}
-        </div>
-    </article>
-
-</section>
-
-<script>
-// Hero slider functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const slider = document.getElementById('heroSlider');
-    const dots = document.querySelectorAll('.movie-hero-dot');
-    const slides = document.querySelectorAll('.movie-hero-item');
-    
-    if (!slider || slides.length === 0) return;
-    
-    let currentSlide = 0;
-    let autoSlideInterval;
-    
-    // Function to show specific slide
-    function showSlide(index) {
-        // Remove active class from all slides and dots
-        slides.forEach(slide => slide.classList.remove('active'));
-        dots.forEach(dot => dot.classList.remove('active'));
         
-        // Add active class to current slide and dot
-        slides[index].classList.add('active');
-        dots[index].classList.add('active');
-        
-        currentSlide = index;
-    }
-    
-    // Function to show next slide
-    function nextSlide() {
-        const next = (currentSlide + 1) % slides.length;
-        showSlide(next);
-    }
-    
-    // Auto-slide every 5 seconds
-    function startAutoSlide() {
-        autoSlideInterval = setInterval(nextSlide, 5000);
-    }
-    
-    // Stop auto-slide
-    function stopAutoSlide() {
-        clearInterval(autoSlideInterval);
-    }
-    
-    // Dot click handlers
-    dots.forEach(dot => {
-        dot.addEventListener('click', function() {
-            const slideIndex = parseInt(this.getAttribute('data-slide'));
-            showSlide(slideIndex);
-            stopAutoSlide();
-            startAutoSlide(); // Restart auto-slide after manual interaction
-        });
-    });
-    
-    // Touch swipe support for mobile
-    let touchStartX = 0;
-    let touchEndX = 0;
-    
-    slider.addEventListener('touchstart', function(e) {
-        touchStartX = e.changedTouches[0].screenX;
-        stopAutoSlide();
-    });
-    
-    slider.addEventListener('touchend', function(e) {
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipe();
-        startAutoSlide();
-    });
-    
-    function handleSwipe() {
-        const swipeThreshold = 50;
-        const diff = touchStartX - touchEndX;
-        
-        if (Math.abs(diff) > swipeThreshold) {
-            if (diff > 0) {
-                // Swipe left - next slide
-                nextSlide();
-            } else {
-                // Swipe right - previous slide
-                const prev = (currentSlide - 1 + slides.length) % slides.length;
-                showSlide(prev);
-            }
-        }
-    }
-    
-    // Start auto-slide
-    startAutoSlide();
-    
-    // Pause auto-slide when page is not visible
-    document.addEventListener('visibilitychange', function() {
-        if (document.hidden) {
-            stopAutoSlide();
-        } else {
-            startAutoSlide();
-        }
-    });
-});
-</script>
+        {% if recent_movies %}
+        <div class="movies-grid">
+            {% for movie in recent_movies if movie and movie.id %}  <!-- ⭐ CRITICAL: Check movie.id exists -->
+            <a href="/movie/{{ movie.id }}" class="movie-card">
+                <img src="/static/{{ movie.poster_path }}" 
+                     alt="{{ movie.title }}" 
+                     class="movie-poster"
+                     onerror="this.src='https://via.placeholder.com/180x270/1e293b/64748b?text=No+Poster'">
+                <div class="movie-info">
+                    <div class="movie-title">{{ movie.title }}</div>
+                    <div class="movie-meta">
+                        <span>{{ movie.language or "—" }} • {{ movie.year or "—" }}</span>
+                        <span class="movie-quality">{{ movie.quality or "HD" }}</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p style="font-size: 48px;">🎬</p>
+            <p>No movies available yet</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}
-        
