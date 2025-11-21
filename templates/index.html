@@ -34,13 +34,13 @@
         color: var(--text-muted);
     }
 
-    /* HERO SECTION */
+    /* ===== HERO SECTION ===== */
     .movie-hero-shell {
         position: relative;
         overflow: hidden;
         border-radius: 24px;
-        background: radial-gradient(circle at top left, rgba(59,130,246,0.25), rgba(15,23,42,0.98));
-        border: 1px solid rgba(55,65,81,0.9);
+        background: radial-gradient(circle at top left, rgba(59,130,246,.25), rgba(15,23,42,.98));
+        border: 1px solid rgba(55,65,81,.9);
         padding: 14px;
     }
 
@@ -51,15 +51,12 @@
 
     .movie-hero-item {
         display: grid;
-        grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.15fr);
+        grid-template-columns: minmax(0,1.05fr) minmax(0,1.15fr);
         gap: 12px;
-        align-items: center;
         opacity: 0;
-        transition: opacity .5s ease-in-out;
         position: absolute;
         width: 100%;
-        top: 0;
-        left: 0;
+        transition: .4s ease-in-out;
     }
 
     .movie-hero-item.active {
@@ -68,10 +65,9 @@
     }
 
     .movie-hero-poster {
-        border-radius: 22px;
+        border-radius: 20px;
         overflow: hidden;
-        background: radial-gradient(circle at top, #1d4ed8, #020617);
-        min-height: 180px;
+        min-height: 190px;
     }
 
     .movie-hero-poster img {
@@ -82,90 +78,36 @@
 
     .movie-hero-title {
         font-size: 20px;
-        font-weight: 650;
+        font-weight: 700;
     }
 
-    .movie-hero-meta {
-        font-size: 12px;
-        color: var(--text-muted);
-    }
-
-    .movie-hero-actions {
-        display: flex;
-        gap: 8px;
-        margin-top: 6px;
-    }
-
-    .movie-btn-hero-primary,
-    .movie-btn-hero-secondary {
-        padding: 8px 16px;
-        border-radius: 999px;
-        font-size: 12px;
-        text-decoration: none;
-        white-space: nowrap;
-        cursor: pointer;
-    }
-
-    .movie-btn-hero-primary {
-        background: linear-gradient(135deg, #f97316, #ec4899);
-        color: #020617;
-    }
-
-    .movie-btn-hero-secondary {
-        background: #020617;
-        color: #e5e7eb;
-        border: 1px solid rgba(148,163,184,.8);
-    }
-
-    .movie-hero-dots {
-        display: flex;
-        justify-content: center;
-        gap: 4px;
-        margin-top: 10px;
-    }
-
-    .movie-hero-dot {
-        width: 16px;
-        height: 3px;
-        background: rgba(148,163,184,.6);
-        border-radius: 999px;
-        cursor: pointer;
-    }
-
-    .movie-hero-dot.active {
-        background: #f97316;
-    }
-
-    /* GENRE */
-    .genre-card {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
+    /* ===== GENRE ===== */
     .genre-row {
         display: flex;
-        gap: 8px;
         flex-wrap: wrap;
+        gap: 8px;
     }
 
     .genre-chip {
         padding: 6px 12px;
         border-radius: 999px;
-        font-size: 11px;
         background: #020617;
-        border: 1px solid rgba(75,85,99,.9);
+        border: 1px solid rgba(75,85,99,.7);
         color: #e5e7eb;
+        font-size: 11px;
         text-decoration: none;
     }
 
-    /* ⭐ NEW UPDATED HORIZONTAL SCROLL — SHOW 3 POSTERS AT ONCE */
+    /* ============================================================
+       FINAL 100% FIX — 3 POSTERS VISIBLE + NO COMPRESSION
+       ============================================================ */
+
     .horizontal-scroll {
         display: flex;
-        gap: 10px;
+        gap: 12px;
         overflow-x: auto;
         padding-bottom: 8px;
-        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
         scrollbar-width: none;
     }
 
@@ -173,21 +115,28 @@
         display: none;
     }
 
+    .tile-link {
+        display: block !important;
+        width: 100% !important;
+        text-decoration: none;
+        color: inherit;
+    }
+
     .tile {
-        flex: 0 0 calc(33.33% - 10px);
-        scroll-snap-align: start;
+        flex: 0 0 calc(33.33% - 12px) !important;
+        max-width: calc(33.33% - 12px) !important;
         border-radius: 18px;
         background: radial-gradient(circle at top, #1e293b, #020617);
-        border: 1px solid rgba(55,65,81,0.9);
+        border: 1px solid rgba(55,65,81,.9);
         padding: 8px;
+        box-sizing: border-box;
     }
 
     .tile-poster {
         width: 100%;
-        height: 145px;
+        height: 150px !important;
         border-radius: 14px;
         overflow: hidden;
-        background: #1d4ed8;
         margin-bottom: 6px;
     }
 
@@ -195,6 +144,7 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
+        border-radius: 14px;
     }
 
     .tile-title {
@@ -214,9 +164,10 @@
     }
 </style>
 
+
 <section class="page-shell">
 
-    <!-- ======================= HERO SECTION ======================= -->
+    <!-- ========= HERO SECTION ========= -->
     <article class="movie-hero-shell">
         <div class="card-header">
             <div>
@@ -227,55 +178,36 @@
 
         {% if latest_movies %}
         <div class="movie-hero-grid" id="heroSlider">
-
             {% set max_slides = latest_movies|length if latest_movies|length < 5 else 5 %}
             {% for movie in latest_movies[:max_slides] %}
-            <div class="movie-hero-item {% if loop.index0 == 0 %}active{% endif %}"
-                 data-slide="{{ loop.index0 }}">
-
+            <div class="movie-hero-item {% if loop.index0==0 %}active{% endif %}" data-slide="{{ loop.index0 }}">
                 <div class="movie-hero-poster">
-                    {% if movie.poster_path %}
-                        <a href="/movie/{{ movie.id }}">
-                            <img src="{{ url_for('static', path=movie.poster_path) }}">
-                        </a>
-                    {% endif %}
+                    <img src="{{ url_for('static', path=movie.poster_path) }}">
                 </div>
 
                 <div>
                     <div class="movie-hero-title">{{ movie.title }}</div>
-                    <div class="movie-hero-meta">
-                        {{ movie.year }} · {{ movie.quality }} · {{ movie.category }}
-                    </div>
-
-                    <div class="movie-hero-actions">
+                    <div class="movie-hero-meta">{{ movie.year }} · {{ movie.quality }}</div>
+                    <div style="margin-top:8px; display:flex; gap:10px;">
                         {% if movie.watch_url %}
-                        <a class="movie-btn-hero-primary" href="{{ movie.watch_url }}">
-                            ▶ Watch now
-                        </a>
-                        {% endif %}
-
-                        {% if movie.download_url %}
-                        <a class="movie-btn-hero-secondary" href="{{ movie.download_url }}">
-                            ⬇ Download
-                        </a>
+                        <a href="{{ movie.watch_url }}" class="movie-btn-hero-primary">▶ Watch now</a>
                         {% endif %}
                     </div>
                 </div>
-
             </div>
             {% endfor %}
         </div>
 
         <div class="movie-hero-dots" id="heroDots">
             {% for i in range(max_slides) %}
-                <div class="movie-hero-dot {% if i == 0 %}active{% endif %}" data-slide="{{ i }}"></div>
+            <div class="movie-hero-dot {% if i==0 %}active{% endif %}" data-slide="{{ i }}"></div>
             {% endfor %}
         </div>
         {% endif %}
     </article>
 
-    <!-- ======================= GENRE SECTION ======================= -->
-    <article class="card genre-card">
+    <!-- ========= GENRE ========= -->
+    <article class="card">
         <div class="card-header">
             <div>
                 <div class="card-title">Browse by genre</div>
@@ -284,18 +216,18 @@
         </div>
 
         <div class="genre-row">
-            <a href="/movies/browse?genre=Action" class="genre-chip">Action</a>
-            <a href="/movies/browse?genre=Comedy" class="genre-chip">Comedy</a>
-            <a href="/movies/browse?genre=Drama" class="genre-chip">Drama</a>
-            <a href="/movies/browse?genre=Horror" class="genre-chip">Horror</a>
-            <a href="/movies/browse?genre=Crime" class="genre-chip">Crime</a>
-            <a href="/movies/browse?genre=Romance" class="genre-chip">Romance</a>
-            <a href="/movies/browse?genre=Sci-Fi" class="genre-chip">Sci-Fi</a>
-            <a href="/movies/browse?genre=Fantasy" class="genre-chip">Fantasy</a>
+            <a class="genre-chip" href="#">Action</a>
+            <a class="genre-chip" href="#">Comedy</a>
+            <a class="genre-chip" href="#">Drama</a>
+            <a class="genre-chip" href="#">Horror</a>
+            <a class="genre-chip" href="#">Crime</a>
+            <a class="genre-chip" href="#">Romance</a>
+            <a class="genre-chip" href="#">Sci-Fi</a>
+            <a class="genre-chip" href="#">Fantasy</a>
         </div>
     </article>
 
-    <!-- ======================= TRENDING ======================= -->
+    <!-- ========= TRENDING ========= -->
     <article class="card">
         <div class="card-header">
             <div>
@@ -306,11 +238,9 @@
 
         <div class="horizontal-scroll">
             {% for m in latest_movies %}
-            <a class="tile-link" href="/movie/{{ m.id }}">
+            <a href="/movie/{{m.id}}" class="tile-link">
                 <div class="tile">
-                    <div class="tile-poster">
-                        <img src="{{ url_for('static', path=m.poster_path) }}">
-                    </div>
+                    <div class="tile-poster"><img src="{{url_for('static',path=m.poster_path)}}"></div>
                     <div class="tile-title">{{ m.title }}</div>
                     <div class="tile-meta">{{ m.year }} · {{ m.quality }}</div>
                 </div>
@@ -319,33 +249,29 @@
         </div>
     </article>
 
-    <!-- ======================= ALL MOVIES ======================= -->
+    <!-- ========= ALL MOVIES ========= -->
     <article class="card">
         <div class="card-header">
             <div>
-                <div class="card-title">
-                    All movies
-                    <a href="/movies/browse" style="color:#a5b4fc;font-size:11px;">See more →</a>
-                </div>
+                <div class="card-title">All movies <a href="/movies/browse" style="color:#a5b4fc;font-size:11px;">See more →</a></div>
                 <div class="card-sub">Recently added across all languages.</div>
             </div>
         </div>
 
         <div class="horizontal-scroll">
             {% for m in latest_movies %}
-            <a href="/movie/{{ m.id }}" class="tile-link">
+            <a href="/movie/{{m.id}}" class="tile-link">
                 <div class="tile">
-                    <div class="tile-poster"><img src="{{ url_for('static', path=m.poster_path) }}"></div>
+                    <div class="tile-poster"><img src="{{url_for('static',path=m.poster_path)}}"></div>
                     <div class="tile-title">{{ m.title }}</div>
-                    <div class="tile-meta">{{ m.quality }} · {{ m.year }}</div>
+                    <div class="tile-meta">{{ m.year }} · {{ m.quality }}</div>
                 </div>
             </a>
             {% endfor %}
         </div>
     </article>
 
-    <!-- ======================= LANGUAGE SECTIONS ======================= -->
-
+    <!-- ========= LANGUAGE SECTIONS ========= -->
     {% for label, movies, lang in [
         ('Tamil movies', tamil_movies, 'Tamil'),
         ('Telugu movies', telugu_movies, 'Telugu'),
@@ -357,21 +283,18 @@
     <article class="card">
         <div class="card-header">
             <div>
-                <div class="card-title">
-                    {{ label }}
-                    <a href="/movies/browse" style="color:#a5b4fc;font-size:11px;">See more →</a>
-                </div>
+                <div class="card-title">{{ label }} <a href="/movies/browse" style="color:#a5b4fc;font-size:11px;">See more →</a></div>
                 <div class="card-sub">Top picks in {{ lang }}.</div>
             </div>
         </div>
 
         <div class="horizontal-scroll">
             {% for m in movies %}
-            <a href="/movie/{{ m.id }}" class="tile-link">
+            <a href="/movie/{{m.id}}" class="tile-link">
                 <div class="tile">
-                    <div class="tile-poster"><img src="{{ url_for('static', path=m.poster_path) }}"></div>
+                    <div class="tile-poster"><img src="{{url_for('static',path=m.poster_path)}}"></div>
                     <div class="tile-title">{{ m.title }}</div>
-                    <div class="tile-meta">{{ m.quality }} · {{ m.year }} · {{ lang }}</div>
+                    <div class="tile-meta">{{ m.year }} · {{ m.quality }} · {{ lang }}</div>
                 </div>
             </a>
             {% endfor %}
@@ -383,28 +306,25 @@
 </section>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const slides = document.querySelectorAll('.movie-hero-item');
-    const dots = document.querySelectorAll('.movie-hero-dot');
-
+document.addEventListener("DOMContentLoaded", () => {
+    const slides = document.querySelectorAll(".movie-hero-item");
+    const dots = document.querySelectorAll(".movie-hero-dot");
     let current = 0;
 
     function show(i) {
-        slides.forEach(s => s.classList.remove('active'));
-        dots.forEach(d => d.classList.remove('active'));
-
-        slides[i].classList.add('active');
-        dots[i].classList.add('active');
+        slides.forEach(s => s.classList.remove("active"));
+        dots.forEach(d => d.classList.remove("active"));
+        slides[i].classList.add("active");
+        dots[i].classList.add("active");
         current = i;
     }
 
     dots.forEach(d => {
-        d.onclick = () => show(Number(d.dataset.slide));
+        d.addEventListener("click", () => show(Number(d.dataset.slide)));
     });
 
-    setInterval(() => show((current + 1) % slides.length), 5000);
+    setInterval(() => show((current+1)%slides.length), 5000);
 });
 </script>
 
 {% endblock %}
-    
