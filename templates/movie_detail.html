@@ -50,7 +50,8 @@
 
   .movie-poster-wrap img {
     width: 100%;
-    height: 180px;
+    height: auto;
+    aspect-ratio: 16 / 9;
     object-fit: cover;
     display: block;
   }
@@ -91,7 +92,7 @@
     color: #e5e7eb;
   }
 
-  /* Watch / Download buttons – NORMAL SIZE */
+  /* Watch / Download buttons – normal size */
 
   .movie-detail-actions {
     display: flex;
@@ -162,6 +163,7 @@
   .comments-placeholder {
     font-size: 13px;
     color: var(--text-muted);
+    margin-top: 6px;
   }
 
   @media (max-width: 640px) {
@@ -176,20 +178,23 @@
   <!-- Movie main header + poster -->
   <article class="card">
     <div class="movie-header">
-
       <div class="movie-header-top">
 
         <div class="movie-poster-wrap">
           {% if movie and movie.poster_path %}
             <img src="{{ url_for('static', path=movie.poster_path) }}" alt="{{ movie.title }} poster">
           {% else %}
-            <!-- fallback gradient block if no poster -->
-            <div style="width:100%;height:180px;background:radial-gradient(circle at top,#1d4ed8,#020617);"></div>
+            <div style="width:100%;aspect-ratio:16/9;
+                        background:radial-gradient(circle at top,#1d4ed8,#020617);">
+            </div>
           {% endif %}
         </div>
 
         <div class="movie-main-text">
-          <div class="movie-title">{{ movie.title if movie else "Unknown movie" }}</div>
+          <div class="movie-title">
+            {{ movie.title if movie else "Unknown movie" }}
+          </div>
+
           <div class="movie-meta">
             {% if movie %}
               <span>{{ movie.year or "Year N/A" }}</span>
@@ -204,9 +209,7 @@
 
           <div class="movie-chips-row">
             {% if movie and movie.audio_languages %}
-              <span class="movie-chip">
-                Multi audio
-              </span>
+              <span class="movie-chip">Multi audio</span>
             {% endif %}
             <span class="movie-chip">HD ready</span>
             <span class="movie-chip">Secure download</span>
@@ -214,13 +217,15 @@
 
           <div class="movie-detail-actions">
             {% if movie and movie.watch_url %}
-              <a href="{{ movie.watch_url }}" target="_blank" rel="noopener"
+              <a href="{{ movie.watch_url }}"
+                 target="_blank" rel="noopener"
                  class="movie-detail-btn movie-detail-btn-primary">
                 ▶ Watch now
               </a>
             {% endif %}
             {% if movie and movie.download_url %}
-              <a href="{{ movie.download_url }}" target="_blank" rel="noopener"
+              <a href="{{ movie.download_url }}"
+                 target="_blank" rel="noopener"
                  class="movie-detail-btn movie-detail-btn-secondary">
                 ↓ Download
               </a>
@@ -228,7 +233,6 @@
           </div>
         </div>
       </div>
-
     </div>
   </article>
 
@@ -258,11 +262,12 @@
           {% endif %}
         </div>
       </div>
+
       <div>
         <div class="info-label">Language</div>
         <div class="info-value">
           {% if movie and movie.languages %}
-            {{ movie.languages }}
+            {{ movie.languages | join(', ') }}
           {% elif movie and movie.language %}
             {{ movie.language }}
           {% else %}
@@ -270,6 +275,7 @@
           {% endif %}
         </div>
       </div>
+
       <div>
         <div class="info-label">Quality</div>
         <div class="info-value">
@@ -280,6 +286,7 @@
           {% endif %}
         </div>
       </div>
+
       <div>
         <div class="info-label">Category</div>
         <div class="info-value">
@@ -293,7 +300,7 @@
     </div>
   </article>
 
-  <!-- Comments placeholder -->
+  <!-- Comments placeholder only -->
   <article class="card">
     <div class="card-title" style="font-size:16px;">Comments</div>
     <p class="comments-placeholder">
