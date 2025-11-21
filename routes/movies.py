@@ -142,6 +142,7 @@ async def movie_detail(request: Request, movie_id: str):
         "year": movie_doc.get("year"),
         "quality": movie_doc.get("quality", "HD"),
         "language": primary_language,
+        "languages": languages,
         "category": movie_doc.get("category", ""),
         "poster_path": movie_doc.get("poster_path"),
         "watch_url": movie_doc.get("watch_url"),
