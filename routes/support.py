@@ -3,7 +3,7 @@ from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from db import get_db
-from config import BOTTOKEN
+from config import BOT_TOKEN
 import os
 
 router = APIRouter()
