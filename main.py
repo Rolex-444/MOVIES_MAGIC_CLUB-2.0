@@ -9,6 +9,14 @@ from starlette.middleware.sessions import SessionMiddleware
 from pyrogram import Client, filters
 from pyrogram.errors import BadRequest
 
+# ---- FIX for Pyrogram Peer ID bug (MIN_* constants) ----
+# Based on official PR: MIN_CHANNEL_ID = -1007852516352, MIN_CHAT_ID = -999999999999
+# https://github.com/pyrogram/pyrogram/pull/1430
+from pyrogram import utils as pyrou  # type: ignore
+pyrou.MIN_CHAT_ID = -999_999_999_999       # allow all new groups
+pyrou.MIN_CHANNEL_ID = -1_007_852_516_352  # allow all new channels
+# ---- END FIX ----
+
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from db import connect_to_mongo, close_mongo_connection
@@ -94,7 +102,7 @@ async def start_command(client, message):
 
 @app.on_event("startup")
 async def on_startup():
-    # Use your existing DB helpers (no args)
+    # Use existing DB helpers (no args)
     await connect_to_mongo()
 
     # Start Telegram bot
@@ -246,7 +254,7 @@ async def debug_channel():
     """
     - If ok == True: bot can see the channel with this CHANNEL_ID.
     - If ok == False and message == 'PEER_ID_INVALID' or 'chat not found':
-      token / channel / membership mismatch.
+      token / channel / membership mismatch (before our MIN_* patch).
     """
     try:
         chat = await bot.get_chat(CHANNEL_ID)
