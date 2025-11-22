@@ -26,18 +26,29 @@ from routes.admin_verification import router as admin_verification_router
 from routes.support import router as support_router
 from routes.legal import router as legal_router
 
-from config import API_ID, API_HASH, BOT_TOKEN, CHANNEL_ID, MONGO_URI, MONGO_DB
+from config import (
+    API_ID,
+    API_HASH,
+    BOT_TOKEN,
+    CHANNEL_ID,
+    MONGO_URI,
+    MONGO_DB,
+)
+
+# -------------------------------------------------------------------
+# FastAPI app setup
+# -------------------------------------------------------------------
 
 SESSION_SECRET = os.getenv("SESSION_SECRET", "change-this-secret")
 
-app = FastAPI()
+app = FastAPI(title="Movies Magic Club 2.0")
 
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Routers
-app.include_router(movies_router)
 app.include_router(web_router)
+app.include_router(movies_router)
 app.include_router(series_router)
 app.include_router(admin_auth_router)
 app.include_router(admin_movies_router)
@@ -49,17 +60,19 @@ app.include_router(admin_verification_router)
 app.include_router(support_router)
 app.include_router(legal_router)
 
-# === Pyrogram Bot: SINGLE CLIENT (used for both bot and upload) ===
+# -------------------------------------------------------------------
+# Telegram bot client (Pyrogram)
+# -------------------------------------------------------------------
 
 bot = Client(
     "movie_webapp_bot",
     api_id=API_ID,
     api_hash=API_HASH,
     bot_token=BOT_TOKEN,
-    in_memory=True,
+    in_memory=True,  # good for Koyeb / ephemeral FS
 )
 
-# Mongo client for posters collection
+# Separate Mongo client for poster collection
 mongo_client = AsyncIOMotorClient(MONGO_URI)
 poster_db = mongo_client[MONGO_DB if MONGO_DB else "movies_magic_club"]
 
@@ -74,10 +87,17 @@ async def start_command(client, message):
     await message.reply_text(text)
 
 
+# -------------------------------------------------------------------
+# Startup & shutdown
+# -------------------------------------------------------------------
+
+
 @app.on_event("startup")
 async def on_startup():
-    # Use original DB helpers (no arguments)
+    # Use your existing DB helpers (no args)
     await connect_to_mongo()
+
+    # Start Telegram bot
     await bot.start()
     print("🚀 FastAPI app and bot startup complete!")
 
@@ -90,14 +110,42 @@ async def on_shutdown():
     print("🔻 FastAPI app and bot shutting down!")
 
 
+# -------------------------------------------------------------------
+# Health / root
+# -------------------------------------------------------------------
+
+
+@app.get("/status")
+async def status():
+    return {"status": "ok"}
+
+
+@app.get("/")
+async def root():
+    return {"message": "Movies Magic Club API is running."}
+
+
+# -------------------------------------------------------------------
+# Poster upload API
+# -------------------------------------------------------------------
+
+
 @app.post("/api/poster/upload")
 async def upload_poster(
     movie_title: str = Form(...),
     description: str = Form(...),
     image: UploadFile = File(...),
 ):
+    """
+    1. Save uploaded image to a temp file.
+    2. Send to Telegram channel as photo.
+    3. Build public Telegram file URL.
+    4. Save record to MongoDB.
+    """
+    tmp_path = None
+
     try:
-        # Save upload to temp file
+        # 1) Save upload to temp file
         suffix = os.path.splitext(image.filename or "")[-1] or ".jpg"
         with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmpfile:
             content = await image.read()
@@ -106,14 +154,14 @@ async def upload_poster(
 
         print(f"[DEBUG] Uploading image to Telegram: {tmp_path}")
 
-        # Use CHANNEL_ID directly (already int from config)
+        # 2) Send photo to channel (CHANNEL_ID already int from config)
         tg_msg = await bot.send_photo(
             CHANNEL_ID,
             tmp_path,
             caption=f"{movie_title}\n{description}",
         )
 
-        # Get highest-resolution photo file_id
+        # 3) Get highest-resolution photo file_id
         photo = tg_msg.photo
         if isinstance(photo, list):
             file_id = photo[-1].file_id
@@ -122,14 +170,12 @@ async def upload_poster(
 
         print(f"[DEBUG] Telegram file_id: {file_id}")
 
-        # Get file path and build public URL
+        # 4) Resolve file path and build URL
         file_info = await bot.get_file(file_id)
-        image_url = (
-            f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_info.file_path}"
-        )
+        image_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_info.file_path}"
         print(f"[DEBUG] Telegram image URL: {image_url}")
 
-        # Save movie record in Mongo
+        # 5) Save movie record in Mongo
         movie = {
             "title": movie_title,
             "description": description,
@@ -139,9 +185,10 @@ async def upload_poster(
         result = await poster_db.movies.insert_one(movie)
         print(f"[DEBUG] Movie inserted with ID: {result.inserted_id}")
 
-        # Clean up temp file
+        # 6) Clean up temp file
         try:
-            os.remove(tmp_path)
+            if tmp_path and os.path.exists(tmp_path):
+                os.remove(tmp_path)
         except OSError:
             pass
 
@@ -152,22 +199,26 @@ async def upload_poster(
                 "url": image_url,
             }
         )
+
     except BadRequest as e:
-        # Catch PEER_ID_INVALID here
+        # This is where PEER_ID_INVALID would appear
         print(f"[ERROR] Poster upload failed (BadRequest): {e.MESSAGE}")
         try:
-            os.remove(tmp_path)
-        except Exception:
+            if tmp_path and os.path.exists(tmp_path):
+                os.remove(tmp_path)
+        except OSError:
             pass
         return JSONResponse(
             {"success": False, "error": e.MESSAGE},
             status_code=200,
         )
+
     except Exception as e:
         print(f"[ERROR] Poster upload failed: {e}")
         try:
-            os.remove(tmp_path)
-        except Exception:
+            if tmp_path and os.path.exists(tmp_path):
+                os.remove(tmp_path)
+        except OSError:
             pass
         return JSONResponse(
             {"success": False, "error": str(e)},
@@ -175,10 +226,27 @@ async def upload_poster(
         )
 
 
+# -------------------------------------------------------------------
+# Debug endpoints to verify config & channel access
+# -------------------------------------------------------------------
+
+
+@app.get("/debug/config")
+async def debug_config():
+    # Returns only first chars of token for safety
+    return {
+        "channel_id": CHANNEL_ID,
+        "bot_token_start": BOT_TOKEN[:10],
+        "bot_token_length": len(BOT_TOKEN),
+    }
+
+
 @app.get("/debug/channel")
 async def debug_channel():
     """
-    Debug endpoint for PEER_ID_INVALID.
+    - If ok == True: bot can see the channel with this CHANNEL_ID.
+    - If ok == False and message == 'PEER_ID_INVALID' or 'chat not found':
+      token / channel / membership mismatch.
     """
     try:
         chat = await bot.get_chat(CHANNEL_ID)
@@ -202,13 +270,12 @@ async def debug_channel():
         }
 
 
-@app.get("/")
-async def root():
-    return {"message": "Movies Magic Club API is running."}
-
+# -------------------------------------------------------------------
+# Local dev entrypoint
+# -------------------------------------------------------------------
 
 if __name__ == "__main__":
     import uvicorn
 
     port = int(os.getenv("PORT", "8000"))
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
