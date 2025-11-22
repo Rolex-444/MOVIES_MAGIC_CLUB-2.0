@@ -1,5 +1,3 @@
-# main.py
-
 import os
 import asyncio
 import tempfile
@@ -9,7 +7,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from pyrogram import Client, filters, idle
+from pyrogram import Client, filters
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from db import connect_to_mongo, close_mongo_connection
@@ -55,7 +53,7 @@ bot = Client(
     api_id=API_ID,
     api_hash=API_HASH,
     bot_token=BOT_TOKEN,
-    in_memory=True  # session stored in RAM
+    in_memory=True
 )
 mongo_client = AsyncIOMotorClient(MONGO_URI)
 poster_db = mongo_client[MONGO_DB if MONGO_DB else "movies_magic_club"]
@@ -69,17 +67,10 @@ async def start_command(client, message):
     )
     await message.reply_text(text)
 
-async def run_bot():
-    await bot.start()
-    print("✅ Pyrogram bot started")
-    await idle()
-    await bot.stop()
-    print("🛑 Pyrogram bot stopped")
-
 @app.on_event("startup")
 async def on_startup():
     await connect_to_mongo()
-    asyncio.create_task(run_bot())
+    await bot.start()  # <--- Only this! No idle, no task!
     print("🚀 FastAPI app and bot startup complete!")
 
 @app.on_event("shutdown")
