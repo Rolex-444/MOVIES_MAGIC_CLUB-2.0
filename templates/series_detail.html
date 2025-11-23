@@ -145,7 +145,7 @@
         <div class="series-header-card">
             <div class="series-poster">
                 {% if series.poster_path %}
-                    <img src="{{ url_for('static', path=series.poster_path) }}" alt="{{ series.title }} poster">
+                    <img src="{{ series.poster_path }}" alt="{{ series.title }} poster">
                 {% endif %}
             </div>
             <div class="series-head-main">
