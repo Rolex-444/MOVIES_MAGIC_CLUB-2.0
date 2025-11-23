@@ -168,6 +168,7 @@ async def admin_create_movie(
         "year": year_int,
         "language": primary_language,
         "languages": languages,
+        "audio_languages": languages,   # NEW
         "quality": quality or "HD",
         "category": category,
         "watch_url": watch_url,
@@ -267,6 +268,7 @@ async def admin_edit_movie(
     update = {
         "title": title,
         "language": primary_language,
+        "audio_languages": languages,   # NEW
         "quality": quality or "HD",
         "category": category,
         "watch_url": watch_url,
