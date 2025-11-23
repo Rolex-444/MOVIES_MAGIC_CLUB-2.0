@@ -181,7 +181,7 @@
 
         <div class="movie-poster-wrap">
           {% if movie and movie.poster_path %}
-            <img src="{{ url_for('static', path=movie.poster_path) }}" alt="{{ movie.title }} poster">
+            <img src="{{ movie.poster_path }}" alt="{{ movie.title }} poster">
           {% else %}
             <div style="width:100%;
                         background:radial-gradient(circle at top,#1d4ed8,#020617);">
