@@ -24,7 +24,9 @@ async def home(request: Request):
 
     if db is not None:
         movies_col = db["movies"]
-        cursor = movies_col.find().sort("_id", -1).limit(5)
+        
+        # ✅ FIX: Exclude series by filtering out documents with 'seasons' field
+        cursor = movies_col.find({"seasons": {"$exists": False}}).sort("_id", -1).limit(5)
         latest_movies = [
             {
                 "id": str(doc.get("_id")),
@@ -38,11 +40,14 @@ async def home(request: Request):
             async for doc in cursor
         ]
 
-        # ✅ FIXED: Changed from "language" to "languages" to match array field
+        # ✅ FIX: Also exclude series in language queries
         async def fetch_by_language(lang: str, limit: int = 12):
             cur = (
                 movies_col
-                .find({"languages": lang})  # Check if lang exists in languages array
+                .find({
+                    "languages": lang,
+                    "seasons": {"$exists": False}  # ✅ Exclude series
+                })
                 .sort("_id", -1)
                 .limit(limit)
             )
@@ -82,10 +87,13 @@ async def home(request: Request):
 async def search_movies(request: Request, q: str = ""):
     db = get_db()
     movies: List[dict] = []
-
     if db is not None and q.strip():
+        # ✅ FIX: Exclude series from search results
         cursor = db["movies"].find(
-            {"title": {"$regex": q, "$options": "i"}}
+            {
+                "title": {"$regex": q, "$options": "i"},
+                "seasons": {"$exists": False}  # ✅ Exclude series
+            }
         ).limit(30)
         movies = [
             {
@@ -97,7 +105,6 @@ async def search_movies(request: Request, q: str = ""):
             }
             async for doc in cursor
         ]
-
     context = {
         "request": request,
         "query": q,
@@ -105,6 +112,7 @@ async def search_movies(request: Request, q: str = ""):
     }
     return templates.TemplateResponse("search.html", context)
 
+# Rest of your code stays the same...
 
 # ---------- BROWSE PAGES (SEE ALL) ----------
 
