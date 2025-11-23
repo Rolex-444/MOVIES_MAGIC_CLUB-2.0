@@ -1,25 +1,20 @@
 # routes/web.py
 
 from typing import List
-
 from bson import ObjectId
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
-
 from db import get_db
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
-
 # ---------- HOME + SEARCH ----------
-
 
 @router.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     db = get_db()
-
     latest_movies = []
     tamil_movies = []
     telugu_movies = []
@@ -29,7 +24,6 @@ async def home(request: Request):
 
     if db is not None:
         movies_col = db["movies"]
-
         cursor = movies_col.find().sort("_id", -1).limit(5)
         latest_movies = [
             {
@@ -44,10 +38,11 @@ async def home(request: Request):
             async for doc in cursor
         ]
 
+        # ✅ FIXED: Changed from "language" to "languages" to match array field
         async def fetch_by_language(lang: str, limit: int = 12):
             cur = (
                 movies_col
-                .find({"language": lang})
+                .find({"languages": lang})  # Check if lang exists in languages array
                 .sort("_id", -1)
                 .limit(limit)
             )
@@ -92,7 +87,6 @@ async def search_movies(request: Request, q: str = ""):
         cursor = db["movies"].find(
             {"title": {"$regex": q, "$options": "i"}}
         ).limit(30)
-
         movies = [
             {
                 "id": str(doc.get("_id")),
@@ -142,14 +136,14 @@ async def _build_movie_list(cursor):
 async def browse_by_language(request: Request, lang_slug: str):
     db = get_db()
     movies: List[dict] = []
-
     lang_key = lang_slug.lower()
     language = LANGUAGE_MAP.get(lang_key, lang_slug.title())
 
     if db is not None:
+        # ✅ FIXED: Changed from "language" to "languages" to match array field
         cursor = (
             db["movies"]
-            .find({"language": language})
+            .find({"languages": language})  # Check if language exists in languages array
             .sort("_id", -1)
         )
         movies = await _build_movie_list(cursor)
@@ -182,7 +176,6 @@ GENRE_MAP = {
 async def browse_by_genre(request: Request, genre_slug: str):
     db = get_db()
     movies: List[dict] = []
-
     key = genre_slug.lower()
     genre = GENRE_MAP.get(key, genre_slug.title())
 
@@ -207,7 +200,6 @@ async def browse_by_genre(request: Request, genre_slug: str):
 
 
 # ---------- MOVIE DETAIL + HEALTH ----------
-
 
 @router.get("/movie/{movie_id}", response_class=HTMLResponse)
 async def movie_detail(request: Request, movie_id: str):
@@ -283,3 +275,4 @@ async def movies_count():
         return "MongoDB not connected"
     count = await db["movies"].count_documents({})
     return f"Movies in DB: {count}"
+        
