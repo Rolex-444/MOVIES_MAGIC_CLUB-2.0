@@ -216,14 +216,14 @@
 
           <div class="movie-detail-actions">
             {% if movie and movie.watch_url %}
-              <a href="{{ movie.watch_url }}"
+              <a href="/movie/{{ movie.id }}/watch" class="btn btn-primary">
                  target="_blank" rel="noopener"
                  class="movie-detail-btn movie-detail-btn-primary">
                 ▶ Watch now
               </a>
             {% endif %}
             {% if movie and movie.download_url %}
-              <a href="{{ movie.download_url }}"
+              <a href="/movie/{{ movie.id }}/download" class="btn btn-secondary">
                  target="_blank" rel="noopener"
                  class="movie-detail-btn movie-detail-btn-secondary">
                 ↓ Download
