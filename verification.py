@@ -9,17 +9,23 @@ import string
 import random
 import requests
 import logging
+from datetime import datetime, timedelta
+from fastapi import APIRouter, Request, Form
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
 from db import get_db
 from config import SHORTLINK_API, SHORTLINK_URL  # Fallback defaults only
+from verification_utils import mark_verified, get_verification_settings
+from verification_tokens import save_verify_token, get_verify_token
 
 logger = logging.getLogger(__name__)
-
+router = APIRouter()
+templates = Jinja2Templates(directory="templates")
 
 def generate_verify_token(length=16):
     """Generate random verification token"""
     chars = string.ascii_letters + string.digits
     return ''.join(random.choice(chars) for _ in range(length))
-
 
 async def get_shortlink_settings():
     """
@@ -33,7 +39,6 @@ async def get_shortlink_settings():
     
     try:
         settings = await db["settings"].find_one({"_id": "verification"})
-        
         if settings:
             api = settings.get("shortlink_api", "").strip() or SHORTLINK_API or ""
             url = settings.get("shortlink_url", "").strip() or SHORTLINK_URL or ""
@@ -45,7 +50,6 @@ async def get_shortlink_settings():
     except Exception as e:
         logger.error(f"❌ Error reading shortlink settings from DB: {e}")
         return SHORTLINK_API or "", SHORTLINK_URL or ""
-
 
 async def create_universal_shortlink(original_url):
     """
@@ -64,7 +68,7 @@ async def create_universal_shortlink(original_url):
     logger.info(f"🔗 Creating shortlink for: {original_url}")
     logger.info(f"🌐 Using service: {shortlink_service}")
     logger.info(f"🔑 API key: {api_key[:10]}...")
-
+    
     # Prepare API endpoint
     api_endpoint = shortlink_service
     if not api_endpoint.startswith('http'):
@@ -75,7 +79,7 @@ async def create_universal_shortlink(original_url):
             api_endpoint += '/api'
         else:
             api_endpoint += 'api'
-
+    
     # Try all common API formats
     api_formats = [
         # Format 1: GET with api & url parameters
@@ -95,7 +99,7 @@ async def create_universal_shortlink(original_url):
         # Format 8: Custom format for specific services
         {'method': 'GET', 'params': {'api': api_key, 'url': original_url, 'alias': generate_verify_token(6)}},
     ]
-
+    
     # Try each format
     for i, format_config in enumerate(api_formats, 1):
         try:
@@ -119,10 +123,10 @@ async def create_universal_shortlink(original_url):
                     timeout=15,
                     verify=False
                 )
-
+            
             logger.info(f"📊 Response Status: {response.status_code}")
             logger.info(f"📄 Response: {response.text[:500]}")
-
+            
             # Try to parse JSON response
             if response.status_code == 200:
                 try:
@@ -134,11 +138,10 @@ async def create_universal_shortlink(original_url):
                         'result_url', 'url', 'link', 'shortened', 'short_link',
                         'result', 'shortlink', 'short', 'data'
                     ]
-
+                    
                     for field in possible_fields:
                         if field in data and data[field]:
                             shortlink = data[field]
-                            
                             # Extract URL if it's nested in data object
                             if isinstance(shortlink, dict) and 'url' in shortlink:
                                 shortlink = shortlink['url']
@@ -147,36 +150,122 @@ async def create_universal_shortlink(original_url):
                             if isinstance(shortlink, str) and shortlink.startswith('http'):
                                 logger.info(f"✅ SUCCESS! Shortlink created: {shortlink}")
                                 return shortlink
-
+                    
                     # Check if response indicates success but different format
                     if data.get('status') == 'success' or data.get('success') == True:
                         logger.info(f"📋 Success response but no URL found: {data}")
                     else:
                         logger.warning(f"⚠️ Format #{i} failed: {data}")
-
+                        
                 except ValueError:
                     # Not JSON, maybe plain text response
                     if response.text.startswith('http'):
                         logger.info(f"✅ SUCCESS! Plain text shortlink: {response.text}")
                         return response.text.strip()
-
+                        
         except requests.exceptions.Timeout:
             logger.warning(f"⏰ Format #{i} timed out")
         except requests.exceptions.RequestException as e:
             logger.warning(f"🔌 Format #{i} connection error: {e}")
         except Exception as e:
             logger.warning(f"❌ Format #{i} error: {e}")
-
+    
     logger.error("❌ ALL API formats failed! No shortlink created.")
     logger.error("🔧 Check your shortlink settings in Admin Dashboard")
     return original_url  # Return original URL if all attempts fail
 
 
+# ========== FASTAPI ROUTES ==========
+
+@router.get("/verify/start")
+async def verify_start(request: Request, next: str = "/"):
+    """
+    ✅ FIXED: Step 1 - Generate verification shortlink WITH await
+    """
+    try:
+        # Generate verification token
+        token = generate_verify_token()
+        
+        # Save token to database
+        await save_verify_token(request, token, next)
+        
+        # Create verification URL (where user will land after shortlink)
+        base_url = str(request.base_url).rstrip('/')
+        verify_url = f"{base_url}/verify/check/{token}"
+        
+        logger.info(f"🎯 Generated verify URL: {verify_url}")
+        
+        # ✅ FIX: Add await here!
+        shortlink = await create_universal_shortlink(verify_url)
+        
+        logger.info(f"💰 Shortlink created: {shortlink}")
+        
+        # Return verification page with shortlink
+        return templates.TemplateResponse(
+            "verify_start.html",
+            {
+                "request": request,
+                "shortlink": shortlink,
+                "next": next
+            }
+        )
+    except Exception as e:
+        logger.error(f"❌ Error in verify_start: {e}")
+        return RedirectResponse(next or "/")
+
+
+@router.get("/verify/check/{token}")
+async def verify_check(request: Request, token: str):
+    """
+    Step 2: User lands here after completing shortlink
+    Validate token and mark user as verified
+    """
+    try:
+        # Get token from database
+        token_data = await get_verify_token(token)
+        
+        if not token_data:
+            logger.warning(f"⚠️ Invalid or expired token: {token}")
+            return templates.TemplateResponse(
+                "verify_error.html",
+                {
+                    "request": request,
+                    "message": "Verification link expired or invalid. Please try again."
+                }
+            )
+        
+        # Mark user as verified
+        await mark_verified(request)
+        
+        # Get redirect URL
+        next_url = token_data.get("redirect_url", "/")
+        
+        logger.info(f"✅ User verified successfully! Redirecting to: {next_url}")
+        
+        # Redirect to original destination
+        return RedirectResponse(next_url, status_code=303)
+        
+    except Exception as e:
+        logger.error(f"❌ Error in verify_check: {e}")
+        return RedirectResponse("/")
+
+
+@router.get("/verify/success")
+async def verify_success(request: Request):
+    """
+    Success page after verification
+    """
+    return templates.TemplateResponse(
+        "verify_success.html",
+        {"request": request}
+    )
+
+
+# Backward compatibility functions
 async def test_shortlink_api():
     """✅ UPDATED: Test your shortlink API with detailed debugging"""
     try:
         logger.info("🧪 Testing shortlink API...")
-        
         # Test with a simple URL
         test_url = "https://google.com"
         result = await create_universal_shortlink(test_url)
@@ -190,63 +279,4 @@ async def test_shortlink_api():
     except Exception as e:
         logger.error(f"❌ API test error: {e}")
         return False
-
-
-async def generate_monetized_verification_link(bot_username, token):
-    """
-    ✅ UPDATED: Generate MONETIZED verification link
-    This is where you EARN MONEY when users click
-    NOW USES DATABASE SETTINGS
-    """
-    try:
-        # Create Telegram verification URL
-        telegram_url = f"https://t.me/{bot_username}?start=verify_{token}"
-        
-        logger.info(f"🎯 Creating MONETIZED shortlink for verification...")
-        logger.info(f"📱 Original Telegram URL: {telegram_url}")
-
-        # Create shortlink using database settings
-        shortlink = await create_universal_shortlink(telegram_url)
-        
-        if shortlink and shortlink != telegram_url:
-            logger.info(f"💰 MONETIZED SHORTLINK CREATED! You'll earn money when users click: {shortlink}")
-            return shortlink
-        else:
-            logger.error(f"❌ SHORTLINK CREATION FAILED! Using direct Telegram link (NO MONEY EARNED)")
-            logger.error(f"🔧 Configure shortlink in Admin Dashboard → Verification Settings")
-            return telegram_url
-
-    except Exception as e:
-        logger.error(f"❌ Error creating monetized link: {e}")
-        return f"https://t.me/{bot_username}?start=verify_{token}"
-
-
-def extract_token_from_start(text):
-    """
-    Extract verification token from /start command
-    ✅ FIXED: Handles BOTH verify_ (leech) and video_ (video) prefixes
-    """
-    try:
-        if not text:
-            return None
-
-        # For leech verification - return with verify_ prefix
-        if text.startswith("verify_"):
-            return text  # Return full token with prefix
-
-        # For video verification - return with video_ prefix
-        elif text.startswith("video_"):
-            return text  # Return full token with prefix
-
-        # Unknown format - return None
-        return None
-
-    except Exception as e:
-        logger.error(f"Error extracting token: {e}")
-        return None
-
-
-# Backward compatibility
-async def generate_verification_link(bot_username, token):
-    return await generate_monetized_verification_link(bot_username, token)
-            
+    
