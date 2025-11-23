@@ -264,4 +264,3 @@ async def movie_download(request: Request, movie_id: str):
 
     return RedirectResponse(url=movie_doc["download_url"], status_code=302)
     
-
