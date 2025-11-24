@@ -1,0 +1,135 @@
+<!-- Notice Banner Component - Include this in your index.html -->
+<div id="noticeBanner" style="display: none;">
+    <style>
+        .site-notice-banner {
+            background: linear-gradient(90deg, #ff6b6b 0%, #ffd93d 100%);
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideDown 0.5s ease;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+        }
+        
+        .site-notice-banner.info {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .site-notice-banner.warning {
+            background: linear-gradient(90deg, #ff6b6b 0%, #ff8e53 100%);
+        }
+        
+        .site-notice-banner.maintenance {
+            background: linear-gradient(90deg, #ffd93d 0%, #ffaf00 100%);
+        }
+        
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .notice-content {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
+        }
+        
+        .notice-icon {
+            font-size: 1.3rem;
+        }
+        
+        .notice-text {
+            font-weight: 600;
+            color: #1a1a1a;
+            font-size: 0.95rem;
+        }
+        
+        .notice-close {
+            background: none;
+            border: none;
+            color: #1a1a1a;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            line-height: 1;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        
+        .notice-close:hover {
+            opacity: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .notice-text {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+    
+    <div id="noticeContent" class="site-notice-banner">
+        <div class="notice-content">
+            <span class="notice-icon" id="noticeIcon">📢</span>
+            <span class="notice-text" id="noticeText">Loading notice...</span>
+        </div>
+        <button class="notice-close" onclick="dismissNotice()">✕</button>
+    </div>
+</div>
+
+<script>
+async function loadNotice() {
+    // Check if user has dismissed notice
+    const dismissed = localStorage.getItem('noticeDismissed');
+    if (dismissed) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/notice');
+        const data = await response.json();
+        
+        if (data.active) {
+            const banner = document.getElementById('noticeBanner');
+            const content = document.getElementById('noticeContent');
+            const icon = document.getElementById('noticeIcon');
+            const text = document.getElementById('noticeText');
+            
+            // Update content
+            icon.textContent = data.icon || '📢';
+            text.textContent = data.message;
+            
+            // Set type class
+            content.className = `site-notice-banner ${data.type || 'info'}`;
+            
+            // Show banner
+            banner.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Error loading notice:', error);
+    }
+}
+
+function dismissNotice() {
+    const banner = document.getElementById('noticeBanner');
+    banner.style.display = 'none';
+    
+    // Remember dismissal
+    localStorage.setItem('noticeDismissed', 'true');
+    
+    // Clear after 24 hours
+    setTimeout(() => {
+        localStorage.removeItem('noticeDismissed');
+    }, 24 * 60 * 60 * 1000);
+}
+
+// Load notice on page load
+document.addEventListener('DOMContentLoaded', loadNotice);
+</script>
