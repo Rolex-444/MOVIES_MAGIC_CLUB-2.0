@@ -152,16 +152,29 @@ async def movie_watch(request: Request, movie_id: str):
     if not movie_doc or not movie_doc.get("watch_url"):
         return RedirectResponse(url=f"/movie/{movie_id}", status_code=303)
     
-    # ✅ STEP 4: Convert Lulu URL to embed format (if needed)
+    # ✅ STEP 4: Convert Lulu URL to embed format - handle multiple URL patterns
     watch_url = movie_doc["watch_url"]
     
-    # Convert /d/ to /e/ for embedding (works for both luluvid and lulivid)
-    if "luluvid.com/d/" in watch_url or "lulivid.com/d/" in watch_url:
-        embed_url = watch_url.replace("/d/", "/e/")
-        print(f"🔄 Converted URL: {watch_url} -> {embed_url}")
-    else:
+    if "luluvid.com/e/" in watch_url or "lulivid.com/e/" in watch_url:
+        # Already in embed format
         embed_url = watch_url
-        print(f"✅ Using URL as-is: {embed_url}")
+        print(f"✅ Already embed URL: {embed_url}")
+    elif "luluvid.com/d/" in watch_url or "lulivid.com/d/" in watch_url:
+        # Convert /d/ to /e/
+        embed_url = watch_url.replace("/d/", "/e/")
+        print(f"🔄 Converted /d/ to /e/: {watch_url} -> {embed_url}")
+    elif "luluvid.com/" in watch_url or "lulivid.com/" in watch_url:
+        # Direct video ID format (no /d/ or /e/) - add /e/ before video ID
+        # Example: https://luluvid.com/g4ttoy0mlp83 -> https://luluvid.com/e/g4ttoy0mlp83
+        parts = watch_url.split("/")
+        video_id = parts[-1]  # Get last part (video ID)
+        base_url = "/".join(parts[:-1])  # Get everything before video ID
+        embed_url = f"{base_url}/e/{video_id}"
+        print(f"🔄 Added /e/ to URL: {watch_url} -> {embed_url}")
+    else:
+        # Unknown format, use as-is
+        embed_url = watch_url
+        print(f"⚠️ Unknown URL format, using as-is: {embed_url}")
     
     # ✅ STEP 5: Render video player template with fullscreen support
     return templates.TemplateResponse(
@@ -229,4 +242,4 @@ async def movie_download(request: Request, movie_id: str):
     print(f"✅ ALLOWING DOWNLOAD")
     print("="*60 + "\n")
     return RedirectResponse(url=movie_doc["download_url"], status_code=302)
-    
+        
