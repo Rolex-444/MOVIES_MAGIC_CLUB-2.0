@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .notice-admin-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 1rem;
+    }
+    
+    .notice-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: white;
+    }
+    
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 8px;
+        background: rgba(255,255,255,0.1);
+        color: white;
+        font-size: 1rem;
+    }
+    
+    .form-group textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+    
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+        color: rgba(255,255,255,0.6);
+    }
+    
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+        width: auto;
+        height: 20px;
+        width: 20px;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 0.75rem 2rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        margin-right: 1rem;
+    }
+    
+    .btn-secondary {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        padding: 0.75rem 2rem;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    
+    .btn-primary:hover {
+        opacity: 0.9;
+    }
+    
+    .btn-secondary:hover {
+        background: rgba(255,255,255,0.3);
+    }
+    
+    .current-notice {
+        background: rgba(255,255,255,0.1);
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        border-left: 4px solid #4ade80;
+    }
+    
+    .alert {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+    
+    .alert-success {
+        background: rgba(74, 222, 128, 0.2);
+        border: 2px solid #4ade80;
+        color: white;
+    }
+    
+    .alert-error {
+        background: rgba(239, 68, 68, 0.2);
+        border: 2px solid #ef4444;
+        color: white;
+    }
+    
+    .preview-banner {
+        background: linear-gradient(90deg, #ff6b6b 0%, #ffd93d 100%);
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 1rem;
+        animation: slideDown 0.3s ease;
+    }
+    
+    @keyframes slideDown {
+        from {
+            transform: translateY(-20px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+    
+    .preview-content {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .preview-icon {
+        font-size: 1.5rem;
+    }
+    
+    .preview-text {
+        font-weight: 600;
+        color: #1a1a1a;
+    }
+</style>
+
+<div class="notice-admin-container">
+    <h1 style="color: white; margin-bottom: 2rem;">📢 Notice Board Management</h1>
+    
+    {% if request.query_params.get('success') %}
+    <div class="alert alert-success">
+        ✅ Notice updated successfully!
+    </div>
+    {% endif %}
+    
+    {% if request.query_params.get('error') %}
+    <div class="alert alert-error">
+        ❌ Error updating notice. Please try again.
+    </div>
+    {% endif %}
+    
+    {% if notice and notice.active %}
+    <div class="current-notice">
+        <h3 style="margin: 0 0 0.5rem 0; color: #4ade80;">🟢 Currently Active Notice:</h3>
+        <p style="margin: 0; color: white; font-size: 1.1rem;">
+            {{ notice.icon }} {{ notice.message }}
+        </p>
+        <small style="color: rgba(255,255,255,0.7);">Type: {{ notice.type }}</small>
+    </div>
+    {% endif %}
+    
+    <div class="notice-card">
+        <h2 style="margin-top: 0;">Create/Update Notice</h2>
+        
+        <form method="POST" action="/admin/notice/update" id="noticeForm">
+            <div class="form-group">
+                <label for="message">Notice Message *</label>
+                <textarea 
+                    name="message" 
+                    id="message" 
+                    placeholder="Server maintenance on Nov 25, 2AM-4AM IST"
+                    required
+                >{% if notice %}{{ notice.message }}{% endif %}</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="notice_type">Notice Type</label>
+                <select name="notice_type" id="notice_type">
+                    <option value="info" {% if notice and notice.type == 'info' %}selected{% endif %}>Info (Blue)</option>
+                    <option value="warning" {% if notice and notice.type == 'warning' %}selected{% endif %}>Warning (Orange/Red)</option>
+                    <option value="maintenance" {% if notice and notice.type == 'maintenance' %}selected{% endif %}>Maintenance (Yellow)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="icon">Icon (Emoji)</label>
+                <input 
+                    type="text" 
+                    name="icon" 
+                    id="icon" 
+                    value="{% if notice %}{{ notice.icon }}{% else %}📢{% endif %}"
+                    placeholder="📢 / ⚠️ / 🔧 / 🔔"
+                    maxlength="2"
+                >
+                <small style="color: rgba(255,255,255,0.7);">Choose an emoji icon for the notice</small>
+            </div>
+            
+            <div class="form-group checkbox-group">
+                <input 
+                    type="checkbox" 
+                    name="active" 
+                    id="active" 
+                    value="true"
+                    {% if notice and notice.active %}checked{% endif %}
+                >
+                <label for="active" style="margin: 0;">Enable Notice (Show on website)</label>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" class="btn-primary">💾 Save Notice</button>
+                <a href="/admin" class="btn-secondary" style="text-decoration: none; display: inline-block;">Cancel</a>
+            </div>
+        </form>
+        
+        <hr style="border-color: rgba(255,255,255,0.2); margin: 2rem 0;">
+        
+        <form method="POST" action="/admin/notice/disable">
+            <button type="submit" class="btn-secondary" onclick="return confirm('Disable current notice?')">
+                🚫 Disable All Notices
+            </button>
+        </form>
+        
+        <div id="preview" style="display: none;">
+            <h3 style="margin-top: 2rem;">Preview:</h3>
+            <div class="preview-banner">
+                <div class="preview-content">
+                    <span class="preview-icon" id="previewIcon">📢</span>
+                    <span class="preview-text" id="previewText">Your notice will appear here</span>
+                </div>
+                <button style="background: none; border: none; color: #1a1a1a; font-size: 1.5rem; cursor: pointer;">✕</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Live preview
+const messageInput = document.getElementById('message');
+const iconInput = document.getElementById('icon');
+const preview = document.getElementById('preview');
+const previewText = document.getElementById('previewText');
+const previewIcon = document.getElementById('previewIcon');
+
+function updatePreview() {
+    const message = messageInput.value.trim();
+    const icon = iconInput.value.trim();
+    
+    if (message) {
+        preview.style.display = 'block';
+        previewText.textContent = message;
+        previewIcon.textContent = icon || '📢';
+    } else {
+        preview.style.display = 'none';
+    }
+}
+
+messageInput.addEventListener('input', updatePreview);
+iconInput.addEventListener('input', updatePreview);
+
+// Show preview on load if there's a message
+if (messageInput.value.trim()) {
+    updatePreview();
+}
+</script>
+{% endblock %}
