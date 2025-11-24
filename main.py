@@ -133,7 +133,7 @@ async def start_command(client, message):
         [
             InlineKeyboardButton(
                 "🌐 Open Website", 
-                url="https://preferred-lesya-rolex44-c5202a04.koyeb.app/"
+                url="https://remote-joceline-rolex44-e142432f.koyeb.app/"
             )
         ],
         [
