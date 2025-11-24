@@ -176,15 +176,9 @@ async def movie_watch(request: Request, movie_id: str):
         embed_url = watch_url
         print(f"⚠️ Unknown URL format, using as-is: {embed_url}")
     
-    # ✅ STEP 5: Render video player template with fullscreen support
-    return templates.TemplateResponse(
-        "watch_video.html",
-        {
-            "request": request,
-            "video_url": embed_url,
-            "title": movie_doc.get("title", "Watch Movie")
-        }
-    )
+    # ✅ STEP 5: Direct redirect to Lulu (TamilBlasters style - best experience)
+    print(f"🎬 Redirecting to: {embed_url}")
+    return RedirectResponse(url=embed_url, status_code=302)
 
 
 @router.get("/movie/{movie_id}/download")
@@ -242,4 +236,4 @@ async def movie_download(request: Request, movie_id: str):
     print(f"✅ ALLOWING DOWNLOAD")
     print("="*60 + "\n")
     return RedirectResponse(url=movie_doc["download_url"], status_code=302)
-        
+    
