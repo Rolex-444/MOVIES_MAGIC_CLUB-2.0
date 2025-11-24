@@ -17,54 +17,12 @@
         width: 100vw;
         height: 100vh;
         position: relative;
-        display: flex;
-        justify-content: center;
-        align-items: center;
     }
     
     iframe {
         width: 100%;
         height: 100%;
         border: none;
-    }
-    
-    /* Fullscreen styles */
-    #video-container:-webkit-full-screen iframe {
-        width: 100%;
-        height: 100%;
-    }
-    
-    #video-container:-moz-full-screen iframe {
-        width: 100%;
-        height: 100%;
-    }
-    
-    #video-container:fullscreen iframe {
-        width: 100%;
-        height: 100%;
-    }
-    
-    .fullscreen-btn {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        padding: 12px 24px;
-        border-radius: 8px;
-        cursor: pointer;
-        z-index: 10000;
-        font-size: 14px;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .fullscreen-btn:hover {
-        background: rgba(0, 0, 0, 0.95);
-        border-color: rgba(255, 255, 255, 0.5);
     }
 </style>
 
@@ -77,63 +35,5 @@
         webkitallowfullscreen 
         mozallowfullscreen>
     </iframe>
-    <button class="fullscreen-btn" onclick="toggleFullscreen()">
-        📺 Fullscreen
-    </button>
 </div>
-
-<script>
-    const container = document.getElementById('video-container');
-    let isLandscape = false;
-    
-    // Toggle fullscreen function
-    function toggleFullscreen() {
-        if (!document.fullscreenElement) {
-            container.requestFullscreen().catch(err => {
-                alert(`Fullscreen error: ${err.message}`);
-            });
-        } else {
-            document.exitFullscreen();
-        }
-    }
-    
-    // Check orientation and auto-fullscreen
-    function checkOrientation() {
-        const newIsLandscape = window.matchMedia("(orientation: landscape)").matches;
-        
-        // Only trigger if orientation changed
-        if (newIsLandscape !== isLandscape) {
-            isLandscape = newIsLandscape;
-            
-            if (isLandscape) {
-                // Landscape mode - enter fullscreen
-                if (!document.fullscreenElement) {
-                    container.requestFullscreen().catch(err => {
-                        console.log('Auto-fullscreen failed:', err.message);
-                    });
-                }
-            } else {
-                // Portrait mode - exit fullscreen
-                if (document.fullscreenElement) {
-                    document.exitFullscreen();
-                }
-            }
-        }
-    }
-    
-    // Listen for orientation changes
-    window.addEventListener('orientationchange', () => {
-        setTimeout(checkOrientation, 100);
-    });
-    
-    window.addEventListener('resize', checkOrientation);
-    
-    // Check on page load
-    window.addEventListener('load', () => {
-        setTimeout(checkOrientation, 500);
-    });
-    
-    // Initial check
-    checkOrientation();
-</script>
 {% endblock %}
