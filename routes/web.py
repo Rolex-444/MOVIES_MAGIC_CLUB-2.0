@@ -101,6 +101,8 @@ async def search_movies(request: Request, q: str = ""):
                 "year": doc.get("year"),
                 "language": doc.get("language"),
                 "quality": doc.get("quality"),
+                "poster_path": doc.get("poster_path"),
+                
             }
             async for doc in cursor
         ]
