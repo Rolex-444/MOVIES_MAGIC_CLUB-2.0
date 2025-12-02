@@ -116,11 +116,12 @@ async def root():
 @app.post("/api/poster/upload")
 async def api_poster_upload(
     movie_title: str = Form(...),
-    description: str = Form(""),  # <--- FIXED: Made optional with default empty string
+    description: str = Form(""), 
     image: UploadFile = File(...)
 ):
     tmp_path = None
     try:
+        # 1. Save to temp file
         suffix = os.path.splitext(image.filename)[1] or ".jpg"
         with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp_file:
             content = await image.read()
@@ -129,6 +130,7 @@ async def api_poster_upload(
 
         print(f"[DEBUG] Uploading to Telegraph: {tmp_path}")
 
+        # 2. Upload to Telegraph
         telegraph_url = "https://telegra.ph/upload"
         
         with open(tmp_path, 'rb') as f:
@@ -140,18 +142,26 @@ async def api_poster_upload(
         final_image_url = None
         try:
             json_response = response.json()
-            if isinstance(json_response, list) and 'src' in json_response[0]:
-                final_image_url = "https://telegra.ph" + json_response[0]['src']
-                print(f"[SUCCESS] Permanent URL: {final_image_url}")
-            elif 'error' in json_response:
+            print(f"[DEBUG] Telegraph Response: {json_response}")  # Print full response for debugging
+
+            # Handle response: It should be a list like [{'src': '/file/...'}]
+            if isinstance(json_response, list) and len(json_response) > 0:
+                src = json_response[0].get('src')
+                if src:
+                    final_image_url = "https://telegra.ph" + src
+                    print(f"[SUCCESS] Permanent URL: {final_image_url}")
+                else:
+                     raise Exception(f"No 'src' found in response: {json_response}")
+            elif isinstance(json_response, dict) and 'error' in json_response:
                 raise Exception(f"Telegraph error: {json_response['error']}")
             else:
-                raise Exception(f"Unknown response: {json_response}")
+                raise Exception(f"Unexpected response format: {json_response}")
                 
         except Exception as e:
             print(f"[ERROR] Telegraph upload failed: {e}")
             raise e
 
+        # 3. Save movie record in Mongo
         movie = {
             "title": movie_title,
             "description": description,
@@ -162,6 +172,7 @@ async def api_poster_upload(
         result = await poster_db.movies.insert_one(movie)
         print(f"[DEBUG] Movie inserted with ID: {result.inserted_id}")
 
+        # Clean up temp file
         try:
             if tmp_path and os.path.exists(tmp_path):
                 os.remove(tmp_path)
@@ -197,6 +208,8 @@ async def api_poster_upload(
             "success": False,
             "error": str(e)
         }, status_code=200)
+            
+
 
 @app.get("/debug/config")
 async def debug_config():
