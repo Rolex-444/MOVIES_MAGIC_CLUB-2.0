@@ -128,52 +128,36 @@ async def api_poster_upload(
             tmp_file.write(content)
             tmp_path = tmp_file.name
 
-        print(f"[DEBUG] Uploading to Telegraph: {tmp_path}")
+        print(f"[DEBUG] Uploading to Catbox: {tmp_path}")
 
-        # 2. Upload to Telegraph with proper Headers
-        telegraph_url = "https://telegra.ph/upload"
+        # 2. Upload to Catbox.moe (Free, No API Key Required)
+        catbox_url = "https://catbox.moe/user/api.php"
         
-        # Use a real browser User-Agent
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
-        }
-
         with open(tmp_path, 'rb') as f:
-            # Note: Telegraph expects field name 'file' (lowercase)
-            response = requests.post(
-                telegraph_url, 
-                files={'file': ('blob', f, 'image/jpeg')}, # 'blob' often works better than filename
-                headers=headers,
-                timeout=30
-            )
+            files = {'fileToUpload': (image.filename, f, 'image/jpeg')}
+            data = {
+                'reqtype': 'fileupload',
+            }
+            
+            response = requests.post(catbox_url, files=files, data=data, timeout=30)
         
-        final_image_url = None
-        try:
-            json_response = response.json()
-            print(f"[DEBUG] Telegraph Response: {json_response}") 
-
-            if isinstance(json_response, list) and len(json_response) > 0:
-                src = json_response[0].get('src')
-                if src:
-                    final_image_url = "https://telegra.ph" + src
-                    print(f"[SUCCESS] Permanent URL: {final_image_url}")
-                else:
-                     raise Exception(f"No 'src' in response: {json_response}")
-            elif isinstance(json_response, dict) and 'error' in json_response:
-                raise Exception(f"Telegraph error: {json_response['error']}")
+        if response.status_code == 200:
+            final_image_url = response.text.strip()
+            
+            # Validate URL
+            if final_image_url.startswith('http'):
+                print(f"[SUCCESS] Permanent URL: {final_image_url}")
             else:
-                raise Exception(f"Unexpected response format: {json_response}")
-                
-        except Exception as e:
-            print(f"[ERROR] Telegraph upload failed: {e}")
-            raise e
+                raise Exception(f"Invalid Catbox response: {final_image_url}")
+        else:
+            raise Exception(f"Catbox upload failed: HTTP {response.status_code}")
 
         # 3. Save to MongoDB
         movie = {
             "title": movie_title,
             "description": description,
             "image_url": final_image_url,
-            "file_id": "telegraph_hosted",
+            "file_id": "catbox_hosted",
         }
         
         result = await poster_db.movies.insert_one(movie)
