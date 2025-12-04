@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .automation-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+    }
+    
+    .auto-card {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .auto-card h2 {
+        color: #60a5fa;
+        margin-bottom: 16px;
+        font-size: 24px;
+    }
+    
+    .auto-card h3 {
+        color: #94a3b8;
+        margin-bottom: 12px;
+        font-size: 18px;
+    }
+    
+    .input-group {
+        margin-bottom: 16px;
+    }
+    
+    .input-group label {
+        display: block;
+        color: #cbd5e1;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+    
+    .input-group input, .input-group textarea {
+        width: 100%;
+        padding: 12px;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        color: #f1f5f9;
+        font-size: 14px;
+    }
+    
+    .input-group input:focus, .input-group textarea:focus {
+        outline: none;
+        border-color: #60a5fa;
+    }
+    
+    .btn-auto {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-auto:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+    }
+    
+    .btn-auto:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .btn-scan {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    
+    .status-box {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 8px;
+        padding: 16px;
+        margin-top: 16px;
+        display: none;
+    }
+    
+    .status-box.active {
+        display: block;
+    }
+    
+    .status-box.success {
+        background: rgba(16, 185, 129, 0.1);
+        border-color: rgba(16, 185, 129, 0.3);
+    }
+    
+    .status-box.error {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: rgba(239, 68, 68, 0.3);
+    }
+    
+    .feature-list {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .feature-list li {
+        color: #94a3b8;
+        padding: 8px 0;
+        padding-left: 24px;
+        position: relative;
+    }
+    
+    .feature-list li:before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: #10b981;
+        font-weight: bold;
+    }
+    
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #60a5fa;
+        text-decoration: none;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+    
+    .back-link:hover {
+        color: #93c5fd;
+    }
+</style>
+
+<div class="automation-container">
+    <a href="/admin/movies" class="back-link">
+        ← Back to Admin Dashboard
+    </a>
+    
+    <div class="auto-card">
+        <h2>⚡ Quick Add Movie (Semi-Automatic)</h2>
+        <p style="color: #94a3b8; margin-bottom: 20px;">
+            Paste magnet link from TamilMV - Everything else happens automatically!
+        </p>
+        
+        <form id="quickAddForm">
+            <div class="input-group">
+                <label>🔗 Magnet Link</label>
+                <textarea 
+                    id="magnet_link" 
+                    rows="3" 
+                    placeholder="magnet:?xt=urn:btih:..."
+                    required
+                ></textarea>
+            </div>
+            
+            <div class="input-group">
+                <label>🎬 Movie Title</label>
+                <input 
+                    type="text" 
+                    id="movie_title" 
+                    placeholder="Amaran"
+                    required
+                />
+            </div>
+            
+            <div class="input-group">
+                <label>📅 Year (Optional)</label>
+                <input 
+                    type="number" 
+                    id="year" 
+                    placeholder="2024"
+                    min="1900"
+                    max="2030"
+                />
+            </div>
+            
+            <button type="submit" class="btn-auto" id="quickAddBtn">
+                🚀 Auto Add Movie
+            </button>
+            
+            <div id="quickStatus" class="status-box"></div>
+        </form>
+        
+        <hr style="border: 1px solid rgba(255,255,255,0.1); margin: 24px 0;">
+        
+        <h3>What Happens Automatically:</h3>
+        <ul class="feature-list">
+            <li>Downloads movie via Debrid-Link</li>
+            <li>Uploads to your PPD website</li>
+            <li>Fetches poster from TMDb</li>
+            <li>Uploads poster to Telegram</li>
+            <li>Saves to MongoDB database</li>
+            <li>Adds to website homepage</li>
+        </ul>
+    </div>
+    
+    <div class="auto-card">
+        <h2>🤖 Fully Automatic Scan (Experimental)</h2>
+        <p style="color: #94a3b8; margin-bottom: 20px;">
+            Automatically scan TamilMV and add latest movies with optimal quality!
+        </p>
+        
+        <form id="autoScanForm">
+            <div class="input-group">
+                <label>📊 Number of Movies to Scan</label>
+                <input 
+                    type="number" 
+                    id="scan_limit" 
+                    value="10"
+                    min="1"
+                    max="50"
+                />
+                <small style="color: #64748b;">Recommended: 10-20 movies per scan</small>
+            </div>
+            
+            <button type="submit" class="btn-auto btn-scan" id="scanBtn">
+                🔍 Start Auto Scan
+            </button>
+            
+            <div id="scanStatus" class="status-box"></div>
+        </form>
+        
+        <hr style="border: 1px solid rgba(255,255,255,0.1); margin: 24px 0;">
+        
+        <h3>Smart Features:</h3>
+        <ul class="feature-list">
+            <li>Prefers 1080p files between 1-3GB</li>
+            <li>Falls back to larger 1080p if needed</li>
+            <li>Skips CAM/poor quality releases</li>
+            <li>Avoids duplicate movies</li>
+            <li>Runs in background (won't freeze page)</li>
+        </ul>
+    </div>
+    
+    <div class="auto-card">
+        <h2>📋 Setup Required</h2>
+        <p style="color: #94a3b8; margin-bottom: 16px;">
+            Before using automation, add these API keys to your environment:
+        </p>
+        
+        <ul class="feature-list">
+            <li><strong>DEBRID_API_KEY</strong> - Get from debrid-link.com (free tier)</li>
+            <li><strong>PPD_API_KEY</strong> - Your PPD website API key</li>
+            <li><strong>PPD_API_URL</strong> - Your PPD website API endpoint</li>
+            <li><strong>TMDB_API_KEY</strong> - Get from themoviedb.org (free)</li>
+            <li><strong>ADMIN_TELEGRAM_ID</strong> (Optional) - For notifications</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+// Quick Add Form Handler
+document.getElementById('quickAddForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const btn = document.getElementById('quickAddBtn');
+    const status = document.getElementById('quickStatus');
+    
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Processing...';
+    
+    status.className = 'status-box active';
+    status.innerHTML = '🔄 Starting automation pipeline...';
+    
+    const formData = new FormData();
+    formData.append('magnet_link', document.getElementById('magnet_link').value);
+    formData.append('movie_title', document.getElementById('movie_title').value);
+    formData.append('year', document.getElementById('year').value);
+    
+    try {
+        const response = await fetch('/admin/automation/quick-add', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            status.className = 'status-box active success';
+            status.innerHTML = `
+                ✅ ${data.message}<br>
+                <small style="opacity: 0.8;">
+                    Processing in background. This may take 5-10 minutes.<br>
+                    Check admin dashboard for the new movie!
+                </small>
+            `;
+            
+            // Clear form
+            document.getElementById('quickAddForm').reset();
+        } else {
+            throw new Error(data.error || 'Unknown error');
+        }
+    } catch (error) {
+        status.className = 'status-box active error';
+        status.innerHTML = `❌ Error: ${error.message}`;
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '🚀 Auto Add Movie';
+    }
+});
+
+// Auto Scan Form Handler
+document.getElementById('autoScanForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const btn = document.getElementById('scanBtn');
+    const status = document.getElementById('scanStatus');
+    
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Scanning...';
+    
+    status.className = 'status-box active';
+    status.innerHTML = '🔍 Scanning TamilMV for new movies...';
+    
+    const formData = new FormData();
+    formData.append('limit', document.getElementById('scan_limit').value);
+    
+    try {
+        const response = await fetch('/admin/automation/auto-scan', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            status.className = 'status-box active success';
+            status.innerHTML = `
+                ✅ ${data.message}<br>
+                <small style="opacity: 0.8;">
+                    Auto-scan running in background. This may take 30-60 minutes.<br>
+                    New movies will appear on your website automatically!<br>
+                    Check server logs for progress updates.
+                </small>
+            `;
+        } else {
+            throw new Error(data.error || 'Unknown error');
+        }
+    } catch (error) {
+        status.className = 'status-box active error';
+        status.innerHTML = `❌ Error: ${error.message}`;
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '🔍 Start Auto Scan';
+    }
+});
+</script>
+
+{% endblock %}
