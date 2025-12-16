@@ -31,3 +31,4 @@ IMGBB_API_KEY = os.getenv("IMGBB_API_KEY", "e613b8ab80d373ca61a4ad388461ba59")
 if not API_ID or not API_HASH or not BOT_TOKEN:
     print("❌ Please set API_ID, API_HASH, BOT_TOKEN as env variables")
     
+
