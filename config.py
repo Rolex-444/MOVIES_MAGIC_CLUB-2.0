@@ -22,7 +22,7 @@ BOT_USERNAME = os.getenv("BOT_USERNAME", "Movie_magic_club_bot")
 
 # MongoDB settings
 MONGO_URI = os.getenv("MONGO_URI", "")
-MONGO_DB = os.getenv("MONGO_DB", "movies_magic_club")
+MONGO_DB = os.getenv("MONGO_DB", "")
 
 # ImgBB API Key (NEW - ADD THIS)
 IMGBB_API_KEY = os.getenv("IMGBB_API_KEY", "e613b8ab80d373ca61a4ad388461ba59")
