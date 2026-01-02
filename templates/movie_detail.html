@@ -51,7 +51,7 @@
   .movie-poster-wrap img {
     width: 100%;
     height: auto;
-    object-fit: contain;   /* full poster visible, no crop */
+    object-fit: contain;
     display: block;
   }
 
@@ -90,8 +90,6 @@
     background: #020617;
     color: #e5e7eb;
   }
-
-  /* Watch / Download buttons – normal size */
 
   .movie-detail-actions {
     display: flex;
@@ -134,15 +132,11 @@
     box-shadow: 0 10px 24px rgba(245, 158, 11, 0.5);
   }
 
-  /* Synopsis card */
-
   .synopsis-text {
     margin-top: 6px;
     font-size: 13px;
     line-height: 1.5;
   }
-
-  /* Movie info grid */
 
   .info-grid {
     display: grid;
@@ -163,12 +157,120 @@
     margin-top: 2px;
   }
 
-  /* Comments card placeholder */
+  /* Comments Section */
+  .comment-form {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
 
-  .comments-placeholder {
+  .comment-input {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 12px;
+    padding: 10px 14px;
+    color: #e5e7eb;
     font-size: 13px;
+    font-family: inherit;
+    outline: none;
+  }
+
+  .comment-input:focus {
+    border-color: #2563eb;
+    background: rgba(30, 41, 59, 1);
+  }
+
+  .comment-textarea {
+    min-height: 80px;
+    resize: vertical;
+  }
+
+  .comment-submit-btn {
+    align-self: flex-end;
+    padding: 10px 24px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #e5e7eb;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .comment-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .comments-list {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .comment-item {
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 12px;
+    padding: 12px;
+  }
+
+  .comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .comment-author {
+    font-weight: 600;
+    font-size: 13px;
+    color: #3b82f6;
+  }
+
+  .comment-time {
+    font-size: 11px;
     color: var(--text-muted);
-    margin-top: 6px;
+  }
+
+  .comment-message {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #e5e7eb;
+  }
+
+  .no-comments {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  .comment-count {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .alert {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+
+  .alert-success {
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: #10b981;
+  }
+
+  .alert-error {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #ef4444;
   }
 
   @media (max-width: 640px) {
@@ -189,8 +291,7 @@
           {% if movie and movie.poster_path %}
             <img src="{{ movie.poster_path }}" alt="{{ movie.title }} poster">
           {% else %}
-            <div style="width:100%;
-                        background:radial-gradient(circle at top,#1d4ed8,#020617);">
+            <div style="width:100%;background:radial-gradient(circle at top,#1d4ed8,#020617);">
             </div>
           {% endif %}
         </div>
@@ -316,14 +417,141 @@
     </div>
   </article>
 
-  <!-- Comments placeholder only -->
+  <!-- Comments Section -->
   <article class="card">
-    <div class="card-title" style="font-size:16px;">Comments</div>
-    <p class="comments-placeholder">
-      Comments feature coming soon.
-    </p>
+    <div class="card-title" style="font-size:16px;">💬 Comments</div>
+    
+    <!-- Alert Messages -->
+    <div id="commentAlert" style="display:none;"></div>
+    
+    <!-- Comment Form -->
+    <form id="commentForm" class="comment-form">
+      <input type="text" 
+             id="userName" 
+             class="comment-input" 
+             placeholder="Your Name" 
+             required 
+             maxlength="50">
+      <textarea id="userMessage" 
+                class="comment-input comment-textarea" 
+                placeholder="Share your thoughts or ask a question..." 
+                required 
+                maxlength="500"></textarea>
+      <button type="submit" class="comment-submit-btn" id="submitBtn">
+        📝 Post Comment
+      </button>
+    </form>
+
+    <!-- Comments Count -->
+    <div class="comment-count" id="commentCount">Loading comments...</div>
+
+    <!-- Comments List -->
+    <div class="comments-list" id="commentsList">
+      <div class="no-comments">Loading...</div>
+    </div>
   </article>
 
 </section>
+
+<script>
+(function() {
+  const movieId = '{{ movie.id if movie else "" }}';
+  const commentForm = document.getElementById('commentForm');
+  const commentsList = document.getElementById('commentsList');
+  const commentCount = document.getElementById('commentCount');
+  const commentAlert = document.getElementById('commentAlert');
+  const submitBtn = document.getElementById('submitBtn');
+
+  // Load comments on page load
+  loadComments();
+
+  // Handle form submission
+  commentForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const userName = document.getElementById('userName').value.trim();
+    const userMessage = document.getElementById('userMessage').value.trim();
+
+    if (!userName || !userMessage) {
+      showAlert('Please fill in all fields', 'error');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Posting...';
+
+    try {
+      const formData = new FormData();
+      formData.append('content_type', 'movie');
+      formData.append('content_id', movieId);
+      formData.append('user_name', userName);
+      formData.append('message', userMessage);
+
+      const response = await fetch('/api/comments/add', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showAlert('Comment posted successfully! 🎉', 'success');
+        document.getElementById('userMessage').value = '';
+        loadComments();
+      } else {
+        showAlert(data.error || 'Failed to post comment', 'error');
+      }
+    } catch (error) {
+      showAlert('Network error. Please try again.', 'error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '📝 Post Comment';
+    }
+  });
+
+  async function loadComments() {
+    try {
+      const response = await fetch(`/api/comments/movie/${movieId}`);
+      const data = await response.json();
+
+      if (data.success) {
+        const comments = data.comments || [];
+        commentCount.textContent = `${comments.length} comment${comments.length !== 1 ? 's' : ''}`;
+
+        if (comments.length === 0) {
+          commentsList.innerHTML = '<div class="no-comments">💬 Be the first to comment!</div>';
+        } else {
+          commentsList.innerHTML = comments.map(comment => `
+            <div class="comment-item">
+              <div class="comment-header">
+                <span class="comment-author">👤 ${escapeHtml(comment.user_name)}</span>
+                <span class="comment-time">${comment.time_ago}</span>
+              </div>
+              <div class="comment-message">${escapeHtml(comment.message)}</div>
+            </div>
+          `).join('');
+        }
+      }
+    } catch (error) {
+      commentsList.innerHTML = '<div class="no-comments">Failed to load comments</div>';
+    }
+  }
+
+  function showAlert(message, type) {
+    commentAlert.className = `alert alert-${type}`;
+    commentAlert.textContent = message;
+    commentAlert.style.display = 'block';
+    setTimeout(() => {
+      commentAlert.style.display = 'none';
+    }, 4000);
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+})();
+</script>
 
 {% endblock %}
