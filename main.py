@@ -34,6 +34,7 @@ from routes.admin_episodes import router as admin_episodes_router
 from routes.admin_verification import router as admin_verification_router
 from routes.support import router as support_router
 from routes.legal import router as legal_router
+from routes.comments import router as comments_router
 from routes import notice, admin_notice
 from config import API_ID, API_HASH, BOT_TOKEN, CHANNEL_ID, MONGO_URI, MONGO_DB
 
@@ -62,6 +63,7 @@ app.include_router(support_router)
 app.include_router(legal_router)
 app.include_router(notice.router)
 app.include_router(admin_notice.router)
+app.include_router(comments_router)  # NEW: Comments system
 
 # ==================== PYROGRAM BOT SETUP ====================
 bot = Client(
