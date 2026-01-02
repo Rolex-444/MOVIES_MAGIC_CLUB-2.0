@@ -133,6 +133,136 @@
         font-weight: 500;
     }
 
+    /* Comments Section */
+    .comments-card {
+        background: rgba(15, 23, 42, 0.96);
+        border-radius: 24px;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        padding: 16px;
+        margin-top: 16px;
+        grid-column: 1 / -1;
+    }
+
+    .card-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+    .comment-form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+    .comment-input {
+        background: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        border-radius: 12px;
+        padding: 10px 14px;
+        color: #e5e7eb;
+        font-size: 12px;
+        font-family: inherit;
+        outline: none;
+    }
+
+    .comment-input:focus {
+        border-color: #f97316;
+        background: rgba(30, 41, 59, 1);
+    }
+
+    .comment-textarea {
+        min-height: 70px;
+        resize: vertical;
+    }
+
+    .comment-submit-btn {
+        align-self: flex-end;
+        padding: 8px 20px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #f97316, #ec4899);
+        color: #020617;
+        border: none;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .comment-submit-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .comments-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .comment-item {
+        background: rgba(30, 41, 59, 0.5);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 12px;
+        padding: 10px;
+    }
+
+    .comment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+
+    .comment-author {
+        font-weight: 600;
+        font-size: 12px;
+        color: #f97316;
+    }
+
+    .comment-time {
+        font-size: 10px;
+        color: var(--text-muted);
+    }
+
+    .comment-message {
+        font-size: 12px;
+        line-height: 1.5;
+        color: #e5e7eb;
+    }
+
+    .no-comments {
+        text-align: center;
+        padding: 20px;
+        color: var(--text-muted);
+        font-size: 12px;
+    }
+
+    .comment-count {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+    }
+
+    .alert {
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 11px;
+        margin-bottom: 10px;
+    }
+
+    .alert-success {
+        background: rgba(16, 185, 129, 0.2);
+        border: 1px solid rgba(16, 185, 129, 0.4);
+        color: #10b981;
+    }
+
+    .alert-error {
+        background: rgba(239, 68, 68, 0.2);
+        border: 1px solid rgba(239, 68, 68, 0.4);
+        color: #ef4444;
+    }
+
     @media (max-width: 768px) {
         .detail-shell {
             grid-template-columns: minmax(0, 1fr);
@@ -154,7 +284,6 @@
         <div class="detail-poster">
             {% if series.poster_path %}
                 <img src="{{ series.poster_path }}" alt="{{ series.title }} poster">
-                     alt="{{ series.title }} poster">
             {% endif %}
         </div>
 
@@ -236,7 +365,151 @@
             </div>
         </div>
     </article>
+
+    <!-- Comments Section -->
+    <article class="comments-card">
+        <div class="card-title">💬 Comments</div>
+        
+        <!-- Alert Messages -->
+        <div id="commentAlert" style="display:none;"></div>
+        
+        <!-- Comment Form -->
+        <form id="commentForm" class="comment-form">
+            <input type="text" 
+                   id="userName" 
+                   class="comment-input" 
+                   placeholder="Your Name" 
+                   required 
+                   maxlength="50">
+            <textarea id="userMessage" 
+                      class="comment-input comment-textarea" 
+                      placeholder="Share your thoughts or ask a question..." 
+                      required 
+                      maxlength="500"></textarea>
+            <button type="submit" class="comment-submit-btn" id="submitBtn">
+                📝 Post Comment
+            </button>
+        </form>
+
+        <!-- Comments Count -->
+        <div class="comment-count" id="commentCount">Loading comments...</div>
+
+        <!-- Comments List -->
+        <div class="comments-list" id="commentsList">
+            <div class="no-comments">Loading...</div>
+        </div>
+    </article>
 </section>
+
+<script>
+(function() {
+  const episodeId = '{{ episode.id if episode and episode.id else "" }}';
+  const commentForm = document.getElementById('commentForm');
+  const commentsList = document.getElementById('commentsList');
+  const commentCount = document.getElementById('commentCount');
+  const commentAlert = document.getElementById('commentAlert');
+  const submitBtn = document.getElementById('submitBtn');
+
+  // Load comments on page load
+  if (episodeId) {
+    loadComments();
+  } else {
+    commentsList.innerHTML = '<div class="no-comments">Comments not available for this episode</div>';
+  }
+
+  // Handle form submission
+  commentForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    if (!episodeId) {
+      showAlert('Episode ID not found', 'error');
+      return;
+    }
+    
+    const userName = document.getElementById('userName').value.trim();
+    const userMessage = document.getElementById('userMessage').value.trim();
+
+    if (!userName || !userMessage) {
+      showAlert('Please fill in all fields', 'error');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Posting...';
+
+    try {
+      const formData = new FormData();
+      formData.append('content_type', 'episode');
+      formData.append('content_id', episodeId);
+      formData.append('user_name', userName);
+      formData.append('message', userMessage);
+
+      const response = await fetch('/api/comments/add', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showAlert('Comment posted successfully! 🎉', 'success');
+        document.getElementById('userMessage').value = '';
+        loadComments();
+      } else {
+        showAlert(data.error || 'Failed to post comment', 'error');
+      }
+    } catch (error) {
+      showAlert('Network error. Please try again.', 'error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '📝 Post Comment';
+    }
+  });
+
+  async function loadComments() {
+    try {
+      const response = await fetch(`/api/comments/episode/${episodeId}`);
+      const data = await response.json();
+
+      if (data.success) {
+        const comments = data.comments || [];
+        commentCount.textContent = `${comments.length} comment${comments.length !== 1 ? 's' : ''}`;
+
+        if (comments.length === 0) {
+          commentsList.innerHTML = '<div class="no-comments">💬 Be the first to comment!</div>';
+        } else {
+          commentsList.innerHTML = comments.map(comment => `
+            <div class="comment-item">
+              <div class="comment-header">
+                <span class="comment-author">👤 ${escapeHtml(comment.user_name)}</span>
+                <span class="comment-time">${comment.time_ago}</span>
+              </div>
+              <div class="comment-message">${escapeHtml(comment.message)}</div>
+            </div>
+          `).join('');
+        }
+      }
+    } catch (error) {
+      commentsList.innerHTML = '<div class="no-comments">Failed to load comments</div>';
+    }
+  }
+
+  function showAlert(message, type) {
+    commentAlert.className = `alert alert-${type}`;
+    commentAlert.textContent = message;
+    commentAlert.style.display = 'block';
+    setTimeout(() => {
+      commentAlert.style.display = 'none';
+    }, 4000);
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+})();
+</script>
 {% endif %}
 
 {% endblock %}
