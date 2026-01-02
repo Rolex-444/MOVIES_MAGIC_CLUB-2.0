@@ -1,6 +1,7 @@
 import os
 import tempfile
 import base64
+import asyncio
 from fastapi import FastAPI, UploadFile, File, Form, Request, HTTPException, Depends
 from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -8,7 +9,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pyrogram import Client, filters
-from pyrogram.errors import BadRequest
+from pyrogram.errors import BadRequest, FloodWait
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import requests
 from datetime import datetime
@@ -74,23 +75,55 @@ bot = Client(
     in_memory=True
 )
 
+# ==================== BOT STATUS ====================
+bot_running = False
+
 # ==================== DATABASE SETUP ====================
 mongo_client = AsyncIOMotorClient(MONGO_URI)
 poster_db = mongo_client[MONGO_DB if MONGO_DB else "movies_magic_club"]
 
+# ==================== BOT STARTUP WITH ERROR HANDLING ====================
+async def start_bot_safely():
+    """Start bot in background with proper error handling"""
+    global bot_running
+    try:
+        print("[BOT] Attempting to start Telegram bot...")
+        await bot.start()
+        bot_running = True
+        print("[BOT] ✅ Telegram bot started successfully!")
+    except FloodWait as e:
+        print(f"[BOT] ⚠️ FloodWait error: Need to wait {e.value} seconds")
+        print(f"[BOT] ⚠️ Web app will continue running without bot functionality")
+        print(f"[BOT] ⏰ Bot will retry after {e.value // 60} minutes")
+        bot_running = False
+        # Schedule retry after wait time
+        await asyncio.sleep(e.value)
+        await start_bot_safely()  # Retry
+    except Exception as e:
+        print(f"[BOT] ❌ Failed to start bot: {e}")
+        print(f"[BOT] ⚠️ Web app will continue running without bot functionality")
+        bot_running = False
+
 # ==================== STARTUP/SHUTDOWN ====================
 @app.on_event("startup")
 async def on_startup():
+    # Start database connection
     await connect_to_mongo()
-    await bot.start()
-    print("FastAPI app and bot startup complete!")
+    print("[APP] ✅ Connected to MongoDB")
+    
+    # Start bot in background (non-blocking)
+    asyncio.create_task(start_bot_safely())
+    
+    print("[APP] ✅ FastAPI web app started successfully!")
+    print("[APP] 🌐 Web app is running and ready to serve requests")
 
 @app.on_event("shutdown")
 async def on_shutdown():
     await close_mongo_connection()
-    await bot.stop()
+    if bot_running:
+        await bot.stop()
     mongo_client.close()
-    print("FastAPI app and bot shutting down!")
+    print("[APP] 👋 FastAPI app and bot shutting down!")
 
 # ==================== BOT /START COMMAND ====================
 @bot.on_message(filters.command("start") & filters.private)
@@ -117,11 +150,18 @@ Your ultimate destination for movies and series!
 # ==================== HEALTH CHECK ROUTES ====================
 @app.get("/status")
 async def status():
-    return {"status": "ok"}
+    return {
+        "status": "ok",
+        "web_app": "running",
+        "bot_status": "running" if bot_running else "not_running"
+    }
 
 @app.get("/")
 async def root():
-    return {"message": "Movies Magic Club API is running."}
+    return {
+        "message": "Movies Magic Club API is running.",
+        "bot_status": "active" if bot_running else "inactive"
+    }
 
 # ==================== POSTER UPLOAD API (IMGBB + TELEGRAM HYBRID) ====================
 @app.post("/api/poster/upload")
@@ -132,7 +172,7 @@ async def upload_poster(
 ):
     """
     1. Save uploaded image to a temp file.
-    2. Upload to Telegram channel (unlimited storage backup).
+    2. Upload to Telegram channel (unlimited storage backup) - ONLY IF BOT IS RUNNING.
     3. Upload to ImgBB (fast CDN with better reliability).
     4. Save both references to MongoDB.
     """
@@ -151,8 +191,8 @@ async def upload_poster(
         
         print(f"[DEBUG] Starting hybrid upload: {movie_title}")
         
-        # 2. UPLOAD TO TELEGRAM CHANNEL (UNLIMITED BACKUP)
-        if POSTER_CHANNEL_ID != 0:
+        # 2. UPLOAD TO TELEGRAM CHANNEL (ONLY IF BOT IS RUNNING)
+        if bot_running and POSTER_CHANNEL_ID != 0:
             try:
                 print(f"[DEBUG] Uploading to Telegram channel: {POSTER_CHANNEL_ID}")
                 tg_msg = await bot.send_photo(
@@ -172,7 +212,10 @@ async def upload_poster(
             except Exception as e:
                 print(f"[WARNING] Telegram upload failed: {e}")
         else:
-            print("[WARNING] POSTER_CHANNEL_ID not configured")
+            if not bot_running:
+                print("[WARNING] Bot not running, skipping Telegram upload")
+            else:
+                print("[WARNING] POSTER_CHANNEL_ID not configured")
         
         # 3. UPLOAD TO IMGBB (FAST CDN - BETTER THAN CATBOX)
         try:
@@ -279,8 +322,8 @@ async def get_poster_url(poster_id: str):
                 "fallback_available": poster.get("telegram_file_id") is not None
             })
         
-        # Fallback to Telegram (regenerate URL from file_id)
-        if poster.get("telegram_file_id"):
+        # Fallback to Telegram (regenerate URL from file_id) - ONLY IF BOT IS RUNNING
+        if bot_running and poster.get("telegram_file_id"):
             try:
                 file_info = await bot.get_file(poster["telegram_file_id"])
                 telegram_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_info.file_path}"
@@ -306,11 +349,18 @@ async def debug_config():
         "poster_channel_id": POSTER_CHANNEL_ID,
         "bot_token_start": BOT_TOKEN[:10],
         "bot_token_length": len(BOT_TOKEN),
-        "imgbb_api_configured": bool(IMGBB_API_KEY)
+        "imgbb_api_configured": bool(IMGBB_API_KEY),
+        "bot_running": bot_running
     }
 
 @app.get("/debug/channel")
 async def debug_channel():
+    if not bot_running:
+        return {
+            "ok": False,
+            "error": "Bot is not running"
+        }
+    
     try:
         chat = await bot.get_chat(CHANNEL_ID)
         return {
