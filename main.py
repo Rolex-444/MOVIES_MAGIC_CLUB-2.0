@@ -163,6 +163,17 @@ async def root():
         "bot_status": "active" if bot_running else "inactive"
     }
 
+# ==================== HELPER: GET TELEGRAM URL FROM FILE_ID ====================
+async def get_telegram_url(file_id: str) -> str:
+    """Generate Telegram CDN URL from file_id"""
+    try:
+        if bot_running:
+            file_info = await bot.get_file(file_id)
+            return f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_info.file_path}"
+    except Exception as e:
+        print(f"[ERROR] Failed to get Telegram URL: {e}")
+    return None
+
 # ==================== POSTER UPLOAD API (IMGBB + TELEGRAM HYBRID) ====================
 @app.post("/api/poster/upload")
 async def upload_poster(
@@ -175,10 +186,12 @@ async def upload_poster(
     2. Upload to Telegram channel (unlimited storage backup) - ONLY IF BOT IS RUNNING.
     3. Upload to ImgBB (fast CDN with better reliability).
     4. Save both references to MongoDB.
+    5. FALLBACK: Use Telegram URL if ImgBB fails.
     """
     tmp_path = None
     telegram_file_id = None
     telegram_message_id = None
+    telegram_url = None
     imgbb_url = None
     
     try:
@@ -208,7 +221,12 @@ async def upload_poster(
                 else:
                     telegram_file_id = photo.file_id
                 telegram_message_id = tg_msg.id
+                
+                # Generate Telegram CDN URL
+                telegram_url = await get_telegram_url(telegram_file_id)
+                
                 print(f"[SUCCESS] Telegram: file_id={telegram_file_id}")
+                print(f"[SUCCESS] Telegram URL: {telegram_url}")
             except Exception as e:
                 print(f"[WARNING] Telegram upload failed: {e}")
         else:
@@ -235,8 +253,8 @@ async def upload_poster(
                 'name': movie_title.replace(" ", "_")
             }
             
-            # Make POST request
-            response = requests.post(imgbb_api, data=payload, timeout=30)
+            # Make POST request with shorter timeout
+            response = requests.post(imgbb_api, data=payload, timeout=15)
             
             if response.status_code == 200:
                 result = response.json()
@@ -256,18 +274,24 @@ async def upload_poster(
         if not telegram_file_id and not imgbb_url:
             raise Exception("Both Telegram and ImgBB uploads failed")
         
-        # 5. DETERMINE PRIMARY URL (ImgBB preferred for speed and reliability)
-        primary_url = imgbb_url if imgbb_url else None
+        # 5. DETERMINE PRIMARY URL (ImgBB preferred, Telegram as fallback)
+        primary_url = imgbb_url if imgbb_url else telegram_url
+        
+        if not primary_url:
+            raise Exception("No valid poster URL generated")
+        
+        print(f"[SUCCESS] Primary poster URL: {primary_url}")
         
         # 6. SAVE TO MONGODB
         movie = {
             "title": movie_title,
             "description": description,
             "poster_imgbb": imgbb_url,  # Primary (fast, permanent, no ISP blocking)
-            "telegram_file_id": telegram_file_id,  # Backup (unlimited storage)
+            "poster_telegram": telegram_url,  # Fallback (unlimited storage)
+            "telegram_file_id": telegram_file_id,  # For regenerating URL
             "telegram_message_id": telegram_message_id,
             "poster_primary": primary_url,
-            "storage_type": "hybrid" if (imgbb_url and telegram_file_id) else "single",
+            "storage_type": "hybrid" if (imgbb_url and telegram_file_id) else ("imgbb" if imgbb_url else "telegram"),
             "uploaded_at": datetime.utcnow()
         }
         
@@ -284,7 +308,8 @@ async def upload_poster(
         return JSONResponse({
             "success": True,
             "message": "Poster uploaded and saved!",
-            "url": primary_url
+            "url": primary_url,
+            "storage": "imgbb" if imgbb_url else "telegram"
         })
         
     except BadRequest as e:
@@ -322,19 +347,25 @@ async def get_poster_url(poster_id: str):
                 "fallback_available": poster.get("telegram_file_id") is not None
             })
         
-        # Fallback to Telegram (regenerate URL from file_id) - ONLY IF BOT IS RUNNING
+        # Try saved Telegram URL
+        if poster.get("poster_telegram"):
+            return JSONResponse({
+                "url": poster["poster_telegram"],
+                "source": "telegram_cached"
+            })
+        
+        # Fallback: Regenerate URL from file_id - ONLY IF BOT IS RUNNING
         if bot_running and poster.get("telegram_file_id"):
             try:
-                file_info = await bot.get_file(poster["telegram_file_id"])
-                telegram_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_info.file_path}"
-                return JSONResponse({
-                    "url": telegram_url,
-                    "source": "telegram",
-                    "note": "Regenerated from file_id"
-                })
+                telegram_url = await get_telegram_url(poster["telegram_file_id"])
+                if telegram_url:
+                    return JSONResponse({
+                        "url": telegram_url,
+                        "source": "telegram",
+                        "note": "Regenerated from file_id"
+                    })
             except Exception as e:
                 print(f"[ERROR] Telegram fallback failed: {e}")
-                raise HTTPException(status_code=500, detail="All sources failed")
         
         raise HTTPException(status_code=404, detail="No poster sources available")
         
